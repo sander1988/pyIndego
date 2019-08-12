@@ -92,6 +92,17 @@ MOWER_MODEL_DESCRIPTION = {
     '3600HB0102': 'Indego S+ 350 Connect'
 }
 
+MOWER_MODEL_VOLTAGE = {
+    '3600HA2300': {'min': '297','max': '369'}, # Indego 1000 Connect
+    '3600HA2301': {'min': '297','max': '369'}, # Indego 1200 Connect
+    '3600HA2302': {'min': '297','max': '369'}, # Indego 1100 Connect
+    '3600HA2303': {'min': '297','max': '369'}, # Indego 13C
+    '3600HA2304': {'min': '297','max': '369'}, # Indego 10C
+    '3600HB0100': {'min': '0','max': '100'},   # Indego 350 Connect
+    '3600HB0101': {'min': '0','max': '100'},   # Indego 400 Connect
+    '3600HB0102': {'min': '0','max': '100'}    # Indego S+ 350 Connect
+}
+
 MOWING_MODE_DESCRIPTION = {
     'smart':    'SmartMowing',
     'calendar': 'Calendar',
@@ -128,6 +139,7 @@ class IndegoAPI():
         self._svg_xPos = None
         self._svg_yPos = None
         self._mower_state_description = None
+        self._mower_state_description_detailed = None
         self._total_operation = None
         self._total_charge = None
         self._total_cut = None
@@ -158,6 +170,7 @@ class IndegoAPI():
         self._battery_temp = None
         self._firmware_available = None
         self._mowingmode_description = None
+        self._battery_percent_adjusted = None
 
         ## Logging in
         self.login()
@@ -537,7 +550,7 @@ class IndegoAPI():
             else:
                 _LOGGER.debug(f"Value not in dict = {self._mower_state}")
                 self._mower_state_description_detailed = "Value not in database: " + str(self._mower_state)
-            return self._mower_state_description
+            return self._mower_state_description_detailed
         else:
             return None
         return self._mower_state_description_detailed
@@ -637,6 +650,34 @@ class IndegoAPI():
         else:
             return None
 
+    def ModelVoltage(self):
+        if hasattr(self, '_bareToolnumber'):
+            if str(self._bareToolnumber) in MOWER_MODEL_VOLTAGE.keys():
+                _LOGGER.debug(f"Value in dict = {self._bareToolnumber}")
+                self._model_voltage = MOWER_MODEL_VOLTAGE.get(str(self._bareToolnumber))
+            else:
+                _LOGGER.debug(f"Value not in dict = {self._bareToolnumber}")
+                self._model_description = "Value not in database: " + str(self._bareToolnumber)
+            return self._model_voltage
+        else:
+            return None
+    
+    def ModelVoltageMin(self):
+        if hasattr(self, '_model_voltage'):
+            tmp = self._model_voltage
+            self._model_voltage_min = tmp['min']
+            return self._model_voltage_min
+        else:
+            return None
+
+    def ModelVoltageMax(self):
+        if hasattr(self, '_model_voltage'):
+            tmp = self._model_voltage
+            self._model_voltage_max = tmp['max']
+            return self._model_voltage_max
+        else:
+            return None
+
     def MowingModeDescription(self):
         if str(self._alm_mode) in MOWING_MODE_DESCRIPTION.keys():
             _LOGGER.debug(f"Value in dict = {self._alm_mode}")
@@ -665,6 +706,18 @@ class IndegoAPI():
         else:
             return None
 
+    def BatteryPercentAdjusted(self):
+        tmp = self.Battery()
+        if hasattr(self, '_battery') and (self._battery):
+            # if hasattr model_voltage
+            starttemp = int(self._battery_percent)
+            #starttemp = 297 + 36 + 18
+            # Oneliner
+            self._battery_percent_adjusted = round((int(starttemp) - int(self._model_voltage_min)) / ((int(self._model_voltage_max) - int(self._model_voltage_min))/100))
+            return self._battery_percent_adjusted
+        else:
+            return None
+    
     def BatteryVoltage(self):
         tmp = self.Battery()
         if hasattr(self, '_battery') and (self._battery):
