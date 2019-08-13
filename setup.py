@@ -11,7 +11,7 @@ setuptools.setup(
     description="API for Bosch Indego mower",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jm-73/Indego",
+    url="https://github.com/jm-73/pyIndego",
     packages=setuptools.find_packages(),
     install_requires=[
         'requests'
