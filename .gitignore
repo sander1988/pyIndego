@@ -2,8 +2,9 @@
 # .gitignore                                                #
 #############################################################
 
-# Test file
-test.jens
+# Test script
+config.py
+test_pyIndego.py
 
 # Log files
 *.log
