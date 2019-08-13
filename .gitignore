@@ -8,3 +8,6 @@ test_pyIndego.py
 
 # Log files
 *.log
+
+# Python cache
+__pycache__/

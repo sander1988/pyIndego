@@ -111,7 +111,7 @@ MOWING_MODE_DESCRIPTION = {
 
 ALERT_ERROR_CODE = {
     '104':             'Stop button pushed',
-    '115':             'Mower needs attention (stuck)',
+    '115':             'Mower is stuck',
     'ntfy_blade_life': 'Reminder blade life'
 }
 
