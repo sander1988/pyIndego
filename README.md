@@ -1,13 +1,14 @@
 # API for the Bosch Indego lawnmowers
 
 ## Usage with Home Assistant
-See https://github.com/jm-73/Indego
+For source files and versin handling: https://github.com/jm-73/pyIndego
+For PYPI package: https://pypi.org/project/pyIndego/
 
 ## Basic information needed
 
 Information   | Description
 --------------|------------
-your_username | Your username when using the BoschSmartMove app
+your_username | Your username in the BoschSmartMove app
 your_password | Your password for the app
 your_serial   | Your Bosch Indego serial (found on the mover, in the mover menu or in the app)
 
