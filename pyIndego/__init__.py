@@ -109,6 +109,12 @@ MOWING_MODE_DESCRIPTION = {
     'manual':   'Manual'
 }
 
+ALERT_ERROR_CODE = {
+    '104':             'Stop button pushed',
+    '115':             'Mower needs attention (stuck)',
+    'ntfy_blade_life': 'Reminder blade life'
+}
+
 class IndegoAPI():
     """Wrapper for Indego's API."""
     def __init__(self, username=None, password=None, serial=None):
@@ -401,6 +407,17 @@ class IndegoAPI():
         _LOGGER.debug("---")  
         return tmp_json
 
+    def getAlerts(self):
+        _LOGGER.debug("---")  
+        _LOGGER.debug("getAlerts start")
+        complete_url = 'alerts'
+        _LOGGER.debug(">>>API Call: " + complete_url)
+        tmp_json = self.get(complete_url)
+        self._alerts = tmp_json
+        _LOGGER.debug("getAlerts end")
+        _LOGGER.debug("---")  
+        return tmp_json
+
     def getNextCutting(self):
         _LOGGER.debug("---")  
         _LOGGER.debug("getNextCutting start")
@@ -424,16 +441,6 @@ class IndegoAPI():
 #        value = Runtime_temp
 #        return value
 
-    def getAlerts(self):
-        _LOGGER.debug("---")  
-        _LOGGER.debug("getAlerts start")
-        complete_url = 'alerts'
-        _LOGGER.debug(">>>API Call: " + complete_url)
-        tmp_json = self.get(complete_url)
-        self._alerts = tmp_json
-        _LOGGER.debug("getAlerts end")
-        _LOGGER.debug("---")  
-        return tmp_json
 
 ###################################################
 ### Functions for getting data from STATE cache
@@ -443,16 +450,16 @@ class IndegoAPI():
             return self._mower_state
         else:
             return None
+            
+    def MapUpdateAvailable(self):
+        if hasattr(self, '_map_update_available'):
+            return self._map_update_available
+        else:
+            return None
 
     def Mowed(self):
         if hasattr(self, '_mowed'):
             return self._mowed
-        else:
-            return None
-
-    def MapUpdateAvailable(self):
-        if hasattr(self, '_map_update_available'):
-            return self._map_update_available
         else:
             return None
 
@@ -480,6 +487,25 @@ class IndegoAPI():
         else:
             return None
 
+    def MapSvgCacheTs(self):
+        if hasattr(self, '_mapsvgcache_ts'):
+            return self._mapsvgcache_ts
+        else:
+            return None
+
+    def SvgxPos(self):
+        if hasattr(self, '_svg_xPos'):
+            return self._svg_xPos
+        else:
+            return None
+
+    def SvgyPos(self):
+        if hasattr(self, '_svg_yPos'):
+            return self._svg_yPos
+        else:
+            return None
+
+### --- User readable get functions
     def RuntimeTotal(self):
         tmp = self.Runtime()
         if (tmp):
@@ -507,25 +533,6 @@ class IndegoAPI():
                 return None
         return None
 
-    def MapSvgCacheTs(self):
-        if hasattr(self, '_mapsvgcache_ts'):
-            return self._mapsvgcache_ts
-        else:
-            return None
-
-    def SvgxPos(self):
-        if hasattr(self, '_svg_xPos'):
-            return self._svg_xPos
-        else:
-            return None
-
-    def SvgyPos(self):
-        if hasattr(self, '_svg_yPos'):
-            return self._svg_yPos
-        else:
-            return None
-
-### --- User readable get functions
 
     def MowerStateDescription(self):
         if hasattr(self, '_mower_state'):
@@ -708,7 +715,7 @@ class IndegoAPI():
 
     def BatteryPercentAdjusted(self):
         tmp = self.Battery()
-        if hasattr(self, '_battery') and (self._battery):
+        if hasattr(self, '_battery') and (self._battery) and (hasattr(self, '_model_voltage_max')) and (hasattr(self, '_model_voltage_min')):
             # if hasattr model_voltage
             starttemp = int(self._battery_percent)
             #starttemp = 297 + 36 + 18
@@ -789,6 +796,21 @@ class IndegoAPI():
 ### Functions for getting data from ALERTS API call cache
 
     def AlertsDescription(self):
+        alerts =  self._alerts
+        tmp_cnt = 0
+        for alert in alerts:
+            tmp_cnt += 1
+            if (tmp_cnt == 1):
+                self._alert1_name  = alert['date'] 
+                self._alert1_error = alert['error_code']
+            if (tmp_cnt == 2):
+                self._alert2_name  = alert['date'] 
+                self._alert2_error = alert['error_code']
+            if (tmp_cnt == 3):
+                self._alert3_name  = alert['date'] 
+                self._alert3_error = alert['error_code']
+            print(tmp_cnt, alert['date'], alert['error_code'], alert['headline'])
+            #alerts_list.update(date = alert['date'])
         return self._alerts
 
 ### --- User readable get functions
