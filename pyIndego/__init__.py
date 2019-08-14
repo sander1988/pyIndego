@@ -177,6 +177,12 @@ class IndegoAPI():
         self._firmware_available = None
         self._mowingmode_description = None
         self._battery_percent_adjusted = None
+        self._alert1_error = None
+        self._alert1_name = None
+        self._alert2_error = None
+        self._alert2_name = None
+        self._alert3_error = None
+        self._alert3_name = None
 
         ## Logging in
         self.login()
