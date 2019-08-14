@@ -2,6 +2,7 @@
 
 ## Usage with Home Assistant
 For source files and versin handling: https://github.com/jm-73/pyIndego
+
 For PYPI package: https://pypi.org/project/pyIndego/
 
 ## Basic information needed
@@ -40,7 +41,7 @@ Collect alerts.
 
 ```python
 {
-    'alm_sn': '505703041', 
+    'alm_sn': '123456789', 
     'alert_id': '5d48171263c5345a75dbc017', 
     'error_code': 'ntfy_blade_life', 
     'headline': 'Underhållstips.', 
@@ -53,7 +54,7 @@ Collect alerts.
 ```
 
 ### getNextcutting()
-Collects data on next cutting.
+Collects data on next cutting. (Not implemented yet)
 
 ### getOperatingData()
 Collect operational data data: battery, runtime, garden data and temperature.
@@ -134,7 +135,7 @@ Collect serial, service counter, name, mowing mode, model number and firmware.
 
 ```python
 {
-    'alm_sn': '505703041', 
+    'alm_sn': '123456789', 
     'alm_name': 'Indego', 
     'service_counter': 60488, 
     'needs_service': False, 
@@ -149,8 +150,8 @@ Collect user data.
 
 ```python
 {
-    'email': 'jens@myretyr.se', 
-    'display_name': 'Frasse', 
+    'email': 'mail@gmail.com', 
+    'display_name': 'Indego', 
     'language': 'sv', 
     'country': 'GB', 
     'optIn': True, 
