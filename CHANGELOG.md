@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.4 2019-08-14
+
+### Changes
+- getAlerts: Added Friendly Description as attribute.
+
 ## 0.7.3 2019-08-14
 
 ### Changes
