@@ -111,7 +111,7 @@ MOWING_MODE_DESCRIPTION = {
 
 ALERT_ERROR_CODE = {
     '104':             'Stop button pushed',
-    '115':             'Mower needs attention (stuck)',
+    '115':             'Mower is stuck',
     'ntfy_blade_life': 'Reminder blade life'
 }
 
@@ -803,9 +803,15 @@ class IndegoAPI():
             if (tmp_cnt == 1):
                 self._alert1_name  = alert['date'] 
                 self._alert1_error = alert['error_code']
+                self._alert2_name  = None
+                self._alert2_error = None
+                self._alert3_name  = None
+                self._alert3_error = None
             if (tmp_cnt == 2):
                 self._alert2_name  = alert['date'] 
                 self._alert2_error = alert['error_code']
+                self._alert3_name  = None
+                self._alert3_error = None
             if (tmp_cnt == 3):
                 self._alert3_name  = alert['date'] 
                 self._alert3_error = alert['error_code']
