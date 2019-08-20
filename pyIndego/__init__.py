@@ -813,7 +813,8 @@ class IndegoAPI():
             if (tmp_cnt == 1):
                 self._alert1_time  = self.ConvertBoschDateTime(alert['date']) 
                 self._alert1_error = alert['error_code']
-                self._alert1_friendly_description = ALERT_ERROR_CODE[tmp_code]
+                #self._alert1_friendly_description = ALERT_ERROR_CODE[tmp_code]
+                self._alert1_friendly_description = self.FriendlyAlertErrorCode(tmp_code)
                 self._alert2_time  = None
                 self._alert2_error = None
                 self._alert3_name  = None
@@ -821,19 +822,33 @@ class IndegoAPI():
             if (tmp_cnt == 2):
                 self._alert2_time  = self.ConvertBoschDateTime(alert['date'])
                 self._alert2_error = alert['error_code']
-                self._alert2_friendly_description = ALERT_ERROR_CODE[tmp_code]
+                #self._alert2_friendly_description = ALERT_ERROR_CODE[tmp_code]
+                self._alert2_friendly_description = self.FriendlyAlertErrorCode(tmp_code)
                 self._alert3_time  = None
                 self._alert3_error = None
             if (tmp_cnt == 3):
                 self._alert3_time  = self.ConvertBoschDateTime(alert['date'])
                 self._alert3_error = alert['error_code']
-                self._alert3_friendly_description = ALERT_ERROR_CODE[tmp_code]
-            print(tmp_cnt, alert['date'], alert['error_code'], alert['headline'])
-            tmp_code = alert['error_code']
-            print("Friendly Description: " + ALERT_ERROR_CODE[tmp_code])
+                #self._alert3_friendly_description = ALERT_ERROR_CODE[tmp_code]
+                self._alert3_friendly_description = self.FriendlyAlertErrorCode(tmp_code)
+            #print(tmp_cnt, alert['date'], alert['error_code'], alert['headline'])
+            #tmp_code = alert['error_code']
+            #print("Friendly Description: " + ALERT_ERROR_CODE[tmp_code])
             #ALERT_ERROR_CODE = {
             #alerts_list.update(date = alert['date'])
         return self._alerts
+
+    def FriendlyAlertErrorCode(self, tmp):
+        tmp_val = tmp
+
+        if str(tmp_val) in ALERT_ERROR_CODE.keys():
+            _LOGGER.debug(f"Alert value in dict = {tmp_val}")
+            alert_description = ALERT_ERROR_CODE[tmp_val]
+            _LOGGER.debug(f"Mower state description: {alert_description}")
+        else:
+            _LOGGER.debug(f"Alert value not in dict = {tmp_val}")
+            alert_description = "Not in database!"
+        return alert_description
 
     def ConvertBoschDateTime(self, boshdatetime):
         return boshdatetime[0:10] + " " + boshdatetime[11:16]
