@@ -2,6 +2,13 @@
 # .gitignore                                                #
 #############################################################
 
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+pyIndego/__pycache__/
+
 # Test script
 config.py
 test_pyIndego.py
@@ -9,5 +16,8 @@ test_pyIndego.py
 # Log files
 *.log
 
-# Python cache
-__pycache__/
+# Python wheel build package
+build/
+dist/
+pyIndego.egg-info/
+_build.cmd
