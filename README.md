@@ -1,7 +1,7 @@
 # API for the Bosch Indego lawnmowers
 
 ## Usage with Home Assistant
-For source files and versin handling: https://github.com/jm-73/pyIndego
+For source files and version handling: https://github.com/jm-73/pyIndego
 
 For PYPI package: https://pypi.org/project/pyIndego/
 
