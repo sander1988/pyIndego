@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.6 2019-08-21
+
+### Changes
+- AlertDescription: Added ID as property.
+
+## 0.7.5 2019-08-20
+
+### Changes
+- FriendlyAlertErrorCode: Added function to get Friendly Description and handle codes that are not known.
+
 ## 0.7.4 2019-08-14
 
 ### Changes
