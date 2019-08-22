@@ -182,7 +182,7 @@ Response:
 All functions that doesnt contain "get" first in name is collecting data from locally stored variables. No API calls to Bosch or mower.
 
 ### AlertsCount()
-![Alertscount](https://img.shields.io/badge/Needs-getAlert-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getAlert-red)<br>
 Counts the current alarms on mower.
 
 ```python
@@ -191,7 +191,7 @@ Response:
 ```
 
 ### AlertsDescription()
-![AlertDescription](https://img.shields.io/badge/Needs-getAlert-red)<br>
+![AlertDescription](https://img.shields.io/badge/Need-getAlert-red)<br>
 Get detailed list of alerts
 
 ```python
@@ -212,7 +212,7 @@ Response:
 ```
 
 ### AlmFirmwareVersion()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Gets the mower firmware version.
 
 ```python
@@ -221,7 +221,7 @@ smart
 ```
 
 ### AlmMode()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Gets the mower mode.
 
 ```python
@@ -230,7 +230,7 @@ smart
 ```
 
 ### AlmName()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Gets the mower instance name.
 ```python
 response:
@@ -239,16 +239,16 @@ Indego
 
 
 ### BareToolNumber() 
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Show the model number of the mower.
 
-```python
+```
 Response:
 3600HA2300
 ```
 
 ### Battery()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Get battery information.
 ```python
 Response:
@@ -256,7 +256,7 @@ Response:
 ```
 
 ### BatteryPercent()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Get the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 mowers it seems to be the actual percentage left in the battery.
 ```python
 Response:
@@ -264,7 +264,7 @@ Response:
 ```
 
 ### BatteryPercentAdjusted()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Get the adjusted value for percentage left. Calculated for Gen 1 mowers, and the actual percentage value for Gen 2.
 ```python
 Response:
@@ -272,7 +272,7 @@ Response:
 ```
 
 ### BatteryVoltage()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Get the voltage for the battery. For Gen 1 mowers this value seems to be correct. For Gen 2 it seems to be the same value as the percentage left in battery.
 ```python
 Response:
@@ -280,7 +280,7 @@ Response:
 ```
 
 ### BatteryCycles()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Dont know what this value is?
 ```python
 Response:
@@ -288,7 +288,7 @@ Response:
 ```
 
 ### BatteryDischarge()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Seems to be the Ah the mower is currently drawing.
 ```python
 Response:
@@ -296,7 +296,7 @@ Response:
 ```
 
 ### BatteryAmbientTemp()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Seems to be the ambient temp of the battery.
 ```python
 Response:
@@ -304,7 +304,7 @@ Response:
 ```
 
 ### BatteryTemp()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Seems to be the temp of the battery.
 ```python
 Response:
@@ -312,7 +312,7 @@ Response:
 ```
 
 ### Country()
-![Alertscount](https://img.shields.io/badge/Needs-getUsers-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getUsers-red)<br>
 Show country for the Bosch account.
 ```python
 Response:
@@ -320,7 +320,7 @@ GB
 ```
 
 ### Displayname()
-![Alertscount](https://img.shields.io/badge/Needs-getUsers-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getUsers-red)<br>
 Show name for the Bosch account.
 ```python
 Response:
@@ -328,7 +328,7 @@ mowername
 ```
 
 ### Email()
-![Alertscount](https://img.shields.io/badge/Needs-getUsers-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getUsers-red)<br>
 Show email adress for the Bosch account.
 ```python
 Response:
@@ -336,7 +336,7 @@ mail@gmail.com
 ```
 
 ### FriendlyAlertErrorCode()
-![Alertscount](https://img.shields.io/badge/Needs-getAlert-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getAlert-red)<br>
 Get user friendly alert error code description to be shown in HA GUI.
 ```python
 Response:
@@ -344,7 +344,7 @@ Reminder blade life
 ```
 
 ### Garden()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Dont know what this is?
 ```python
 Response:
@@ -366,7 +366,7 @@ Response:
 ```
 
 ### HmiKeysn()
-![Alertscount](https://img.shields.io/badge/Needs-getOperatingData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getOperatingData-red)<br>
 Dont know what this is?
 ```python
 Response:
@@ -374,7 +374,7 @@ Response:
 ```
 
 ### Language()
-![Alertscount](https://img.shields.io/badge/Needs-getUsers-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getUsers-red)<br>
 Show language for the Bosch account.
 ```python
 Response:
@@ -382,7 +382,7 @@ sv
 ```
 
 ### MapSvgCacheTs()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Dont know what this is...
 ```python
 Response:
@@ -390,7 +390,7 @@ Response:
 ```
 
 ### MapUpdateAvailable()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show if there is an update of the map image.
 ```python
 Response:
@@ -398,7 +398,7 @@ True
 ```
 
 ### ModelDescription()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get user friendly model name.
 ```python
 response:
@@ -406,7 +406,7 @@ Indego Connect 1000
 ```
 
 ### ModelVoltage()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get the predefined voltage limits in order to calculate battery percentage.
 ```python
 response:
@@ -417,7 +417,7 @@ response:
 ```
 
 ### ModelVoltageMin()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get the minimum predefined voltage limits in order to calculate battery percentage.
 ```python
 response:
@@ -425,7 +425,7 @@ response:
 ```
 
 ### ModelVoltageMax()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get the maximum predefined voltage limits in order to calculate battery percentage.
 ```python
 response:
@@ -433,7 +433,7 @@ response:
 ```
 
 ### Mowed() 
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show percentage of lawn mowed
 ```python
 Response:
@@ -441,7 +441,7 @@ Response:
 ```
 
 ### MowerState()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show current state of mower
 ```python
 Response:
@@ -449,7 +449,7 @@ Response:
 ```
 
 ### MowerStateDescription()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show simple description of current state of mower. States available are Docked, Mowing, Stuck, Diagnostics mode, End of life, Software update.
 ```python
 Response:
@@ -457,7 +457,7 @@ Docked
 ```
 
 ### MowerStateDescriptionDetailed()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show description in detail of current state of mower.
 ```python
 Response:
@@ -465,7 +465,7 @@ Sleeping
 ```
 
 ### MowingModeDescription()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get the user friendly mowing mode description.
 ```python
 response:
@@ -473,7 +473,7 @@ Smart
 ```
 
 ### NeedsService()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Gets the needs service flag. Dont know when it is used.
 ```python
 Response:
@@ -481,7 +481,7 @@ False
 ```
 
 ### NextCutting()
-![Alertscount](https://img.shields.io/badge/Needs-getNextCutting-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getNextCutting-red)<br>
 Should get the next planned cutting session. Seems to give the last sent mower command.
 ```python
 Response:
@@ -492,7 +492,7 @@ Response:
 ```
 
 ### OptIn()
-![Alertscount](https://img.shields.io/badge/Needs-getUsers-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getUsers-red)<br>
 Dont know what this are for?
 ```python
 Response:
@@ -500,7 +500,7 @@ True
 ```
 
 ### OptInApp()
-![Alertscount](https://img.shields.io/badge/Needs-getUsers-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getUsers-red)<br>
 Dont know what this are for?
 ```python
 Response:
@@ -508,7 +508,7 @@ True
 ```
 
 ### Runtime()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Get session and total rutime and charge time in minutes.
 ```python
 Response:
@@ -525,7 +525,7 @@ Response:
 ```
 
 ### RuntimeSession()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Get session runtime and charge time in minutes
 ```python
 Response:
@@ -536,7 +536,7 @@ Response:
 ```
 
 ### RuntimeTotal()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Get total runtime and charge time in hours
 ```python
 response:
@@ -554,7 +554,7 @@ response:
 ```
 
 ### ServiceCounter()
-![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get service counter for knives
 ```python
 response:
@@ -562,7 +562,7 @@ response:
 ```
 
 ### SvgxPos()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show svg x-position of mower.
 ```python
 Response:
@@ -570,7 +570,7 @@ Response:
 ```
 
 ### FirmwareAvailable()
-![Alertscount](https://img.shields.io/badge/Needs-getUpdates-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getUpdates-red)<br>
 Checks if there are any firmware updates available for the mower.
 ```python
 Response:
@@ -578,7 +578,7 @@ false
 ```
 
 ### SvgyPos()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show svg y-position of mower.
 ```python
 Response:
@@ -586,7 +586,7 @@ Response:
 ```
 
 ### xPos()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show x-position of mower.
 ```python
 Response:
@@ -594,7 +594,7 @@ Response:
 ```
 
 ### yPos()
-![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
+![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Show y-position of mower.
 ```python
 Response:
