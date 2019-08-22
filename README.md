@@ -183,9 +183,8 @@ Response:
 All functions that doesnt contain "get" first in name is collecting data from locally stored variables. No API calls to Bosch or mower.
 
 ### AlertsCount()
-[![Alertscount](https://img.shields.io/badge/Needs-getState-red)]
-
-Need: getAlert. Counts the current alarms on mower.
+![Alertscount](https://img.shields.io/badge/Needs-getAlert-red)
+Counts the current alarms on mower.
 
 ```python
 Response:
@@ -193,7 +192,8 @@ Response:
 ```
 
 ### AlertsDescription()
-Need: getAlert. Get detailed list of alerts
+![AlertDescription](https://img.shields.io/badge/Needs-getAlert-red)
+Get detailed list of alerts
 
 ```python
 Response:
@@ -213,7 +213,8 @@ Response:
 ```
 
 ### AlmFirmwareVersion()
-Need: getGenericData. Gets the mower firmware version.
+![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)
+Gets the mower firmware version.
 
 ```python
 response:
