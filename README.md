@@ -184,7 +184,6 @@ All functions that doesnt contain "get" first in name is collecting data from lo
 ### AlertsCount()
 ![Alertscount](https://img.shields.io/badge/Need-getAlert-red)<br>
 Counts the current alarms on mower.
-
 ```
 Response:
 1
@@ -193,7 +192,6 @@ Response:
 ### AlertsDescription()
 ![AlertDescription](https://img.shields.io/badge/Need-getAlert-red)<br>
 Get detailed list of alerts
-
 ```
 Response:
 [
@@ -214,18 +212,16 @@ Response:
 ### AlmFirmwareVersion()
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Gets the mower firmware version.
-
 ```
-response:
+Response:
 smart
 ```
 
 ### AlmMode()
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Gets the mower mode.
-
 ```
-response:
+Response:
 smart
 ```
 
@@ -233,10 +229,9 @@ smart
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Gets the mower instance name.
 ```
-response:
+Response:
 Indego
 ```
-
 
 ### BareToolNumber() 
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
@@ -401,7 +396,7 @@ True
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get user friendly model name.
 ```
-response:
+Response:
 Indego Connect 1000
 ```
 
@@ -409,7 +404,7 @@ Indego Connect 1000
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get the predefined voltage limits in order to calculate battery percentage.
 ```
-response:
+Response:
 {
     'min': '297',
     'max': '369'
@@ -420,7 +415,7 @@ response:
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get the minimum predefined voltage limits in order to calculate battery percentage.
 ```
-response:
+Response:
 297
 ```
 
@@ -428,7 +423,7 @@ response:
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get the maximum predefined voltage limits in order to calculate battery percentage.
 ```
-response:
+Response:
 369
 ```
 
@@ -468,7 +463,7 @@ Sleeping
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get the user friendly mowing mode description.
 ```
-response:
+Response:
 Smart
 ```
 
@@ -539,7 +534,7 @@ Response:
 ![Alertscount](https://img.shields.io/badge/Need-getState-red)<br>
 Get total runtime and charge time in hours
 ```
-response:
+Response:
 {
     'operate': 86389, 
     'charge': 25891
@@ -549,7 +544,7 @@ response:
 ### Serial()
 Get the serial number
 ```
-response:
+Response:
 123456789
 ```
 
