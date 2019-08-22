@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.8 2019-08-22
+
+### Changes
+- Updated Readme
+
+## 0.7.7 2019-08-22
+
+### Changes
+- Handle API timeout without error
+- Added the netpredictive cutting API call, seems to get the last command sent to the mower
+
 ## 0.7.6 2019-08-21
 
 ### Changes

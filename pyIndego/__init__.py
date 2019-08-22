@@ -300,6 +300,7 @@ class IndegoAPI():
 ###########################################################
 ### Updating classes that updates cached data
 ###########################################################
+# 1
     def getState(self):
         # Finished with all properties as get-calls
         # GET core Update all self values in STATE API call
@@ -333,6 +334,7 @@ class IndegoAPI():
         _LOGGER.debug("---")    
         return tmp_json
 
+# 2
     def getUsers(self):
         # Finished
         # GET Core Update all self values in USERS API call
@@ -360,6 +362,7 @@ class IndegoAPI():
         #PUT https://api.indego.iot.bosch-si.com/api/v1/users/{{userId}}
         #{New_display_name: "New name"}
 
+# 3
     def getGenericData(self):
         # Finished
         # GET Core Update all self values in SERIAL API call
@@ -386,6 +389,7 @@ class IndegoAPI():
         _LOGGER.debug("---")  
         return tmp_json
 
+# 4
     def getOperatingData(self):
         # Finished
         # GET core Update all self values in state get API call
@@ -395,17 +399,20 @@ class IndegoAPI():
         _LOGGER.debug(">>>API Call: " + complete_url)
         tmp_json = self.get(complete_url)
         ### Dont pay attention to runtime values as they are collected in the STATE call also
-        _LOGGER.debug(f"runtime: {tmp_json.get('runtime')}")
-        self._battery = tmp_json.get('battery')
-        _LOGGER.debug(f"battery: {self._battery}")
-        self._garden = tmp_json.get('garden')
-        _LOGGER.debug(f"garden: {self._garden}")
-        self._hmikeys = tmp_json.get('hmiKeys')
-        _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
-        _LOGGER.debug("getOperatingData end")
-        _LOGGER.debug("---")  
-        return tmp_json
-
+        if tmp_json:
+            _LOGGER.debug(f"runtime: {tmp_json.get('runtime')}")
+            self._battery = tmp_json.get('battery')
+            _LOGGER.debug(f"battery: {self._battery}")
+            self._garden = tmp_json.get('garden')
+            _LOGGER.debug(f"garden: {self._garden}")
+            self._hmikeys = tmp_json.get('hmiKeys')
+            _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
+            _LOGGER.debug("getOperatingData end")
+            _LOGGER.debug("---")  
+            return tmp_json
+        else:
+            return None
+# 5
     def getUpdates(self):
         # Finished
         _LOGGER.debug("---")  
@@ -414,11 +421,14 @@ class IndegoAPI():
         # Takes time as the mower has to wake up for this control to be perfomed
         complete_url = 'alms/' + self._serial + '/updates'
         tmp_json = self.get(complete_url)
-        self._firmware_available = tmp_json.get('available')
-        _LOGGER.debug("getUpdates end")
-        _LOGGER.debug("---")  
-        return tmp_json
-
+        if tmp_json:
+            self._firmware_available = tmp_json.get('available')
+            _LOGGER.debug("getUpdates end")
+            _LOGGER.debug("---")  
+            return tmp_json
+        else:
+            return None
+# 6
     def getAlerts(self):
         _LOGGER.debug("---")  
         _LOGGER.debug("getAlerts start")
@@ -430,6 +440,7 @@ class IndegoAPI():
         _LOGGER.debug("---")  
         return tmp_json
 
+# 7
     def getNextCutting(self):
         _LOGGER.debug("---")  
         _LOGGER.debug("getNextCutting start")
@@ -946,15 +957,24 @@ class IndegoAPI():
         """Send a GET request and return the response as a dict."""
         _LOGGER.debug("---")  
         _LOGGER.debug("GET start")
+        logindata = json.loads(self._login_session.content)
+        contextId = logindata['contextId']
+        _LOGGER.debug("   ContextID: " + contextId)
+        headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
+        url = self._api_url + method
+        _LOGGER.debug("   >>>API CALL: " + url)
         try:
-            logindata = json.loads(self._login_session.content)
-            contextId = logindata['contextId']
-            _LOGGER.debug("   ContextID: " + contextId)
-            headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
-            url = self._api_url + method
-            _LOGGER.debug("   >>>API CALL: " + url)
-            #response = requests.get(url, headers=headers, timeout=30, verify=False)
-            response = requests.get(url, headers=headers, timeout=30)
+            response = requests.get(url, headers=headers, timeout=15)
+        except requests.exceptions.Timeout:
+            _LOGGER.debug("   Failed to update Indego status. Timeout!")
+            return None
+        except requests.exceptions.TooManyRedirects:
+            _LOGGER.debug("   Failed to update Indego status. Too many redirects")
+            return None
+        except requests.exceptions.RequestException as e:
+            _LOGGER.debug("   Failed to update Indego status. Error: " + str(e))
+            return None
+        else:
             _LOGGER.debug("   HTTP Status code: " + str(response.status_code))
             if response.status_code != 200:
                 _LOGGER.debug("   need to call login again")
@@ -965,42 +985,41 @@ class IndegoAPI():
                 response.raise_for_status()
                 _LOGGER.debug("GET end")
                 return response.json()
-        except requests.exceptions.ConnectionError as conn_exc:
-            _LOGGER.debug("   Failed to update Indego status. Error: " + str(conn_exc))
-            _LOGGER.debug("GET end")
-            raise
+        _LOGGER.debug("GET end")
     
     def put(self, url, method):
         """Send a PUT request and return the response as a dict."""
         _LOGGER.debug("---")  
         _LOGGER.debug("PUT start")
+        logindata = json.loads(self._login_session.content)
+        contextId = logindata['contextId']
+        headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
+        url = self._api_url + url
+        data = '{"state":"' + method + '"}'
+        _LOGGER.debug("   >>>API CALL: " + url)
+        _LOGGER.debug("   headers: " + str(headers))
+        _LOGGER.debug("   data: " + str(data))
         try:
-            logindata = json.loads(self._login_session.content)
-            contextId = logindata['contextId']
-            headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
-            url = self._api_url + url
-            data = '{"state":"' + method + '"}'
-            _LOGGER.debug("   >>>API CALL: " + url)
-            _LOGGER.debug("   headers: " + str(headers))
-            _LOGGER.debug("   data: " + str(data))
-            #response = requests.put(url, headers=headers, data=data, timeout=30, verify=False)
             response = requests.put(url, headers=headers, data=data, timeout=30)
+        except requests.exceptions.Timeout:
+            _LOGGER.debug("   Failed to send data to Indego mower. Timeout!")
+            return None
+        except requests.exceptions.TooManyRedirects:
+            _LOGGER.debug("   Failed to send data to Indego mower. Too many redirects")
+            return None
+        except requests.exceptions.RequestException as e:
+            _LOGGER.debug("   Failed to send data to Indego mower. Error status: " + str(e))
+            return None
+        else:
             _LOGGER.debug("   HTTP Status code: " + str(response.status_code))
             if response.status_code != 200:
                 _LOGGER.debug("   need to call login again")
-                _LOGGER.debug("PUT end")
                 self.login()
-                return
+                return None
             else:
-                _LOGGER.debug("   Status code: " + str(response))
-                #response.raise_for_status()
-                _LOGGER.debug("PUT end")
-                #return response.json()
-                return response.status_code                   #Not returning codes!!!
-
-        except requests.exceptions.ConnectionError as conn_exc:
-            _LOGGER.debug("   Failed to update Indego status. Error: " + str(conn_exc))
-            _LOGGER.debug("PUT end")
-            raise
-
+                _LOGGER.debug("   Json:" + str(response.json()))
+                response.raise_for_status()
+                _LOGGER.debug("GET end")
+                return response.json()
+        _LOGGER.debug("GET end")
 #End PYPI __init__.py
