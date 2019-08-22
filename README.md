@@ -182,6 +182,16 @@ Response:
 ## Functions for reading data from locally cached API data
 All functions that doesnt contain "get" first in name is collecting data from locally stored variables. No API calls to Bosch or mower.
 
+### AlertsCount()
+[![Alertscount](https://img.shields.io/badge/Needs-getState-red)]
+
+Need: getAlert. Counts the current alarms on mower.
+
+```python
+Response:
+1
+```
+
 ### AlertsDescription()
 Need: getAlert. Get detailed list of alerts
 
@@ -202,28 +212,37 @@ Response:
 ]
 ```
 
-### FriendlyAlertErrorCode()
-Need: getAlert. Get user friendly alert error code description to be shown in HA GUI.
+### AlmFirmwareVersion()
+Need: getGenericData. Gets the mower firmware version.
 
 ```python
-Response:
-Reminder blade life
+response:
+smart
 ```
 
-### ConvertBoschDateTime()
-Need: getAlert. Convert the time stamp in alerts to user friendly time stamp.
+### AlmMode()
+Need: getGenericData. Gets the mower mode.
 
 ```python
-Response:
-2019-08-20 18:18
+response:
+smart
 ```
 
-### AlertsCount()
-Need: getAlert. Counts the current alarms on mower.
+### AlmName()
+Need: getGenericData. Gets the instance name.
+
+```python
+response:
+Indego
+```
+
+
+### BareToolNumber() 
+Need: getGenericData. Show the model number of the mower.
 
 ```python
 Response:
-1
+3600HA2300
 ```
 
 ### Battery()
@@ -282,6 +301,14 @@ Response:
 29
 ```
 
+### ConvertBoschDateTime()
+Need: getAlert. Convert the time stamp in alerts to user friendly time stamp.
+
+```python
+Response:
+2019-08-20 18:18
+```
+
 ### Country()
 Need getUsers. Show country for the Bosch account.
 ```python
@@ -304,8 +331,43 @@ Response:
 mail@gmail.com
 ```
 
-### getFirmware() xxx
-Get the mower firmware version
+### FriendlyAlertErrorCode()
+Need: getAlert. Get user friendly alert error code description to be shown in HA GUI.
+
+```python
+Response:
+Reminder blade life
+```
+
+### Garden())
+Need: get???. ???
+
+```python
+Response:
+{
+    'garden': {
+        'id': 7, 
+        'name': 1, 
+        'signal_id': 1, 
+        'size': 625, 
+        'inner_bounds': 3, 
+        'cuts': 26, 
+        'runtime': 82197, 
+        'charge': 24860, 
+        'bumps': 4650, 
+        'stops': 24, 
+        'last_mow': 4
+    }
+} 
+```
+
+### HmiKeysn())
+Need: get???. ???
+
+```python
+Response:
+1344
+```
 
 ### Language
 Need getUsers. Show language for the Bosch account.
@@ -330,8 +392,41 @@ Response:
 True
 ```
 
-### getModel() xxx
-Get the mower model
+### ModelDescription()
+Need: getxxx. Get user friendly model name.
+
+```python
+response:
+Indego Connect 1000
+```
+
+### ModelVoltage()
+Need: getxxx. Get the predefined voltage limits in order to calculate battery percentage.
+
+```python
+response:
+{
+    'min': '297',
+    'max': '369'
+}
+```
+
+### ModelVoltageMin()
+Need: getxxx. Get the minimum predefined voltage limits in order to calculate battery percentage.
+
+```python
+response:
+297
+```
+
+### ModelVoltageMin()
+Need: getxxx. Get the maximum predefined voltage limits in order to calculate battery percentage.
+
+```python
+response:
+369
+```
+
 
 ### Mowed() 
 Need: getState. Show percentage of lawn mowed
@@ -339,14 +434,6 @@ Need: getState. Show percentage of lawn mowed
 ```python
 Response:
 95
-```
-
-### BareToolNumber() 
-Need: getGenericData. Show the model number of the mower.
-
-```python
-Response:
-3600HA2300
 ```
 
 ### MowerState()
@@ -373,12 +460,12 @@ Response:
 Sleeping
 ```
 
-### MowMode()
-Need: getState. Not working, use alm_mode instead!
+### MowingModeDescription()
+Need: getxxx. Get the user friendly mowing mode description.
 
 ```python
-Response:
-smart
+response:
+Smart
 ```
 
 ### NeedsService()
@@ -415,10 +502,6 @@ Need: getUSers. Dont know what tis are for?
 Response:
 True
 ```
-
-
-### getPosition()
-Get position (relative on map)
 
 ### Runtime()
 Need: getState. Get session and total rutime and charge time in minutes.
@@ -466,79 +549,12 @@ response:
 123456789
 ```
 
-### AlmName()
-Need: getGenericData. Gets the instance name.
-
-```python
-response:
-Indego
-```
-
-### AlmMode()
-Need: getGenericData. Gets the mower mode.
-
-```python
-response:
-smart
-```
-
-### AlmFirmwareVersion()
-Need: getGenericData. Gets the mower firmware version.
-
-```python
-response:
-smart
-```
-
 ### ServiceCounter()
 Get service counter for knives
 
 ```python
 response:
 73275
-```
-
-### ModelDescription()
-Need: getxxx. Get user friendly model name.
-
-```python
-response:
-Indego Connect 1000
-```
-
-### ModelVoltage()
-Need: getxxx. Get the predefined voltage limits in order to calculate battery percentage.
-
-```python
-response:
-{
-    'min': '297',
-    'max': '369'
-}
-```
-
-### ModelVoltageMin()
-Need: getxxx. Get the minimum predefined voltage limits in order to calculate battery percentage.
-
-```python
-response:
-297
-```
-
-### ModelVoltageMin()
-Need: getxxx. Get the maximum predefined voltage limits in order to calculate battery percentage.
-
-```python
-response:
-369
-```
-
-### MowingModeDescription()
-Need: getxxx. Get the user friendly mowing mode description.
-
-```python
-response:
-Smart
 ```
 
 ### SvgxPos())
@@ -549,35 +565,7 @@ Response:
 928
 ```
 
-### Garden())
-Need: get???. ???
 
-```python
-Response:
-{
-    'garden': {
-        'id': 7, 
-        'name': 1, 
-        'signal_id': 1, 
-        'size': 625, 
-        'inner_bounds': 3, 
-        'cuts': 26, 
-        'runtime': 82197, 
-        'charge': 24860, 
-        'bumps': 4650, 
-        'stops': 24, 
-        'last_mow': 4
-    }
-} 
-```
-
-### HmiKeysn())
-Need: get???. ???
-
-```python
-Response:
-1344
-```
 
 ### FirmwareAvailable())
 Need: get???. ???
@@ -593,16 +581,6 @@ Need: getState. Show svg y-position of mower.
 ```python
 Response:
 264
-```
-
-### getUpdateAvailable()
-Check if there is an update available
-
-### getUpdateAvailable()
-Get the user data.
-
-```python
-Response:
 ```
 
 ### xPos())
