@@ -178,7 +178,6 @@ Response:
 ```
 
 
-
 ## Functions for reading data from locally cached API data
 All functions that doesnt contain "get" first in name is collecting data from locally stored variables. No API calls to Bosch or mower.
 
@@ -374,7 +373,7 @@ Response:
 1344
 ```
 
-### Language
+### Language()
 ![Alertscount](https://img.shields.io/badge/Needs-getUsers-red)<br>
 Show language for the Bosch account.
 ```python
@@ -399,16 +398,16 @@ True
 ```
 
 ### ModelDescription()
-Need: getxxx. Get user friendly model name.
-
+![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+Get user friendly model name.
 ```python
 response:
 Indego Connect 1000
 ```
 
 ### ModelVoltage()
-Need: getxxx. Get the predefined voltage limits in order to calculate battery percentage.
-
+![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+Get the predefined voltage limits in order to calculate battery percentage.
 ```python
 response:
 {
@@ -418,21 +417,20 @@ response:
 ```
 
 ### ModelVoltageMin()
-Need: getxxx. Get the minimum predefined voltage limits in order to calculate battery percentage.
-
+![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+Get the minimum predefined voltage limits in order to calculate battery percentage.
 ```python
 response:
 297
 ```
 
-### ModelVoltageMin()
-Need: getxxx. Get the maximum predefined voltage limits in order to calculate battery percentage.
-
+### ModelVoltageMax()
+![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+Get the maximum predefined voltage limits in order to calculate battery percentage.
 ```python
 response:
 369
 ```
-
 
 ### Mowed() 
 ![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
@@ -461,15 +459,14 @@ Docked
 ### MowerStateDescriptionDetailed()
 ![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
 Show description in detail of current state of mower.
-
 ```python
 Response:
 Sleeping
 ```
 
 ### MowingModeDescription()
-Need: getxxx. Get the user friendly mowing mode description.
-
+![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
+Get the user friendly mowing mode description.
 ```python
 response:
 Smart
@@ -478,14 +475,14 @@ Smart
 ### NeedsService()
 ![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
 Gets the needs service flag. Dont know when it is used.
-
 ```python
 Response:
 False
 ```
 
 ### NextCutting()
-Need: get???. Should get the next planned cutting session. Seems to give the last sent mower command.
+![Alertscount](https://img.shields.io/badge/Needs-getNextCutting-red)<br>
+Should get the next planned cutting session. Seems to give the last sent mower command.
 ```python
 Response:
 {
@@ -557,13 +554,14 @@ response:
 ```
 
 ### ServiceCounter()
+![Alertscount](https://img.shields.io/badge/Needs-getGenericData-red)<br>
 Get service counter for knives
 ```python
 response:
 73275
 ```
 
-### SvgxPos())
+### SvgxPos()
 ![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
 Show svg x-position of mower.
 ```python
@@ -571,15 +569,15 @@ Response:
 928
 ```
 
-### FirmwareAvailable())
-Need: get???. ???
-
+### FirmwareAvailable()
+![Alertscount](https://img.shields.io/badge/Needs-getUpdates-red)<br>
+Checks if there are any firmware updates available for the mower.
 ```python
 Response:
 false
 ```
 
-### SvgyPos()) ***
+### SvgyPos()
 ![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
 Show svg y-position of mower.
 ```python
@@ -587,7 +585,7 @@ Response:
 264
 ```
 
-### xPos())
+### xPos()
 ![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
 Show x-position of mower.
 ```python
@@ -595,7 +593,7 @@ Response:
 85
 ```
 
-### yPos()) ***
+### yPos()
 ![Alertscount](https://img.shields.io/badge/Needs-getState-red)<br>
 Show y-position of mower.
 ```python
