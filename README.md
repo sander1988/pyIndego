@@ -552,7 +552,7 @@ Response:
 ![Alertscount](https://img.shields.io/badge/Need-getGenericData-red)<br>
 Get service counter for knives
 ```
-response:
+Response:
 73275
 ```
 
