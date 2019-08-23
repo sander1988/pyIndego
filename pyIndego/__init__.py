@@ -12,7 +12,7 @@ CONTENT_TYPE_JSON = "application/json"
 CONTENT_TYPE = "Content-Type"
 
 #logging.basicConfig(filename='pyindego.log',level=logging.DEBUG)
-logging.basicConfig(filename='pyindego.log',level=logging.ERROR)
+#logging.basicConfig(filename='pyindego.log',level=logging.ERROR)
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.debug("---------------------------------")
@@ -1017,8 +1017,9 @@ class IndegoAPI():
                 self.login()
                 return None
             else:
-                _LOGGER.debug("   Json:" + str(response.json()))
-                response.raise_for_status()
+                #_LOGGER.debug("   Json:" + str(response.json()))
+                _LOGGER.debug("   Json:" + str(response))
+                #response.raise_for_status()
                 _LOGGER.debug("GET end")
                 return response.json()
         _LOGGER.debug("GET end")
