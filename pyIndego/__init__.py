@@ -11,9 +11,6 @@ CONTENT_TYPE_JSON = "application/json"
 #const taken from aiohttp.hdrs
 CONTENT_TYPE = "Content-Type"
 
-#logging.basicConfig(filename='pyindego.log',level=logging.DEBUG)
-#logging.basicConfig(filename='pyindego.log',level=logging.ERROR)
-
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.debug("---------------------------------")
 _LOGGER.debug("Start")
@@ -189,7 +186,8 @@ class IndegoAPI():
         self._alert3_error                  = None
         self._alert3_time                   = None
         self._alert3_friendly_description   = None
-
+        self._online                        = False
+        self._offline                       = 0
         ## Logging in
         self.login()
         
@@ -409,8 +407,18 @@ class IndegoAPI():
             _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
             _LOGGER.debug("getOperatingData end")
             _LOGGER.debug("---")  
+            self._online = True
+            self._offline = 0
+            #_LOGGER.debug("Online: ", self._online)
+            _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
+            #print('I have %d %s' %(a,b))
             return tmp_json
         else:
+            self._offline += 1
+            if (self._offline > 5):
+                self._online   = False
+            #_LOGGER.debug("Online: ", self._online)
+            _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
             return None
 # 5
     def getUpdates(self):
@@ -559,28 +567,35 @@ class IndegoAPI():
 
     def MowerStateDescription(self):
         if hasattr(self, '_mower_state'):
-            if str(self._mower_state) in MOWER_STATE_DESCRIPTION.keys():
-                _LOGGER.debug(f"Value in dict = {self._mower_state}")
-                self._mower_state_description = MOWER_STATE_DESCRIPTION.get(str(self._mower_state))
-                _LOGGER.debug(f"Mower state description: {self._mower_state_description}")
+            if (self._online == False):
+                if str(self._mower_state) in MOWER_STATE_DESCRIPTION.keys():
+                    _LOGGER.debug(f"Value in dict = {self._mower_state}")
+                    self._mower_state_description = MOWER_STATE_DESCRIPTION.get(str(self._mower_state))
+                    _LOGGER.debug(f"Mower state description: {self._mower_state_description}")
+                else:
+                    _LOGGER.debug(f"Value not in dict = {self._mower_state}")
+                    self._mower_state_description = "Value not in database: " + str(self._mower_state)
+                return self._mower_state_description
             else:
-                _LOGGER.debug(f"Value not in dict = {self._mower_state}")
-                self._mower_state_description = "Value not in database: " + str(self._mower_state)
-            return self._mower_state_description
+                return 'Offline'
         else:
             return None
         return self._mower_state_description
 
     def MowerStateDescriptionDetailed(self):
         if hasattr(self, '_mower_state'):
-            if str(self._mower_state) in MOWER_STATE_DESCRIPTION_DETAILED.keys():
-                _LOGGER.debug(f"Value in dict = {self._mower_state}")
-                self._mower_state_description_detailed = MOWER_STATE_DESCRIPTION_DETAILED.get(str(self._mower_state))
-                _LOGGER.debug(f"Mower state description: {self._mower_state_description}")
+            if (self._online == False):
+                if str(self._mower_state) in MOWER_STATE_DESCRIPTION_DETAILED.keys():
+                    _LOGGER.debug(f"Value in dict = {self._mower_state}")
+                    self._mower_state_description_detailed = MOWER_STATE_DESCRIPTION_DETAILED.get(str(self._mower_state))
+                    _LOGGER.debug(f"Mower state description: {self._mower_state_description}")
+                else:
+                    _LOGGER.debug(f"Value not in dict = {self._mower_state}")
+                    self._mower_state_description_detailed = "Value not in database: " + str(self._mower_state)
+                return self._mower_state_description_detailed
             else:
-                _LOGGER.debug(f"Value not in dict = {self._mower_state}")
-                self._mower_state_description_detailed = "Value not in database: " + str(self._mower_state)
-            return self._mower_state_description_detailed
+                temp_state = ('Offline: %d' %(self._offline))
+                return temp_state
         else:
             return None
         return self._mower_state_description_detailed
