@@ -79,7 +79,7 @@ MOWER_STATE_DESCRIPTION = {
 
 
 MOWER_MODEL_DESCRIPTION = {
-    '3600HA2300':'Indego 1000 Connect',
+    '3600HA2300': 'Indego 1000 Connect',
     '3600HA2301': 'Indego 1200 Connect',
     '3600HA2302': 'Indego 1100 Connect',
     '3600HA2303': 'Indego 13C',
@@ -90,14 +90,14 @@ MOWER_MODEL_DESCRIPTION = {
 }
 
 MOWER_MODEL_VOLTAGE = {
-    '3600HA2300': {'min': '297','max': '369'}, # Indego 1000 Connect
-    '3600HA2301': {'min': '297','max': '369'}, # Indego 1200 Connect
-    '3600HA2302': {'min': '297','max': '369'}, # Indego 1100 Connect
-    '3600HA2303': {'min': '297','max': '369'}, # Indego 13C
-    '3600HA2304': {'min': '297','max': '369'}, # Indego 10C
-    '3600HB0100': {'min': '0','max': '100'},   # Indego 350 Connect
-    '3600HB0101': {'min': '0','max': '100'},   # Indego 400 Connect
-    '3600HB0102': {'min': '0','max': '100'}    # Indego S+ 350 Connect
+    '3600HA2300': {'min': '297', 'max': '369'},  # Indego 1000 Connect
+    '3600HA2301': {'min': '297', 'max': '369'},  # Indego 1200 Connect
+    '3600HA2302': {'min': '297', 'max': '369'},  # Indego 1100 Connect
+    '3600HA2303': {'min': '297', 'max': '369'},  # Indego 13C
+    '3600HA2304': {'min': '297', 'max': '369'},  # Indego 10C
+    '3600HB0100': {'min': '0', 'max': '100'},    # Indego 350 Connect
+    '3600HB0101': {'min': '0', 'max': '100'},    # Indego 400 Connect
+    '3600HB0102': {'min': '0', 'max': '100'}     # Indego S+ 350 Connect
 }
 
 MOWING_MODE_DESCRIPTION = {
@@ -111,6 +111,7 @@ ALERT_ERROR_CODE = {
     '115':             'Mower is stuck',
     'ntfy_blade_life': 'Reminder blade life'
 }
+
 
 class IndegoAPI():
     """Wrapper for Indego's API."""
@@ -175,20 +176,20 @@ class IndegoAPI():
         self._firmware_available = None
         self._mowingmode_description = None
         self._battery_percent_adjusted = None
-        self._alert1_id                     = None
-        self._alert1_error                  = None
-        self._alert1_time                   = None
-        self._alert1_friendly_description   = None
-        self._alert2_id                     = None
-        self._alert2_error                  = None
-        self._alert2_time                   = None
-        self._alert2_friendly_description   = None
-        self._alert3_id                     = None
-        self._alert3_error                  = None
-        self._alert3_time                   = None
-        self._alert3_friendly_description   = None
-        self._online                        = False
-        self._offline                       = 0
+        self._alert1_id = None
+        self._alert1_error = None
+        self._alert1_time = None
+        self._alert1_friendly_description = None
+        self._alert2_id = None
+        self._alert2_error = None
+        self._alert2_time = None
+        self._alert2_friendly_description = None
+        self._alert3_id = None
+        self._alert3_error = None
+        self._alert3_time = None
+        self._alert3_friendly_description = None
+        self._online = False
+        self._offline = 0
         # Logging in
         self.login()
         _LOGGER.debug("--- Indego API: end __init__")
@@ -467,8 +468,6 @@ class IndegoAPI():
         _LOGGER.debug("--- getTest: end")  
         return self._test
 
-
-
 # Depricated in Bosch API??? Gives no answer from API call
 #    def getNextPredicitiveCutting(self):
 #        # Not working
@@ -478,7 +477,6 @@ class IndegoAPI():
 #        value = Runtime_temp
 #        return value
 
-
 ###################################################
 # Functions for getting data from STATE cache
 
@@ -487,61 +485,52 @@ class IndegoAPI():
             return self._mower_state
         else:
             return None
-            
     def MapUpdateAvailable(self):
         if hasattr(self, '_map_update_available'):
             return self._map_update_available
         else:
             return None
-
     def Mowed(self):
         if hasattr(self, '_mowed'):
             return self._mowed
         else:
             return None
-
     def MowMode(self):
         if hasattr(self, '_mowmode'):
             return self._mowmode
         else:
             return None
-
     def XPos(self):
         if hasattr(self, '_xpos'):
             return self._xpos
         else:
             return None
-
     def YPos(self):
         if hasattr(self, '_ypos'):
             return self._ypos
         else:
             return None
-
     def Runtime(self):
         if hasattr(self, '_runtime'):
             return self._runtime
         else:
             return None
-
     def MapSvgCacheTs(self):
         if hasattr(self, '_mapsvgcache_ts'):
             return self._mapsvgcache_ts
         else:
             return None
-
     def SvgxPos(self):
         if hasattr(self, '_svg_xPos'):
             return self._svg_xPos
         else:
             return None
-
     def SvgyPos(self):
         if hasattr(self, '_svg_yPos'):
             return self._svg_yPos
         else:
             return None
-
+            
 # --- User readable get functions
     def RuntimeTotal(self):
         tmp = self.Runtime()
