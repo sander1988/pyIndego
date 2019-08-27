@@ -202,7 +202,7 @@ class IndegoAPI():
 
     def login(self):
         _LOGGER.debug("--- Indego API: start login")
-        _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url,\
+        _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url,
             'authenticate'))
         self._login_session = requests.post(
             '{}{}'.format(self._api_url, 'authenticate'),
@@ -767,7 +767,7 @@ class IndegoAPI():
             return None
 
     def BatteryPercentAdjusted(self):
-        tmp = self.Battery()
+        # tmp = self.Battery()
         if hasattr(self, '_battery') and (self._battery) and (hasattr(self, '_model_voltage_max')) and (hasattr(self, '_model_voltage_min')):
             # if hasattr model_voltage
             starttemp = int(self._battery_percent)
@@ -787,7 +787,7 @@ class IndegoAPI():
             return None
 
     def BatteryCycles(self):
-        # tmp = self.Battery()
+        tmp = self.Battery()
         if hasattr(self, '_battery') and (self._battery):
             self._battery_cycles = tmp.get('cycles')
             return self._battery_cycles
@@ -931,7 +931,6 @@ class IndegoAPI():
 # Not properly implemented yet
 ###
 
-
 #    def getLocation(self):
 #        _LOGGER.debug("getLocation")
 #        complete_url = 'alms/' + self._serial + '/predictive/location'
@@ -985,7 +984,6 @@ class IndegoAPI():
 
 ##########################################################################
 # Basics for API calls
-
 
     def get(self, method):
         """Send a GET request and return the response as a dict."""
