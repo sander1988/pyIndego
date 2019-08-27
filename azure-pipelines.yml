@@ -17,3 +17,10 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
   displayName: 'Run a multi-line script'
+
+- script: python -m pip install --upgrade pip setuptools wheel
+  displayName: 'Install tools'
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.6'
