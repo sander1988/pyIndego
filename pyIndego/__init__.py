@@ -8,12 +8,12 @@ import logging
 DEFAULT_URL = "https://api.indego.iot.bosch-si.com:443/api/v1/"
 # CONST TAKEN FROM homeassistant.const
 CONTENT_TYPE_JSON = "application/json"
-#const taken from aiohttp.hdrs
+# const taken from aiohttp.hdrs
 CONTENT_TYPE = "Content-Type"
 
 _LOGGER = logging.getLogger(__name__)
-#_LOGGER.debug("---------------------------------")
-#_LOGGER.debug("Start")
+# _LOGGER.debug("---------------------------------")
+# _LOGGER.debug("Start")
 
 MOWER_STATE_DESCRIPTION_DETAILED = {
     '0'    : 'Reading status',
@@ -127,7 +127,7 @@ class IndegoAPI():
         self._headers = {CONTENT_TYPE: CONTENT_TYPE_JSON}
         self.body = {'device': '', 'os_type': 'Android', 'os_version': '4.0', 'dvc_manuf': 'unknown', 'dvc_type': 'unknown'}
         self._jsonBody = json.dumps(self.body)
-        #Properties for cached values
+        # Properties for cached values
         self._serial = serial
         self._devices = {}
 
@@ -189,7 +189,7 @@ class IndegoAPI():
         self._alert3_friendly_description   = None
         self._online                        = False
         self._offline                       = 0
-        ## Logging in
+        # Logging in
         self.login()
         _LOGGER.debug("--- Indego API: end __init__")
 
@@ -208,7 +208,7 @@ class IndegoAPI():
         _LOGGER.debug("self._userId: " + logindata['userId'])
         _LOGGER.debug("self._serial: " + self._serial)
         _LOGGER.debug("--- Indego API: end login")
-        #self.initial_update()
+        # self.initial_update()
 
     def show_vars(self):
         # For debug: writing all vars to log
@@ -248,7 +248,7 @@ class IndegoAPI():
         _LOGGER.debug(f"self._session_charge: {self._session_charge}")
         _LOGGER.debug(f"self._session_cut: {self._session_cut}")
 
-        #self.getUsers()
+        # self.getUsers()
         _LOGGER.debug("-self.getUsers")
         _LOGGER.debug(f"self._email: {self._email}")                
         _LOGGER.debug(f"self._display_name: {self._display_name}")                
@@ -257,9 +257,9 @@ class IndegoAPI():
         _LOGGER.debug(f"self._optIn = {self._optin}")
         _LOGGER.debug(f"self._optInApp = {self._optinapp}")
 
-        #self.getGenericData()
+        # self.getGenericData()
         _LOGGER.debug("-self.getGenericData")
-        #_LOGGER.debug(f"self._alm_sn ignored: {self._alm_sn}")
+        # _LOGGER.debug(f"self._alm_sn ignored: {self._alm_sn}")
         _LOGGER.debug(f"self._alm_name: {self._alm_name}")
         _LOGGER.debug(f"self._service_counter: {self._service_counter}")
         _LOGGER.debug(f"self._needs_service: {self._needs_service}")
@@ -271,7 +271,7 @@ class IndegoAPI():
         _LOGGER.debug("-self._model_description")
         _LOGGER.debug(f"self._model_description = {self._model_description}")
 
-        #self.getOperationalData()
+        # self.getOperationalData()
         _LOGGER.debug("-self.getOperatingData")
         _LOGGER.debug(f"battery: {self._battery}")
         _LOGGER.debug(f"garden: {self._garden}")
@@ -283,14 +283,14 @@ class IndegoAPI():
         _LOGGER.debug(f"self._battery_ambient_temp: {self._battery_ambient_temp}")
         _LOGGER.debug(f"self._battery_temp: {self._battery_temp}")
 
-        #self.getUpdates()
+        # self.getUpdates()
         _LOGGER.debug(f"self._firmware_available: {self._firmware_available}")
         
         #self.getNextCutting()
 
         # Not updated in the getState API call
-        #_LOGGER.debug("Not updated in the getState API call")        
-        #_LOGGER.debug(f"self._model = {self._model}")
+        # _LOGGER.debug("Not updated in the getState API call")        
+        # _LOGGER.debug(f"self._model = {self._model}")
 
         _LOGGER.debug("Show vars end")
         _LOGGER.debug("--------------------------------------------------------")
@@ -361,8 +361,8 @@ class IndegoAPI():
         complete_url = 'alms/' + self._serial
         _LOGGER.debug(f">>>API call: {complete_url}")
         tmp_json = self.get(complete_url)
-        #value = tmp_json['alm_mode']
-        #_LOGGER.debug(f"self._alm_sn ignored: {tmp_json['alm_sn']}")
+        # value = tmp_json['alm_mode']
+        # _LOGGER.debug(f"self._alm_sn ignored: {tmp_json['alm_sn']}")
         self._alm_name = tmp_json.get('alm_name')
         _LOGGER.debug(f"self._alm_name: {self._alm_name}")
         self._service_counter = tmp_json.get('service_counter')
@@ -386,7 +386,7 @@ class IndegoAPI():
         complete_url = 'alms/' + self._serial + '/operatingData'
         _LOGGER.debug(">>>API Call: " + complete_url)
         tmp_json = self.get(complete_url)
-        ### Dont pay attention to runtime values as they are collected in the STATE call also
+        # Dont pay attention to runtime values as they are collected in the STATE call also
         if tmp_json:
             _LOGGER.debug(f"runtime: {tmp_json.get('runtime')}")
             self._battery = tmp_json.get('battery')
@@ -398,16 +398,16 @@ class IndegoAPI():
             _LOGGER.debug("getOperatingData end")
             self._online = True
             self._offline = 0
-            #_LOGGER.debug("Online: ", self._online)
+            # _LOGGER.debug("Online: ", self._online)
             _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
-            #print('I have %d %s' %(a,b))
+            # print('I have %d %s' %(a,b))
             _LOGGER.debug("--- getOperatingData: end")
             return tmp_json
         else:
             self._offline += 1
             if (self._offline > 5):
                 self._online   = False
-            #_LOGGER.debug("Online: ", self._online)
+            # _LOGGER.debug("Online: ", self._online)
             _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
             _LOGGER.debug("--- getOperatingData: end")
             return None
@@ -460,7 +460,6 @@ class IndegoAPI():
 # 9 Test
     def getTest(self):  
         _LOGGER.debug("--- getTest: start")
-        #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/network?resolveMccMnc=true
         complete_url = 'alms/' + self._serial + '/network?resolveMccMnc=true'
         _LOGGER.debug("Complete URL: " + complete_url)
         self._test = self.get(complete_url)
@@ -481,7 +480,7 @@ class IndegoAPI():
 
 
 ###################################################
-### Functions for getting data from STATE cache
+# Functions for getting data from STATE cache
 
     def MowerState(self):
         if hasattr(self, '_mower_state'):
@@ -543,7 +542,7 @@ class IndegoAPI():
         else:
             return None
 
-### --- User readable get functions
+# --- User readable get functions
     def RuntimeTotal(self):
         tmp = self.Runtime()
         if (tmp):
@@ -608,7 +607,7 @@ class IndegoAPI():
         return self._mower_state_description_detailed
 
 ###################################################
-### Functions for getting data from USERS cache
+# Functions for getting data from USERS cache
 
     def Email(self):
         if hasattr(self, '_email'):
@@ -647,7 +646,7 @@ class IndegoAPI():
             return None
 
 #########################################################
-### Functions for getting data from SERIAL API call cache
+# Functions for getting data from SERIAL API call cache
 
     def Serial(self):
         return self._serial
@@ -688,7 +687,7 @@ class IndegoAPI():
         else:
             return None
 
-### --- User readable get functions
+# --- User readable get functions
 
     def ModelDescription(self):
         if hasattr(self, '_bareToolnumber'):
@@ -742,7 +741,7 @@ class IndegoAPI():
 
 
 ############################################################
-### Functions for getting data from OPERATING API call cache
+# Functions for getting data from OPERATING API call cache
 
     def Battery(self):
         if hasattr(self, '_battery') and (self._battery):
@@ -763,7 +762,7 @@ class IndegoAPI():
         if hasattr(self, '_battery') and (self._battery) and (hasattr(self, '_model_voltage_max')) and (hasattr(self, '_model_voltage_min')):
             # if hasattr model_voltage
             starttemp = int(self._battery_percent)
-            #starttemp = 297 + 36 + 18
+            # starttemp = 297 + 36 + 18
             # Oneliner
             self._battery_percent_adjusted = round((int(starttemp) - int(self._model_voltage_min)) / ((int(self._model_voltage_max) - int(self._model_voltage_min))/100))
             return self._battery_percent_adjusted
@@ -823,7 +822,7 @@ class IndegoAPI():
             return None
 
 ############################################################
-### Functions for getting data from UPDATES API call cache
+# Functions for getting data from UPDATES API call cache
 
     def FirmwareAvailable(self):
         if hasattr(self, '_firmware_available'):
@@ -832,13 +831,13 @@ class IndegoAPI():
             return None
 
 ############################################################
-### Functions for getting data from NEXTCUTTING API call cache
+# Functions for getting data from NEXTCUTTING API call cache
 
     def NextCutting(self):
         return self._nextcutting
 
 ############################################################
-### Functions for getting data from ALERTS API call cache
+# Functions for getting data from ALERTS API call cache
 
     def AlertsDescription(self):
         alerts =  self._alerts
@@ -889,30 +888,30 @@ class IndegoAPI():
     def ConvertBoschDateTime(self, boshdatetime):
         return boshdatetime[0:10] + " " + boshdatetime[11:16]
 
-### --- User readable get functions
+# --- User readable get functions
 
     def AlertsCount(self):
         self._alerts_count = len(self._alerts)
         return self._alerts_count
 
-### --- User readable LastCutting functions
+# --- User readable LastCutting functions
 
     def LastCompleteCutting(self):
-        #_LOGGER.debug("LastCompleteCutting")
-        #_LOGGER.debug(f"LastCutting = {self._lastcutting}")
+        # _LOGGER.debug("LastCompleteCutting")
+        # _LOGGER.debug(f"LastCutting = {self._lastcutting}")
         tmpvar = self._lastcutting['last_mowed']
-        #_LOGGER.debug(f"LastMowed = {tmpvar}")
+        # _LOGGER.debug(f"LastMowed = {tmpvar}")
         self._lastcompletecutting = self.ConvertBoschDateTime(tmpvar)
         return self._lastcompletecutting
 
 #######################################
-### Sending commands to mower
-####################################### 
+# Sending commands to mower
+#######################################
     def putCommand(self, command):
         _LOGGER.debug("postCommand: " + command)
         if command == "mow" or command == "pause" or command == "returnToDock":
             complete_url = "alms/" + self._serial + "/state"
-            temp = self.put(complete_url, command)    
+            temp = self.put(complete_url, command)
             return temp
         else:
             _LOGGER.debug("postCommand " + command + " not valid!")
@@ -976,7 +975,8 @@ class IndegoAPI():
 #        return value
 
 ##########################################################################
-### Basics for API calls
+# Basics for API calls
+
     def get(self, method):
         """Send a GET request and return the response as a dict."""
         _LOGGER.debug("-- GET start")
@@ -1039,15 +1039,15 @@ class IndegoAPI():
                 self.login()
                 return str(response.status_code)
             else:
-                #_LOGGER.debug("   Json:" + str(response.json()))
+                # _LOGGER.debug("   Json:" + str(response.json()))
                 _LOGGER.debug("   Json:" + str(response))
-                #response.raise_for_status()
+                # response.raise_for_status()
                 _LOGGER.debug("--- GET: end")
-                #return response.json()
-                #return str(response)
+                # return response.json()
+                # return str(response)
                 if (response.status_code == 200):
                     return "OK"
                 else:
                     return str(response.status_code)
         _LOGGER.debug("--- GET: end")
-#End PYPI __init__.py
+# End PYPI __init__.py
