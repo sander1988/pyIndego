@@ -206,7 +206,7 @@ class IndegoAPI():
         self._login_session = requests.post(
             '{}{}'.format(self._api_url, 'authenticate'),
             data=self._jsonBody,
-            headers=self._headers
+            headers=self._headers,
             auth=HTTPBasicAuth(self._username, self._password),
             timeout=30
             )
@@ -247,7 +247,7 @@ class IndegoAPI():
         _LOGGER.debug("-self.MowerStateDescription()")
         _LOGGER.debug(f"self._mower_state_description = {self._mower_state_description}")
 
-        # split runtime into total        
+        # split runtime into total
         _LOGGER.debug("-self.RuntimeTotal()")
         _LOGGER.debug(f"self._total_operation: {self._total_operation}")
         _LOGGER.debug(f"self._total_charge: {self._total_charge}")
@@ -297,7 +297,7 @@ class IndegoAPI():
         # self.getUpdates()
         _LOGGER.debug(f"self._firmware_available: {self._firmware_available}")
 
-        #self.getNextCutting()
+        # self.getNextCutting()
 
         # Not updated in the getState API call
         # _LOGGER.debug("Not updated in the getState API call")
@@ -410,18 +410,19 @@ class IndegoAPI():
             self._online = True
             self._offline = 0
             # _LOGGER.debug("Online: ", self._online)
-            _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
+            _LOGGER.debug('Online: %d = Offline: %e' % (self._online, self._offline))
             # print('I have %d %s' %(a,b))
             _LOGGER.debug("--- getOperatingData: end")
             return tmp_json
         else:
             self._offline += 1
             if (self._offline > 5):
-                self._online   = False
+                self._online = False
             # _LOGGER.debug("Online: ", self._online)
-            _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
+            _LOGGER.debug('Online: %d = Offline: %e' % (self._online, self._offline))
             _LOGGER.debug("--- getOperatingData: end")
             return None
+
 # 5
     def getUpdates(self):
         # Finished
@@ -437,6 +438,7 @@ class IndegoAPI():
         else:
             _LOGGER.debug("--- getUpdates: end")
             return None
+
 # 6
     def getAlerts(self):
         _LOGGER.debug("--- getAlerts: start")
@@ -549,7 +551,7 @@ class IndegoAPI():
             return self._svg_yPos
         else:
             return None
-            
+
 # --- User readable get functions
     def RuntimeTotal(self):
         tmp = self.Runtime()
@@ -577,7 +579,6 @@ class IndegoAPI():
             else:
                 return None
         return None
-
 
     def MowerStateDescription(self):
         if hasattr(self, '_mower_state'):
@@ -608,7 +609,7 @@ class IndegoAPI():
                     self._mower_state_description_detailed = "Value not in database: " + str(self._mower_state)
                 return self._mower_state_description_detailed
             else:
-                temp_state = ('Offline: %d' %(self._offline))
+                temp_state = ('Offline: %d' % (self._offline))
                 return temp_state
         else:
             return None
@@ -720,7 +721,7 @@ class IndegoAPI():
             return self._model_voltage
         else:
             return None
-    
+
     def ModelVoltageMin(self):
         if hasattr(self, '_model_voltage'):
             tmp = self._model_voltage
@@ -776,7 +777,7 @@ class IndegoAPI():
             return self._battery_percent_adjusted
         else:
             return None
-    
+
     def BatteryVoltage(self):
         tmp = self.Battery()
         if hasattr(self, '_battery') and (self._battery):
@@ -848,35 +849,35 @@ class IndegoAPI():
 # Functions for getting data from ALERTS API call cache
 
     def AlertsDescription(self):
-        alerts =  self._alerts
+        alerts = self._alerts
         tmp_cnt = 0
         for alert in alerts:
             tmp_cnt += 1
             tmp_code = alert['error_code']
             if (tmp_cnt == 1):
-                self._alert1_id    = alert['alert_id']
-                self._alert1_time  = self.ConvertBoschDateTime(alert['date']) 
+                self._alert1_id = alert['alert_id']
+                self._alert1_time = self.ConvertBoschDateTime(alert['date']) 
                 self._alert1_error = alert['error_code']
                 self._alert1_friendly_description = self.FriendlyAlertErrorCode(tmp_code)
-                self._alert2_id    = None
-                self._alert2_time  = None
+                self._alert2_id = None
+                self._alert2_time = None
                 self._alert2_error = None
                 self._alert2_friendly_description = None
-                self._alert3_id    = None
-                self._alert3_name  = None
+                self._alert3_id = None
+                self._alert3_name = None
                 self._alert3_error = None
                 self._alert3_friendly_description = None
             if (tmp_cnt == 2):
-                self._alert2_id  = alert['alert_id']
-                self._alert2_time  = self.ConvertBoschDateTime(alert['date'])
+                self._alert2_id = alert['alert_id']
+                self._alert2_time = self.ConvertBoschDateTime(alert['date'])
                 self._alert2_error = alert['error_code']
                 self._alert2_friendly_description = self.FriendlyAlertErrorCode(tmp_code)
-                self._alert3_time  = None
+                self._alert3_time = None
                 self._alert3_error = None
                 self._alert3_friendly_description = None
             if (tmp_cnt == 3):
-                self._alert3_id  = alert['alert_id']
-                self._alert3_time  = self.ConvertBoschDateTime(alert['date'])
+                self._alert3_id = alert['alert_id']
+                self._alert3_time = self.ConvertBoschDateTime(alert['date'])
                 self._alert3_error = alert['error_code']
                 self._alert3_friendly_description = self.FriendlyAlertErrorCode(tmp_code)
         return self._alerts
@@ -1017,7 +1018,7 @@ class IndegoAPI():
                 _LOGGER.debug("--- GET: end")
                 return response.json()
         _LOGGER.debug("--- GET: end")
-    
+
     def put(self, url, method):
         """Send a PUT request and return the response as a dict."""
         _LOGGER.debug("--- PUT: start")
