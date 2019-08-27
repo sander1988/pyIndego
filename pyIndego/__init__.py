@@ -16,65 +16,65 @@ _LOGGER = logging.getLogger(__name__)
 # _LOGGER.debug("Start")
 
 MOWER_STATE_DESCRIPTION_DETAILED = {
-    '0'    : 'Reading status',
-    '257'  : 'Charging',
-    '258'  : 'Docked',
-    '259'  : 'Docked - Software update',
-    '260'  : 'Docked',
-    '261'  : 'Docked',
-    '262'  : 'Docked - Loading map',
-    '263'  : 'Docked - Saving map',
-    '513'  : 'Mowing',
-    '514'  : 'Relocalising',
-    '515'  : 'Loading map',
-    '516'  : 'Learning lawn',
-    '517'  : 'Paused',
-    '518'  : 'Border cut',
-    '519'  : 'Idle in lawn',
-    '769'  : 'Returning to Dock',
-    '770'  : 'Returning to Dock',
-    '771'  : 'Returning to Dock - Battery low',
-    '772'  : 'Returning to dock - Calendar timeslot ended',
-    '773'  : 'Returning to dock - Battery temp range',
-    '774'  : 'Returning to dock - requested by user/app',
-    '775'  : 'Returning to dock - Lawn complete',
-    '776'  : 'Returning to dock - Relocalising',
+    '0' : 'Reading status',
+    '257' : 'Charging',
+    '258' : 'Docked',
+    '259' : 'Docked - Software update',
+    '260' : 'Docked',
+    '261' : 'Docked',
+    '262' : 'Docked - Loading map',
+    '263' : 'Docked - Saving map',
+    '513' : 'Mowing',
+    '514' : 'Relocalising',
+    '515' : 'Loading map',
+    '516' : 'Learning lawn',
+    '517' : 'Paused',
+    '518' : 'Border cut',
+    '519' : 'Idle in lawn',
+    '769' : 'Returning to Dock',
+    '770' : 'Returning to Dock',
+    '771' : 'Returning to Dock - Battery low',
+    '772' : 'Returning to dock - Calendar timeslot ended',
+    '773' : 'Returning to dock - Battery temp range',
+    '774' : 'Returning to dock - requested by user/app',
+    '775' : 'Returning to dock - Lawn complete',
+    '776' : 'Returning to dock - Relocalising',
     '1025' : 'Diagnostic mode',
     '1026' : 'End of life',
     '1281' : 'Software update',
     '1537' : 'Stuck on lawn, help needed',
-    '64513': 'Sleeping'
+    '64513' : 'Sleeping'
 }
 
 MOWER_STATE_DESCRIPTION = {
-    '0'    : 'Docked',
-    '257'  : 'Docked',
-    '258'  : 'Docked',
-    '259'  : 'Docked',
-    '260'  : 'Docked',
-    '261'  : 'Docked',
-    '262'  : 'Docked',
-    '263'  : 'Docked',
-    '513'  : 'Mowing',
-    '514'  : 'Mowing',
-    '515'  : 'Mowing',
-    '516'  : 'Mowing',
-    '517'  : 'Mowing',
-    '518'  : 'Mowing',
-    '519'  : 'Mowing',
-    '769'  : 'Mowing',
-    '770'  : 'Mowing',
-    '771'  : 'Mowing',
-    '772'  : 'Mowing',
-    '773'  : 'Mowing',
-    '774'  : 'Mowing',
-    '775'  : 'Mowing',
-    '776'  : 'Mowing',
+    '0' : 'Docked',
+    '257' : 'Docked',
+    '258' : 'Docked',
+    '259' : 'Docked',
+    '260' : 'Docked',
+    '261' : 'Docked',
+    '262' : 'Docked',
+    '263' : 'Docked',
+    '513' : 'Mowing',
+    '514' : 'Mowing',
+    '515' : 'Mowing',
+    '516' : 'Mowing',
+    '517' : 'Mowing',
+    '518' : 'Mowing',
+    '519' : 'Mowing',
+    '769' : 'Mowing',
+    '770' : 'Mowing',
+    '771' : 'Mowing',
+    '772' : 'Mowing',
+    '773' : 'Mowing',
+    '774' : 'Mowing',
+    '775' : 'Mowing',
+    '776' : 'Mowing',
     '1025' : 'Diagnostic mode',
     '1026' : 'End of life',
     '1281' : 'Software update',
     '1537' : 'Stuck',
-    '64513': 'Docked'
+    '64513' : 'Docked'
 }
 
 
@@ -117,7 +117,7 @@ class IndegoAPI():
     """Wrapper for Indego's API."""
     def __init__(self, username=None, password=None, serial=None):
         """Initialize Indego API and set headers needed later."""
-        _LOGGER.debug("---------------------------------------------------------------------------")
+        _LOGGER.debug("------------------------------------------------------")
         _LOGGER.debug("--- Indego API: start __init__")
 
         # Declaring variables in case that they are read before initialized
@@ -126,7 +126,13 @@ class IndegoAPI():
         self._username = username
         self._password = password
         self._headers = {CONTENT_TYPE: CONTENT_TYPE_JSON}
-        self.body = {'device': '', 'os_type': 'Android', 'os_version': '4.0', 'dvc_manuf': 'unknown', 'dvc_type': 'unknown'}
+        self.body = {
+            'device': '', 
+            'os_type': 'Android', 
+            'os_version': '4.0', 
+            'dvc_manuf': 'unknown', 
+            'dvc_type': 'unknown'
+            }
         self._jsonBody = json.dumps(self.body)
         # Properties for cached values
         self._serial = serial
@@ -198,8 +204,11 @@ class IndegoAPI():
         _LOGGER.debug("--- Indego API: start login")
         _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url, 'authenticate'))
         self._login_session = requests.post(
-            '{}{}'.format(self._api_url, 'authenticate'), data=self._jsonBody, headers=self._headers,
-            auth=HTTPBasicAuth(self._username, self._password), timeout=30)
+            '{}{}'.format(self._api_url, 'authenticate'), 
+            data=self._jsonBody, 
+            headers=self._headers,
+            auth=HTTPBasicAuth(self._username, self._password), timeout=30
+            )
         _LOGGER.debug("JSON Response: " + str(self._login_session.json()))
 
         logindata = json.loads(self._login_session.content)
