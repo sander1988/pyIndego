@@ -202,7 +202,8 @@ class IndegoAPI():
 
     def login(self):
         _LOGGER.debug("--- Indego API: start login")
-        _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url, 'authenticate'))
+        _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url,\
+            'authenticate'))
         self._login_session = requests.post(
             '{}{}'.format(self._api_url, 'authenticate'),
             data=self._jsonBody,
@@ -582,7 +583,7 @@ class IndegoAPI():
 
     def MowerStateDescription(self):
         if hasattr(self, '_mower_state'):
-            if (self._online == False):
+            if (self._online is False):
                 if str(self._mower_state) in MOWER_STATE_DESCRIPTION.keys():
                     _LOGGER.debug(f"Value in dict = {self._mower_state}")
                     self._mower_state_description = MOWER_STATE_DESCRIPTION.get(str(self._mower_state))
@@ -599,7 +600,7 @@ class IndegoAPI():
 
     def MowerStateDescriptionDetailed(self):
         if hasattr(self, '_mower_state'):
-            if (self._online == False):
+            if (self._online is False):
                 if str(self._mower_state) in MOWER_STATE_DESCRIPTION_DETAILED.keys():
                     _LOGGER.debug(f"Value in dict = {self._mower_state}")
                     self._mower_state_description_detailed = MOWER_STATE_DESCRIPTION_DETAILED.get(str(self._mower_state))
@@ -748,7 +749,6 @@ class IndegoAPI():
             self._mowingmode_description = "Value not in database: " + str(self._alm_mode)
         return self._mowingmode_description
 
-
 ############################################################
 # Functions for getting data from OPERATING API call cache
 
@@ -787,7 +787,7 @@ class IndegoAPI():
             return None
 
     def BatteryCycles(self):
-        tmp = self.Battery()
+        # tmp = self.Battery()
         if hasattr(self, '_battery') and (self._battery):
             self._battery_cycles = tmp.get('cycles')
             return self._battery_cycles
@@ -856,7 +856,7 @@ class IndegoAPI():
             tmp_code = alert['error_code']
             if (tmp_cnt == 1):
                 self._alert1_id = alert['alert_id']
-                self._alert1_time = self.ConvertBoschDateTime(alert['date']) 
+                self._alert1_time = self.ConvertBoschDateTime(alert['date'])
                 self._alert1_error = alert['error_code']
                 self._alert1_friendly_description = self.FriendlyAlertErrorCode(tmp_code)
                 self._alert2_id = None
@@ -985,6 +985,7 @@ class IndegoAPI():
 
 ##########################################################################
 # Basics for API calls
+
 
     def get(self, method):
         """Send a GET request and return the response as a dict."""
