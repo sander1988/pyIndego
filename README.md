@@ -1,5 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/pyIndego.svg)](https://pypi.python.org/pypi/pyIndego/) [![Build Status](https://dev.azure.com/jensmazzanti-myretyr/pyIndego/_apis/build/status/jm-73.pyIndego?branchName=master)](https://dev.azure.com/jensmazzanti-myretyr/pyIndego/_build/latest?definitionId=1&branchName=master)
- 
+
 # API for the Bosch Indego lawnmowers
 
 ## Usage with Home Assistant
