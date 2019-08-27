@@ -10,10 +10,13 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
 - script: |
-    python -m pip install flake8
-    flake8 .
-  displayName: 'Run lint tests'
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
 
 - script: python -m pip install --upgrade pip setuptools wheel
   displayName: 'Install tools'
@@ -22,3 +25,7 @@ steps:
   inputs:
     versionSpec: '3.6'
 
+- script: |
+    python -m pip install flake8
+    flake8 .
+  displayName: 'Run lint tests'
