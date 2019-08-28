@@ -203,7 +203,7 @@ class IndegoAPI():
     def login(self):
         _LOGGER.debug("--- Indego API: start login")
         _LOGGER.debug(
-            "   >>> API-call: %s", 
+            "   >>> API-call: %s",
             '{}{}'.format(self._api_url, 'authenticate')
         )
         self._login_session = requests.post(
