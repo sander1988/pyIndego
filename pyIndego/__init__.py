@@ -203,7 +203,7 @@ class IndegoAPI():
     def login(self):
         _LOGGER.debug("--- Indego API: start login")
         _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url,
-            'authenticate'))
+                'authenticate'))
         self._login_session = requests.post(
             '{}{}'.format(self._api_url, 'authenticate'),
             data=self._jsonBody,
@@ -924,26 +924,25 @@ class IndegoAPI():
         else:
             _LOGGER.debug("postCommand " + command + " not valid!")
             return "Wrong Command!"
-
-
+#
 ###
 # Not properly implemented yet
 ###
-
+#
 #    def getLocation(self):
 #        _LOGGER.debug("getLocation")
 #        complete_url = 'alms/' + self._serial + '/predictive/location'
 #        Runtime_temp = self.get(complete_url)
 #        value = Runtime_temp
 #        return value
-
+#
 #    def getPredicitiveCalendar(self):
 #        _LOGGER.debug("getPredicitveCalendar")
 #        complete_url = 'alms/' + self._serial + '/predictive/calendar'
 #        Runtime_temp = self.get(complete_url)
 #        value = Runtime_temp
 #        return value
-
+#
 #    def getUserAdjustment(self):
 #        # No idea what this does?
 #        _LOGGER.debug("getUserAdjustment")
@@ -951,28 +950,28 @@ class IndegoAPI():
 #        Runtime_temp = self.get(complete_url)
 #        value = Runtime_temp
 #        return value['user_adjustment']
-
+#
 #    def getCalendar(self):
 #        _LOGGER.debug("getCalendar")
 #        complete_url = 'alms/' + self._serial + '/calendar'
 #        Runtime_temp = self.get(complete_url)
 #        value = Runtime_temp
 #        return value
-
+#
 #    def getSecurity(self):
 #        _LOGGER.debug("getSecurity")
 #        complete_url = 'alms/' + self._serial + '/security'
 #        Runtime_temp = self.get(complete_url)
 #        value = Runtime_temp
 #        return value
-
+#
 #    def getAutomaticUpdate(self):
 #        _LOGGER.debug("getAutomaticUpdate")
 #        complete_url = 'alms/' + self._serial + '/automaticUpdate'
 #        Runtime_temp = self.get(complete_url)
 #        value = Runtime_temp
 #        return value
-
+#
 #    def getMap(self):
 #        print("getMap (Not implemented yet")
 #        #complete_url = 'alms/' + self._serial + '/map'
@@ -980,10 +979,9 @@ class IndegoAPI():
 #        #value = Runtime_temp
 #        value = "error"
 #        return value
-
 ##########################################################################
 # Basics for API calls
-
+##########################################################################
 
     def get(self, method):
         _LOGGER.debug("-- GET start")
