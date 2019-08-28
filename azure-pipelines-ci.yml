@@ -10,9 +10,6 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
 - script: |
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
@@ -24,3 +21,8 @@ steps:
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '3.6'
+
+- script: |
+    python -m pip install flake8
+    flake8 --ignore=E501 .
+  displayName: 'Run lint tests'
