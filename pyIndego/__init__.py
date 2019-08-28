@@ -101,14 +101,14 @@ MOWER_MODEL_VOLTAGE = {
 }
 
 MOWING_MODE_DESCRIPTION = {
-    'smart':    'SmartMowing',
+    'smart': 'SmartMowing',
     'calendar': 'Calendar',
-    'manual':   'Manual'
+    'manual': 'Manual'
 }
 
 ALERT_ERROR_CODE = {
-    '104':             'Stop button pushed',
-    '115':             'Mower is stuck',
+    '104': 'Stop button pushed',
+    '115': 'Mower is stuck',
     'ntfy_blade_life': 'Reminder blade life'
 }
 
@@ -132,7 +132,7 @@ class IndegoAPI():
             'os_version': '4.0',
             'dvc_manuf': 'unknown',
             'dvc_type': 'unknown'
-            }
+        }
         self._jsonBody = json.dumps(self.body)
         # Properties for cached values
         self._serial = serial
@@ -203,16 +203,15 @@ class IndegoAPI():
     def login(self):
         _LOGGER.debug("--- Indego API: start login")
         _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url,
-            'authenticate'))
+        'authenticate'))
         self._login_session = requests.post(
             '{}{}'.format(self._api_url, 'authenticate'),
             data=self._jsonBody,
             headers=self._headers,
             auth=HTTPBasicAuth(self._username, self._password),
             timeout=30
-            )
+        )
         _LOGGER.debug("JSON Response: " + str(self._login_session.json()))
-
         logindata = json.loads(self._login_session.content)
         self._contextid = logindata['contextId']
         _LOGGER.debug("self._contextid: " + self._contextid)
@@ -559,8 +558,8 @@ class IndegoAPI():
         if (tmp):
             tmp = tmp.get('total')
             if (tmp):
-                self._total_operation = round(tmp.get('operate')/100)
-                self._total_charge = round(tmp.get('charge')/100)
+                self._total_operation = round(tmp.get('operate') / 100)
+                self._total_charge = round(tmp.get('charge') / 100)
                 self._total_cut = round(self._total_operation - self._total_charge)
                 return tmp
             else:
@@ -773,7 +772,7 @@ class IndegoAPI():
             starttemp = int(self._battery_percent)
             # starttemp = 297 + 36 + 18
             # Oneliner
-            self._battery_percent_adjusted = round((int(starttemp) - int(self._model_voltage_min)) / ((int(self._model_voltage_max) - int(self._model_voltage_min))/100))
+            self._battery_percent_adjusted = round((int(starttemp) - int(self._model_voltage_min)) / ((int(self._model_voltage_max) - int(self._model_voltage_min)) / 100))
             return self._battery_percent_adjusted
         else:
             return None
