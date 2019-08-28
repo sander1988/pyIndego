@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.11 2019-08-27
+
+### Changes
+- Added support for last completed lawn mowe
+- Added support for CI with Azure pipelines (for testing code before releases)
+
 ## 0.7.8 2019-08-22
 
 ### Changes
