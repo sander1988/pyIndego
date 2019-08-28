@@ -203,7 +203,7 @@ class IndegoAPI():
     def login(self):
         _LOGGER.debug("--- Indego API: start login")
         _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url,
-        'authenticate'))
+            'authenticate'))
         self._login_session = requests.post(
             '{}{}'.format(self._api_url, 'authenticate'),
             data=self._jsonBody,
@@ -984,8 +984,8 @@ class IndegoAPI():
 ##########################################################################
 # Basics for API calls
 
+
     def get(self, method):
-        """Send a GET request and return the response as a dict."""
         _LOGGER.debug("-- GET start")
         logindata = json.loads(self._login_session.content)
         contextId = logindata['contextId']
