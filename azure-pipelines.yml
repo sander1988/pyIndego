@@ -27,5 +27,5 @@ steps:
 
 - script: |
     python -m pip install flake8
-    flake8 .
+    flake8 --ignore=E501 .
   displayName: 'Run lint tests'
