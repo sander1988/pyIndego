@@ -423,7 +423,7 @@ class IndegoAPI():
             #_LOGGER.debug("Online: ", self._online)
             #_LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
             #_LOGGER.debug("Online: " + self._online + " - Offline: " + rnd(self._offline))
-            _LOGGER.debug("Online: " + self._online + " - Offline: " + self._offline)
+            _LOGGER.debug("Online: " + str(self._online) + " - Offline: " + str(self._offline))
             #_LOGGER.debug(">>>API Call: " + complete_url)
             _LOGGER.debug("--- getOperatingData: end")
             return None
