@@ -21,4 +21,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    test_suite='nose.collector',
+    tests_require=['nose'],
 )

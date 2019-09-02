@@ -213,6 +213,18 @@ class IndegoAPI():
             auth=HTTPBasicAuth(self._username, self._password),
             timeout=30
         )
+
+
+        if self._login_session.status_code != 200:
+            _LOGGER.debug("   need to call login again")
+            #self.login()
+            return
+        else:
+            _LOGGER.debug("   Json:" + str(self._login_session.json()))
+            self._login_session.raise_for_status()
+            _LOGGER.debug("--- GET: end")
+            return str(self._login_session.status_code)
+
         _LOGGER.debug("JSON Response: " + str(self._login_session.json()))
         logindata = json.loads(self._login_session.content)
         self._contextid = logindata['contextId']
@@ -319,29 +331,31 @@ class IndegoAPI():
         complete_url = 'alms/' + self._serial + '/state'
         _LOGGER.debug("URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        self._mower_state = tmp_json.get('state')
-        _LOGGER.debug(f"self._mower_state: {self._mower_state}")
-        self._map_update_available = tmp_json.get('map_update_available')
-        _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")
-        self._mowed = tmp_json.get('mowed')
-        _LOGGER.debug(f"self._mowed: {self._mowed}")
-        self._mowmode = tmp_json.get('mowmode')
-        _LOGGER.debug(f"self._mowmode: {self._mowmode}")
-        self._xpos = tmp_json.get('xPos')
-        _LOGGER.debug(f"self._xPos: {self._xpos}")
-        self._ypos = tmp_json.get('yPos')
-        _LOGGER.debug(f"self._yPos: {self._ypos}")
-        self._runtime = tmp_json.get('runtime')
-        _LOGGER.debug(f"self._runtime: {self._runtime}")
-        self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
-        _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")
-        self._svg_xPos = tmp_json.get('svg_xPos')
-        _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")
-        self._svg_yPos = tmp_json.get('svg_yPos')
-        _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")
-        _LOGGER.debug("--- getState end")
-        return tmp_json
-
+        if (self._login_session):
+            self._mower_state = tmp_json.get('state')
+            _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+            self._map_update_available = tmp_json.get('map_update_available')
+            _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")
+            self._mowed = tmp_json.get('mowed')
+            _LOGGER.debug(f"self._mowed: {self._mowed}")
+            self._mowmode = tmp_json.get('mowmode')
+            _LOGGER.debug(f"self._mowmode: {self._mowmode}")
+            self._xpos = tmp_json.get('xPos')
+            _LOGGER.debug(f"self._xPos: {self._xpos}")
+            self._ypos = tmp_json.get('yPos')
+            _LOGGER.debug(f"self._yPos: {self._ypos}")
+            self._runtime = tmp_json.get('runtime')
+            _LOGGER.debug(f"self._runtime: {self._runtime}")
+            self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+            _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")
+            self._svg_xPos = tmp_json.get('svg_xPos')
+            _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")
+            self._svg_yPos = tmp_json.get('svg_yPos')
+            _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")
+            _LOGGER.debug("--- getState end")
+            return tmp_json
+        else:
+            return None
 # 2
     def getUsers(self):
         # Finished
@@ -909,10 +923,15 @@ class IndegoAPI():
     def LastCompleteCutting(self):
         # _LOGGER.debug("LastCompleteCutting")
         # _LOGGER.debug(f"LastCutting = {self._lastcutting}")
-        tmpvar = self._lastcutting['last_mowed']
-        # _LOGGER.debug(f"LastMowed = {tmpvar}")
-        self._lastcompletecutting = self.ConvertBoschDateTime(tmpvar)
-        return self._lastcompletecutting
+        
+        #self._mower_state = tmp_json.get('state')
+        if (self._lastcutting):
+            tmpvar = self._lastcutting['last_mowed']
+            # _LOGGER.debug(f"LastMowed = {tmpvar}")
+            self._lastcompletecutting = self.ConvertBoschDateTime(tmpvar)
+            return self._lastcompletecutting
+        else:
+            return None
 
 #######################################
 # Sending commands to mower
@@ -932,7 +951,7 @@ class IndegoAPI():
 ###
 #
 #    def getLocation(self):
-#        _LOGGER.debug("getLocation")
+#        _LOGGER.8debug("getLocation")
 #        complete_url = 'alms/' + self._serial + '/predictive/location'
 #        Runtime_temp = self.get(complete_url)
 #        value = Runtime_temp
@@ -987,6 +1006,14 @@ class IndegoAPI():
 
     def get(self, method):
         _LOGGER.debug("-- GET start")
+        
+
+        if (self._login_session):
+            print ("Logged in")
+        else:
+            print ("Not logged in")
+            return
+        
         logindata = json.loads(self._login_session.content)
         contextId = logindata['contextId']
         _LOGGER.debug("   ContextID: " + contextId)
