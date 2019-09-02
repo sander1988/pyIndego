@@ -187,7 +187,7 @@ class IndegoAPI():
         self._alert3_time                   = None
         self._alert3_friendly_description   = None
         self._online                        = False
-        self._offline                       = 0
+        self._offline = 0
 
         ## Logging in
         self.login()
@@ -411,16 +411,20 @@ class IndegoAPI():
             self._online = True
             self._offline = 0
             #_LOGGER.debug("Online: ", self._online)
-            _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
+            _LOGGER.debug(f"Online: {self._online} - Offline: {self._offline}")
             #print('I have %d %s' %(a,b))
             _LOGGER.debug("--- getOperatingData: end") 
             return tmp_json
         else:
             self._offline += 1
-            if (self._offline > 5):
-                self._online   = False
+            if (self._offline >= 5):
+                self._online = False
+                _LOGGER.debug(">>> Mower offline for 5 minutes!!!")    
             #_LOGGER.debug("Online: ", self._online)
-            _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
+            #_LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
+            #_LOGGER.debug("Online: " + self._online + " - Offline: " + rnd(self._offline))
+            _LOGGER.debug("Online: " + self._online + " - Offline: " + self._offline)
+            #_LOGGER.debug(">>>API Call: " + complete_url)
             _LOGGER.debug("--- getOperatingData: end")
             return None
 # 5
