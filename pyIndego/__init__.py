@@ -186,6 +186,8 @@ class IndegoAPI():
         self._alert3_error                  = None
         self._alert3_time                   = None
         self._alert3_friendly_description   = None
+        self._online                        = False
+        self._offline                       = 0
 
         ## Logging in
         self.login()
@@ -405,9 +407,21 @@ class IndegoAPI():
             self._hmikeys = tmp_json.get('hmiKeys')
             _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
             _LOGGER.debug("getOperatingData end")
-            _LOGGER.debug("---")  
+            _LOGGER.debug("---")
+            self._online = True
+            self._offline = 0
+            #_LOGGER.debug("Online: ", self._online)
+            _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
+            #print('I have %d %s' %(a,b))
+            _LOGGER.debug("--- getOperatingData: end") 
             return tmp_json
         else:
+            self._offline += 1
+            if (self._offline > 5):
+                self._online   = False
+            #_LOGGER.debug("Online: ", self._online)
+            _LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
+            _LOGGER.debug("--- getOperatingData: end")
             return None
 # 5
     def getUpdates(self):
