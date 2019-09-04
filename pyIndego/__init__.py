@@ -43,7 +43,8 @@ MOWER_STATE_DESCRIPTION_DETAILED = {
     '1026' : 'End of life',
     '1281' : 'Software update',
     '1537' : 'Stuck on lawn, help needed',
-    '64513': 'Sleeping'
+    '64513': 'Sleeping',
+    '99999': 'Offline'
 }
 
 MOWER_STATE_DESCRIPTION = {
@@ -74,7 +75,8 @@ MOWER_STATE_DESCRIPTION = {
     '1026' : 'End of life',
     '1281' : 'Software update',
     '1537' : 'Stuck',
-    '64513': 'Docked'
+    '64513': 'Docked',
+    '99999': 'Offline'
 }
 
 
@@ -116,7 +118,8 @@ class IndegoAPI():
     """Wrapper for Indego's API."""
     def __init__(self, username=None, password=None, serial=None):
         """Initialize Indego API and set headers needed later."""
-        _LOGGER.debug("Init Indego API start __init__")
+        _LOGGER.debug("---------------------------------------------------------------------------")
+        _LOGGER.debug("--- Indego API: start __init__")
 
         # Declaring variables in case that they are read before initialized
         self._api_url = DEFAULT_URL
@@ -192,11 +195,11 @@ class IndegoAPI():
         ## Logging in
         self.login()
         
-        _LOGGER.debug("Init Indego API end __init__")
+        _LOGGER.debug("--- Indego API: end __init__")
 
     def login(self):
-        _LOGGER.debug(">>>API-call: %s", '{}{}'.format(self._api_url, 'authenticate'))
-        _LOGGER.debug("Call self login")
+        _LOGGER.debug("--- Indego API: start login")
+        _LOGGER.debug("   >>> API-call: %s", '{}{}'.format(self._api_url, 'authenticate'))
         self._login_session = requests.post(
             '{}{}'.format(self._api_url, 'authenticate'), data=self._jsonBody, headers=self._headers,
             auth=HTTPBasicAuth(self._username, self._password), timeout=30)
@@ -208,7 +211,7 @@ class IndegoAPI():
         self._userid = logindata['userId']
         _LOGGER.debug("self._userId: " + logindata['userId'])
         _LOGGER.debug("self._serial: " + self._serial)
-        _LOGGER.debug("End Indego API class __init__")
+        _LOGGER.debug("--- Indego API: end login")
         #self.initial_update()
 
     def show_vars(self):
@@ -249,7 +252,7 @@ class IndegoAPI():
         _LOGGER.debug(f"self._session_charge: {self._session_charge}")
         _LOGGER.debug(f"self._session_cut: {self._session_cut}")
 
-        #self.getUsers()
+        # self.getUsers()
         _LOGGER.debug("-self.getUsers")
         _LOGGER.debug(f"self._email: {self._email}")                
         _LOGGER.debug(f"self._display_name: {self._display_name}")                
@@ -258,7 +261,7 @@ class IndegoAPI():
         _LOGGER.debug(f"self._optIn = {self._optin}")
         _LOGGER.debug(f"self._optInApp = {self._optinapp}")
 
-        #self.getGenericData()
+        # self.getGenericData()
         _LOGGER.debug("-self.getGenericData")
         #_LOGGER.debug(f"self._alm_sn ignored: {self._alm_sn}")
         _LOGGER.debug(f"self._alm_name: {self._alm_name}")
@@ -272,7 +275,7 @@ class IndegoAPI():
         _LOGGER.debug("-self._model_description")
         _LOGGER.debug(f"self._model_description = {self._model_description}")
 
-        #self.getOperationalData()
+        # self.getOperationalData()
         _LOGGER.debug("-self.getOperatingData")
         _LOGGER.debug(f"battery: {self._battery}")
         _LOGGER.debug(f"garden: {self._garden}")
@@ -284,10 +287,10 @@ class IndegoAPI():
         _LOGGER.debug(f"self._battery_ambient_temp: {self._battery_ambient_temp}")
         _LOGGER.debug(f"self._battery_temp: {self._battery_temp}")
 
-        #self.getUpdates()
+        # self.getUpdates()
         _LOGGER.debug(f"self._firmware_available: {self._firmware_available}")
         
-        #self.getNextCutting()
+        # self.getNextCutting()
 
         # Not updated in the getState API call
         #_LOGGER.debug("Not updated in the getState API call")        
@@ -303,12 +306,14 @@ class IndegoAPI():
     def getState(self):
         # Finished with all properties as get-calls
         # GET core Update all self values in STATE API call
-        _LOGGER.debug("---")    
-        _LOGGER.debug("getState: Update State API call values")    
+        _LOGGER.debug("--- getState: Start. Update State API call values")    
         complete_url = 'alms/' + self._serial + '/state'
         _LOGGER.debug("URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        self._mower_state = tmp_json.get('state')
+        if (self._online):
+            self._mower_state = tmp_json.get('state')
+        else:
+            self._mower_state = "99999"
         _LOGGER.debug(f"self._mower_state: {self._mower_state}")
         self._map_update_available = tmp_json.get('map_update_available')
         _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
@@ -328,17 +333,14 @@ class IndegoAPI():
         _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
         self._svg_yPos = tmp_json.get('svg_yPos')
         _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
-
-        _LOGGER.debug("getState end")    
-        _LOGGER.debug("---")    
+        _LOGGER.debug("--- getState end")        
         return tmp_json
 
 # 2
     def getUsers(self):
         # Finished
         # GET Core Update all self values in USERS API call
-        _LOGGER.debug("---")  
-        _LOGGER.debug("getUsers: ")
+        _LOGGER.debug("--- getUsers: start")
         complete_url = 'users/' + self._userid
         _LOGGER.debug(">>>API Call: " + complete_url)
         tmp_json = self.get(complete_url)
@@ -355,8 +357,7 @@ class IndegoAPI():
         self._optinapp = tmp_json.get('optInApp')
         _LOGGER.debug(f"optInApp = {self._optinapp}")
         _LOGGER.debug(f"Value User = {tmp_json}")
-        _LOGGER.debug("getUsers end")
-        _LOGGER.debug("---")  
+        _LOGGER.debug("--- getUsers: end")
         return tmp_json
         #PUT https://api.indego.iot.bosch-si.com/api/v1/users/{{userId}}
         #{New_display_name: "New name"}
@@ -365,8 +366,7 @@ class IndegoAPI():
     def getGenericData(self):
         # Finished
         # GET Core Update all self values in SERIAL API call
-        _LOGGER.debug("---")  
-        _LOGGER.debug("getGenericData start")
+        _LOGGER.debug("--- getGenericData: start")
         complete_url = 'alms/' + self._serial
         _LOGGER.debug(f">>>API call: {complete_url}")
         tmp_json = self.get(complete_url)
@@ -384,16 +384,14 @@ class IndegoAPI():
         _LOGGER.debug(f"self._bareToolnumber: {self._bareToolnumber}")
         self._alm_firmware_version = tmp_json.get('alm_firmware_version')
         _LOGGER.debug(f"self._alm_firmware_version: {self._alm_firmware_version}")
-        _LOGGER.debug("getGenericData end")
-        _LOGGER.debug("---")  
+        _LOGGER.debug("--- getGenericData: end")
         return tmp_json
 
 # 4
     def getOperatingData(self):
         # Finished
         # GET core Update all self values in state get API call
-        _LOGGER.debug("---")  
-        _LOGGER.debug("getOperatingData start")
+        _LOGGER.debug("--- getOperatingData: start")
         complete_url = 'alms/' + self._serial + '/operatingData'
         _LOGGER.debug(">>>API Call: " + complete_url)
         tmp_json = self.get(complete_url)
@@ -406,8 +404,6 @@ class IndegoAPI():
             _LOGGER.debug(f"garden: {self._garden}")
             self._hmikeys = tmp_json.get('hmiKeys')
             _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
-            _LOGGER.debug("getOperatingData end")
-            _LOGGER.debug("---")
             self._online = True
             self._offline = 0
             #_LOGGER.debug("Online: ", self._online)
@@ -425,48 +421,44 @@ class IndegoAPI():
             #_LOGGER.debug("Online: " + self._online + " - Offline: " + rnd(self._offline))
             _LOGGER.debug("Online: " + str(self._online) + " - Offline: " + str(self._offline))
             #_LOGGER.debug(">>>API Call: " + complete_url)
+            _LOGGER.debug("self._online: " + str(self._online))
             _LOGGER.debug("--- getOperatingData: end")
             return None
 # 5
     def getUpdates(self):
         # Finished
-        _LOGGER.debug("---")  
-        _LOGGER.debug("getUpdates start")  
+        _LOGGER.debug("--- getUpdates: start")  
         # Need to better this class with better error handling for timeout
         # Takes time as the mower has to wake up for this control to be perfomed
         complete_url = 'alms/' + self._serial + '/updates'
         tmp_json = self.get(complete_url)
         if tmp_json:
             self._firmware_available = tmp_json.get('available')
-            _LOGGER.debug("getUpdates end")
-            _LOGGER.debug("---")  
+            _LOGGER.debug("--- getUpdates: end")  
             return tmp_json
         else:
+            _LOGGER.debug("--- getUpdates: end")  
             return None
 # 6
     def getAlerts(self):
-        _LOGGER.debug("---")  
-        _LOGGER.debug("getAlerts start")
+        _LOGGER.debug("--- getAlerts: start")
         complete_url = 'alerts'
         _LOGGER.debug(">>>API Call: " + complete_url)
         tmp_json = self.get(complete_url)
         self._alerts = tmp_json
-        _LOGGER.debug("getAlerts end")
-        _LOGGER.debug("---")  
+        _LOGGER.debug("--- getAlerts: end")
         return tmp_json
 
 # 7
     def getNextCutting(self):
-        _LOGGER.debug("---")  
-        _LOGGER.debug("getNextCutting start")
+        _LOGGER.debug("--- getNextCutting: start")
         #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/predictive/nextcutting?withReason=true]
         complete_url = 'alms/' + self._serial + '/predictive/nextcutting?withReason=true'
         _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
         self._nextcutting = tmp_json
         _LOGGER.debug(f"NextCutting = {tmp_json}")
-        _LOGGER.debug("getNextCutting end")
-        _LOGGER.debug("---")  
+        _LOGGER.debug("--- getNextCutting: end")  
         return tmp_json
 
 # Depricated in Bosch API??? Gives no answer from API call
@@ -970,8 +962,7 @@ class IndegoAPI():
 ### Basics for API calls
     def get(self, method):
         """Send a GET request and return the response as a dict."""
-        _LOGGER.debug("---")  
-        _LOGGER.debug("GET start")
+        _LOGGER.debug("-- GET start")
         logindata = json.loads(self._login_session.content)
         contextId = logindata['contextId']
         _LOGGER.debug("   ContextID: " + contextId)
@@ -998,14 +989,13 @@ class IndegoAPI():
             else:
                 _LOGGER.debug("   Json:" + str(response.json()))
                 response.raise_for_status()
-                _LOGGER.debug("GET end")
+                _LOGGER.debug("--- GET: end")
                 return response.json()
-        _LOGGER.debug("GET end")
+        _LOGGER.debug("--- GET: end")
     
     def put(self, url, method):
         """Send a PUT request and return the response as a dict."""
-        _LOGGER.debug("---")  
-        _LOGGER.debug("PUT start")
+        _LOGGER.debug("--- PUT: start")
         logindata = json.loads(self._login_session.content)
         contextId = logindata['contextId']
         headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
