@@ -25,16 +25,16 @@ Call the API:
 ## get-functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 
-API Call         | Bosch API | Mower | Mower needs to be online
------------------|-----------|-------|-------------------------
-getAlerts        |           |       |
-getGenericData   |           |       |
-getNextCutting   |           |       |
-getOperatingData |    X      |  X    |   X
-getState         |    X      |       |
-getUpdates       |           |       |   X
-getUsers         |           |       |
-login            |    X      |       |
+API Call                 | Bosch API | Mower | Mower needs to be online
+-------------------------|-----------|-------|-------------------------
+getAlerts                |    X      |       |
+getGenericData           |    X      |       |
+getLastComletedCutting   |    X      |       |
+getOperatingData         |           |  X    |   X
+getState                 |    X      |       |
+getUpdates               |           |  X    |   X
+getUsers                 |           |       |
+login                    |    X      |       |
 
 ## List of get-functions
 

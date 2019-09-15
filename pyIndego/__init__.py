@@ -44,7 +44,8 @@ MOWER_STATE_DESCRIPTION_DETAILED = {
     '1281' : 'Software update',
     '1537' : 'Stuck on lawn, help needed',
     '64513': 'Sleeping',
-    '99999': 'Offline'
+    '99999': 'Offline',
+    'None' : 'None'
 }
 
 MOWER_STATE_DESCRIPTION = {
@@ -76,7 +77,8 @@ MOWER_STATE_DESCRIPTION = {
     '1281' : 'Software update',
     '1537' : 'Stuck',
     '64513': 'Docked',
-    '99999': 'Offline'
+    '99999': 'Offline',
+    'None' : 'None'
 }
 
 
@@ -304,41 +306,45 @@ class IndegoAPI():
 ###########################################################
 # 1
     def getState(self):
-        # Finished with all properties as get-calls
-        # GET core Update all self values in STATE API call
         _LOGGER.debug("--- getState: Start. Update State API call values")    
-        complete_url = 'alms/' + self._serial + '/state'
-        _LOGGER.debug("URL: " + complete_url)
-        tmp_json = self.get(complete_url)
+        # Works even if mower is offline! Returns cached values!
+        # Check if mower is offline
         if (self._online):
+            # GET core Update all self values in STATE API call
+            complete_url = 'alms/' + self._serial + '/state'
+            _LOGGER.debug("URL: " + complete_url)
+            tmp_json = self.get(complete_url)
             self._mower_state = tmp_json.get('state')
+            _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+            self._map_update_available = tmp_json.get('map_update_available')
+            _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+            self._mowed = tmp_json.get('mowed')
+            _LOGGER.debug(f"self._mowed: {self._mowed}")    
+            self._mowmode = tmp_json.get('mowmode')
+            _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+            self._xpos = tmp_json.get('xPos')
+            _LOGGER.debug(f"self._xPos: {self._xpos}")    
+            self._ypos = tmp_json.get('yPos')
+            _LOGGER.debug(f"self._yPos: {self._ypos}")    
+            self._runtime = tmp_json.get('runtime')
+            _LOGGER.debug(f"self._runtime: {self._runtime}")    
+            self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+            _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+            self._svg_xPos = tmp_json.get('svg_xPos')
+            _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+            self._svg_yPos = tmp_json.get('svg_yPos')
+            _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
+            return tmp_json
         else:
-            self._mower_state = "99999"
-        _LOGGER.debug(f"self._mower_state: {self._mower_state}")
-        self._map_update_available = tmp_json.get('map_update_available')
-        _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
-        self._mowed = tmp_json.get('mowed')
-        _LOGGER.debug(f"self._mowed: {self._mowed}")    
-        self._mowmode = tmp_json.get('mowmode')
-        _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
-        self._xpos = tmp_json.get('xPos')
-        _LOGGER.debug(f"self._xPos: {self._xpos}")    
-        self._ypos = tmp_json.get('yPos')
-        _LOGGER.debug(f"self._yPos: {self._ypos}")    
-        self._runtime = tmp_json.get('runtime')
-        _LOGGER.debug(f"self._runtime: {self._runtime}")    
-        self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
-        _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
-        self._svg_xPos = tmp_json.get('svg_xPos')
-        _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
-        self._svg_yPos = tmp_json.get('svg_yPos')
-        _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
+            _LOGGER.debug("Mower offline, no update!")        
+            self._offline += 1
+            if (self._offline >= 2):
+                self._mower_state = "99999"
         _LOGGER.debug("--- getState end")        
-        return tmp_json
-
+            
 # 2
     def getUsers(self):
-        # Finished
+        # Works even if mower is offline!
         # GET Core Update all self values in USERS API call
         _LOGGER.debug("--- getUsers: start")
         complete_url = 'users/' + self._userid
@@ -364,7 +370,7 @@ class IndegoAPI():
 
 # 3
     def getGenericData(self):
-        # Finished
+        # Works even if mower is offline!
         # GET Core Update all self values in SERIAL API call
         _LOGGER.debug("--- getGenericData: start")
         complete_url = 'alms/' + self._serial
@@ -389,7 +395,7 @@ class IndegoAPI():
 
 # 4
     def getOperatingData(self):
-        # Finished
+        # Does not work if mower is offline! Ued to check if mower is offline!
         # GET core Update all self values in state get API call
         _LOGGER.debug("--- getOperatingData: start")
         complete_url = 'alms/' + self._serial + '/operatingData'
@@ -406,41 +412,37 @@ class IndegoAPI():
             _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
             self._online = True
             self._offline = 0
-            #_LOGGER.debug("Online: ", self._online)
             _LOGGER.debug(f"Online: {self._online} - Offline: {self._offline}")
-            #print('I have %d %s' %(a,b))
             _LOGGER.debug("--- getOperatingData: end") 
             return tmp_json
         else:
             self._offline += 1
-            if (self._offline >= 5):
-                self._online = False
-                _LOGGER.debug(">>> Mower offline for 5 minutes!!!")    
-            #_LOGGER.debug("Online: ", self._online)
-            #_LOGGER.debug('Online: %d = Offline: %e' %(self._online,self._offline))
-            #_LOGGER.debug("Online: " + self._online + " - Offline: " + rnd(self._offline))
+            self._online = False
+            _LOGGER.debug(">>> Mower offline!!!")    
             _LOGGER.debug("Online: " + str(self._online) + " - Offline: " + str(self._offline))
-            #_LOGGER.debug(">>>API Call: " + complete_url)
             _LOGGER.debug("self._online: " + str(self._online))
             _LOGGER.debug("--- getOperatingData: end")
             return None
 # 5
     def getUpdates(self):
-        # Finished
+        # Does not works if mower is offline!
         _LOGGER.debug("--- getUpdates: start")  
         # Need to better this class with better error handling for timeout
         # Takes time as the mower has to wake up for this control to be perfomed
-        complete_url = 'alms/' + self._serial + '/updates'
-        tmp_json = self.get(complete_url)
-        if tmp_json:
+        if (self._online):
+            complete_url = 'alms/' + self._serial + '/updates'
+            tmp_json = self.get(complete_url)
             self._firmware_available = tmp_json.get('available')
             _LOGGER.debug("--- getUpdates: end")  
             return tmp_json
         else:
+            _LOGGER.debug("Mower offline, no update")  
             _LOGGER.debug("--- getUpdates: end")  
             return None
+
 # 6
     def getAlerts(self):
+        # Works even if mower is offline!
         _LOGGER.debug("--- getAlerts: start")
         complete_url = 'alerts'
         _LOGGER.debug(">>>API Call: " + complete_url)
@@ -450,16 +452,27 @@ class IndegoAPI():
         return tmp_json
 
 # 7
-    def getNextCutting(self):
-        _LOGGER.debug("--- getNextCutting: start")
-        #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/predictive/nextcutting?withReason=true]
-        complete_url = 'alms/' + self._serial + '/predictive/nextcutting?withReason=true'
+    def getLastCompletedCutting(self):
+        # Works even if mower is offline!
+        _LOGGER.debug("--- getLastCompletedCutting: start")
+        complete_url = 'alms/' + self._serial + '/predictive/lastcutting'
         _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
         self._nextcutting = tmp_json
-        _LOGGER.debug(f"NextCutting = {tmp_json}")
-        _LOGGER.debug("--- getNextCutting: end")  
+        _LOGGER.debug(f"LastCompletedCutting = {tmp_json}")
+        _LOGGER.debug("--- getLastCompletedCutting: end")  
         return tmp_json
+
+#    def getLastCompletedCutting(self):
+#        _LOGGER.debug("--- getLastCompletedCutting: start")
+#        #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/predictive/nextcutting?withReason=true]
+#        complete_url = 'alms/' + self._serial + '/predictive/nextcutting?withReason=true'
+#        _LOGGER.debug("Complete URL: " + complete_url)
+#        tmp_json = self.get(complete_url)
+#        self._nextcutting = tmp_json
+#        _LOGGER.debug(f"LastCompletedCutting = {tmp_json}")
+#        _LOGGER.debug("--- getLastCompletedCutting: end")  
+#        return tmp_json
 
 # Depricated in Bosch API??? Gives no answer from API call
 #    def getNextPredicitiveCutting(self):
@@ -567,11 +580,11 @@ class IndegoAPI():
     def MowerStateDescription(self):
         if hasattr(self, '_mower_state'):
             if str(self._mower_state) in MOWER_STATE_DESCRIPTION.keys():
-                _LOGGER.debug(f"Value in dict = {self._mower_state}")
+                _LOGGER.debug(f"Value in state dict = {self._mower_state}")
                 self._mower_state_description = MOWER_STATE_DESCRIPTION.get(str(self._mower_state))
                 _LOGGER.debug(f"Mower state description: {self._mower_state_description}")
             else:
-                _LOGGER.debug(f"Value not in dict = {self._mower_state}")
+                _LOGGER.debug(f"Value not in state dict = {self._mower_state}")
                 self._mower_state_description = "Value not in database: " + str(self._mower_state)
             return self._mower_state_description
         else:
@@ -581,11 +594,11 @@ class IndegoAPI():
     def MowerStateDescriptionDetailed(self):
         if hasattr(self, '_mower_state'):
             if str(self._mower_state) in MOWER_STATE_DESCRIPTION_DETAILED.keys():
-                _LOGGER.debug(f"Value in dict = {self._mower_state}")
+                _LOGGER.debug(f"Value in detailed state dict = {self._mower_state}")
                 self._mower_state_description_detailed = MOWER_STATE_DESCRIPTION_DETAILED.get(str(self._mower_state))
-                _LOGGER.debug(f"Mower state description: {self._mower_state_description}")
+                _LOGGER.debug(f"Mower state detailed description: {self._mower_state_description}")
             else:
-                _LOGGER.debug(f"Value not in dict = {self._mower_state}")
+                _LOGGER.debug(f"Value not in detailed state dict = {self._mower_state}")
                 self._mower_state_description_detailed = "Value not in database: " + str(self._mower_state)
             return self._mower_state_description_detailed
         else:
@@ -678,10 +691,10 @@ class IndegoAPI():
     def ModelDescription(self):
         if hasattr(self, '_bareToolnumber'):
             if str(self._bareToolnumber) in MOWER_MODEL_DESCRIPTION.keys():
-                _LOGGER.debug(f"Value in dict = {self._bareToolnumber}")
+                _LOGGER.debug(f"Value in model dict = {self._bareToolnumber}")
                 self._model_description = MOWER_MODEL_DESCRIPTION.get(str(self._bareToolnumber))
             else:
-                _LOGGER.debug(f"Value not in dict = {self._bareToolnumber}")
+                _LOGGER.debug(f"Value not in model dict = {self._bareToolnumber}")
                 self._model_description = "Value not in database: " + str(self._bareToolnumber)
             return self._model_description
         else:
@@ -690,10 +703,10 @@ class IndegoAPI():
     def ModelVoltage(self):
         if hasattr(self, '_bareToolnumber'):
             if str(self._bareToolnumber) in MOWER_MODEL_VOLTAGE.keys():
-                _LOGGER.debug(f"Value in dict = {self._bareToolnumber}")
+                _LOGGER.debug(f"Value in voltage dict = {self._bareToolnumber}")
                 self._model_voltage = MOWER_MODEL_VOLTAGE.get(str(self._bareToolnumber))
             else:
-                _LOGGER.debug(f"Value not in dict = {self._bareToolnumber}")
+                _LOGGER.debug(f"Value not in voltage dict = {self._bareToolnumber}")
                 self._model_description = "Value not in database: " + str(self._bareToolnumber)
             return self._model_voltage
         else:
@@ -717,11 +730,11 @@ class IndegoAPI():
 
     def MowingModeDescription(self):
         if str(self._alm_mode) in MOWING_MODE_DESCRIPTION.keys():
-            _LOGGER.debug(f"Value in dict = {self._alm_mode}")
+            _LOGGER.debug(f"Value in mowing mode dict = {self._alm_mode}")
             self._mowingmode_description = MOWING_MODE_DESCRIPTION.get(str(self._alm_mode))
             _LOGGER.debug(f"Mowingmode description: {self._mowingmode_description}")
         else:
-            _LOGGER.debug(f"Value not in dict = {self._alm_mode}")
+            _LOGGER.debug(f"Value not in mowing mode dict = {self._alm_mode}")
             self._mowingmode_description = "Value not in database: " + str(self._alm_mode)
         return self._mowingmode_description
 
@@ -863,11 +876,11 @@ class IndegoAPI():
         tmp_val = tmp
 
         if str(tmp_val) in ALERT_ERROR_CODE.keys():
-            _LOGGER.debug(f"Alert value in dict = {tmp_val}")
+            _LOGGER.debug(f"Alert value in alert code dict = {tmp_val}")
             alert_description = ALERT_ERROR_CODE[tmp_val]
             _LOGGER.debug(f"Mower state description: {alert_description}")
         else:
-            _LOGGER.debug(f"Alert value not in dict = {tmp_val}")
+            _LOGGER.debug(f"Alert value not in alect code dict = {tmp_val}")
             alert_description = "Not in database!"
         return alert_description
 
@@ -962,75 +975,75 @@ class IndegoAPI():
 ### Basics for API calls
     def get(self, method):
         """Send a GET request and return the response as a dict."""
-        _LOGGER.debug("-- GET start")
+        _LOGGER.debug("   --- GET start")
         logindata = json.loads(self._login_session.content)
         contextId = logindata['contextId']
-        _LOGGER.debug("   ContextID: " + contextId)
+        _LOGGER.debug("      ContextID: " + contextId)
         headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
         url = self._api_url + method
-        _LOGGER.debug("   >>>API CALL: " + url)
+        _LOGGER.debug("      >>>API CALL: " + url)
         try:
             response = requests.get(url, headers=headers, timeout=15)
         except requests.exceptions.Timeout:
-            _LOGGER.debug("   Failed to update Indego status. Timeout!")
+            _LOGGER.debug("      Failed to update Indego status. Timeout!")
             return None
         except requests.exceptions.TooManyRedirects:
-            _LOGGER.debug("   Failed to update Indego status. Too many redirects")
+            _LOGGER.debug("      Failed to update Indego status. Too many redirects")
             return None
         except requests.exceptions.RequestException as e:
-            _LOGGER.debug("   Failed to update Indego status. Error: " + str(e))
+            _LOGGER.debug("      Failed to update Indego status. Error: " + str(e))
             return None
         else:
-            _LOGGER.debug("   HTTP Status code: " + str(response.status_code))
+            _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
             if response.status_code != 200:
-                _LOGGER.debug("   need to call login again")
+                _LOGGER.debug("      need to call login again")
                 self.login()
                 return
             else:
-                _LOGGER.debug("   Json:" + str(response.json()))
+                _LOGGER.debug("      Json:" + str(response.json()))
                 response.raise_for_status()
-                _LOGGER.debug("--- GET: end")
+                _LOGGER.debug("   --- GET: end")
                 return response.json()
-        _LOGGER.debug("--- GET: end")
+        _LOGGER.debug("   --- GET: end")
     
     def put(self, url, method):
         """Send a PUT request and return the response as a dict."""
-        _LOGGER.debug("--- PUT: start")
+        _LOGGER.debug("   --- PUT: start")
         logindata = json.loads(self._login_session.content)
         contextId = logindata['contextId']
         headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
         url = self._api_url + url
         data = '{"state":"' + method + '"}'
-        _LOGGER.debug("   >>>API CALL: " + url)
-        _LOGGER.debug("   headers: " + str(headers))
-        _LOGGER.debug("   data: " + str(data))
+        _LOGGER.debug("      >>>API CALL: " + url)
+        _LOGGER.debug("      headers: " + str(headers))
+        _LOGGER.debug("      data: " + str(data))
         try:
             response = requests.put(url, headers=headers, data=data, timeout=30)
         except requests.exceptions.Timeout:
-            _LOGGER.debug("   Failed to send data to Indego mower. Timeout!")
+            _LOGGER.debug("      Failed to send data to Indego mower. Timeout!")
             return None
         except requests.exceptions.TooManyRedirects:
-            _LOGGER.debug("   Failed to send data to Indego mower. Too many redirects")
+            _LOGGER.debug("      Failed to send data to Indego mower. Too many redirects")
             return None
         except requests.exceptions.RequestException as e:
-            _LOGGER.debug("   Failed to send data to Indego mower. Error status: " + str(e))
+            _LOGGER.debug("      Failed to send data to Indego mower. Error status: " + str(e))
             return None
         else:
-            _LOGGER.debug("   HTTP Status code: " + str(response.status_code))
+            _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
             if response.status_code != 200:
-                _LOGGER.debug("   need to call login again")
+                _LOGGER.debug("      need to call login again")
                 self.login()
                 return str(response.status_code)
             else:
-                #_LOGGER.debug("   Json:" + str(response.json()))
-                _LOGGER.debug("   Json:" + str(response))
+                #_LOGGER.debug("      Json:" + str(response.json()))
+                _LOGGER.debug("      Json:" + str(response))
                 #response.raise_for_status()
-                _LOGGER.debug("--- GET: end")
+                _LOGGER.debug("   --- GET: end")
                 #return response.json()
                 #return str(response)
                 if (response.status_code == 200):
                     return "OK"
                 else:
                     return str(response.status_code)
-        _LOGGER.debug("--- GET: end")
+        _LOGGER.debug("   --- GET: end")
 #End PYPI __init__.py
