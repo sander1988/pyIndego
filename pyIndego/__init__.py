@@ -337,7 +337,7 @@ class IndegoAPI():
             return tmp_json
         else:
             _LOGGER.debug("Mower offline, no update!")        
-            self._offline += 1
+            #self._offline += 1
             if (self._offline >= 2):
                 self._mower_state = "99999"
                 _LOGGER.debug(">>>Mower offline, setting state to Offline!")        
@@ -453,15 +453,17 @@ class IndegoAPI():
         return tmp_json
 
 # 7
-    def getLastCompletedCutting(self):
+    def getLastCutting(self):
         # Works even if mower is offline!
-        _LOGGER.debug("--- getLastCompletedCutting: start")
+        _LOGGER.debug("--- getLastCutting: start")
         complete_url = 'alms/' + self._serial + '/predictive/lastcutting'
         _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        self._nextcutting = tmp_json
-        _LOGGER.debug(f"LastCompletedCutting = {tmp_json}")
-        _LOGGER.debug("--- getLastCompletedCutting: end")  
+        tmp_datetime = tmp_json['last_mowed']
+        self._lastcutting = self.ConvertBoschDateTime(tmp_datetime)
+        _LOGGER.debug(f"tmp_json = {tmp_json}")
+        _LOGGER.debug(f"lastcutting = {self._lastcutting}")
+        _LOGGER.debug("--- getLastCutting: end")  
         return tmp_json
 
 #    def getLastCompletedCutting(self):
