@@ -340,6 +340,7 @@ class IndegoAPI():
             self._offline += 1
             if (self._offline >= 2):
                 self._mower_state = "99999"
+                _LOGGER.debug(">>>Mower offline, setting state to Offline!")        
         _LOGGER.debug("--- getState end")        
             
 # 2

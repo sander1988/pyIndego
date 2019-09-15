@@ -33,7 +33,7 @@ getLastComletedCutting   |    X      |       |
 getOperatingData         |           |  X    |   X
 getState                 |    X      |       |
 getUpdates               |           |  X    |   X
-getUsers                 |           |       |
+getUsers                 |    X      |       |
 login                    |    X      |       |
 
 ## List of get-functions
