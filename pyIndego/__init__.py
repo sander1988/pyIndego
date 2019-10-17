@@ -90,7 +90,8 @@ MOWER_MODEL_DESCRIPTION = {
     '3600HA2304': 'Indego 10C',
     '3600HB0100': 'Indego 350 Connect',
     '3600HB0101': 'Indego 400 Connect',
-    '3600HB0102': 'Indego S+ 350 Connect'
+    '3600HB0102': 'Indego S+ 350 Connect',
+    '3600HB0103': 'Indego S+ 400 Connect'
 }
 
 MOWER_MODEL_VOLTAGE = {
@@ -101,7 +102,8 @@ MOWER_MODEL_VOLTAGE = {
     '3600HA2304': {'min': '297','max': '369'}, # Indego 10C
     '3600HB0100': {'min': '0','max': '100'},   # Indego 350 Connect
     '3600HB0101': {'min': '0','max': '100'},   # Indego 400 Connect
-    '3600HB0102': {'min': '0','max': '100'}    # Indego S+ 350 Connect
+    '3600HB0102': {'min': '0','max': '100'},   # Indego S+ 350 Connect
+    '3600HB0103': {'min': '0','max': '100'}    # Indego S+ 400 Connect
 }
 
 MOWING_MODE_DESCRIPTION = {
