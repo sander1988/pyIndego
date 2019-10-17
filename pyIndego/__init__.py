@@ -466,6 +466,18 @@ class IndegoAPI():
         _LOGGER.debug("--- getLastCutting: end")  
         return tmp_json
 
+# 8
+    def getTest(self):
+        # Works even if mower is offline!
+        _LOGGER.debug("--- getTest: start")
+        complete_url = 'alms/' + self._serial + '/network?resolveMccMnc=true'
+        #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/network?resolveMccMnc=true 
+        _LOGGER.debug("Complete URL: " + complete_url)
+        tmp_json = self.get(complete_url)
+        _LOGGER.debug(f"tmp_json = {tmp_json}")
+        _LOGGER.debug("--- getTest: end")  
+        return tmp_json
+
 #    def getLastCompletedCutting(self):
 #        _LOGGER.debug("--- getLastCompletedCutting: start")
 #        #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/predictive/nextcutting?withReason=true]
