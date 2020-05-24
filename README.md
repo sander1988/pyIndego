@@ -1,6 +1,9 @@
-[![PyPI](https://img.shields.io/pypi/v/pyIndego.svg)](https://pypi.python.org/pypi/pyIndego/) [![Build Status](https://dev.azure.com/jensmazzanti-myretyr/pyIndego/_apis/build/status/jm-73.pyIndego?branchName=master)](https://dev.azure.com/jensmazzanti-myretyr/pyIndego/_build/latest?definitionId=1&branchName=master)
+[![PyPI](https://img.shields.io/pypi/v)](https://pypi.python.org/pypi/pyIndego/)
 
 # API for Bosch Indego lawnmowers
+
+Join the Discord channel to discuss around this integration:
+https://discord.gg/aD33GsP
 
 ## Usage with Home Assistant
 For source files and version handling: https://github.com/jm-73/pyIndego
@@ -20,7 +23,7 @@ The python library is written for the login method with username (email address)
 ## Call the API and the mower
 Call the API:
 
-    IndegoApi_Instance = IndegoAPI(username=your_mail@gmail.com, password=your_password, serial=your_serial)
+    IndegoApi_Instance = IndegoAPI(username='your_mail@gmail.com', password='your_password', serial='your_serial')
 
 ## get-functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
@@ -78,8 +81,7 @@ Collects data on next cutting. Seems to get the last command sent to the mower.
 ```python
 Response:
 {
-    'lastMowSent': '2019-08-20T05:09:51.842+01:00',
-    'lastMowCode': 200
+    'mow_next': '2020-05-25T10:00:00+02:00'
 }
 ```
 
@@ -179,7 +181,7 @@ Response:
 
 
 ## Functions for reading data from locally cached API data
-All functions that doesnt contain "get" first in name is collecting data from locally stored variables. No API calls to Bosch or mower.
+All functions that doesnt contain "get" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
 
 ### AlertsCount()
 ![Alertscount](https://img.shields.io/badge/Need-getAlert-red)<br>
@@ -636,22 +638,36 @@ https://api.indego.iot.bosch-si.com:443/api/v1
 
 
 ```python
-get
+post
 /authenticate
+
+get
 /alerts
 /alms/<serial>
 /alms/<serial>/automaticUpdate
-/alms/<serial>/updates
 /alms/<serial>/calendar
 /alms/<serial>/map
+/alms/<serial>/updates
 /alms/<serial>/operatingData
-/alms/<serial>/predictive/nextcutting?withReason=true
-/alms/<serial>/predictive/nextcutting?last=YYYY-MM-DDTHH:MM:SS%2BHH:MM (Not working)
-/alms/<serial>/predictive/location
+/alms/<serial>/predictive
 /alms/<serial>/predictive/calendar
-/alms/<serial>/predictive/useradjustment (What is this for?)
+/alms/<serial>/predictive/lastcutting
+/alms/<serial>/predictive/location
+/alms/<serial>/predictive/nextcutting
+/alms/<serial>/predictive/useradjustment
+/alms/<serial>/predictive/weather
 /alms/<serial>/security
 /alms/<serial>/state
+/users/<userid>
 
 put
+/alms/<serial>/automaticUpdate
+/alms/<serial>/predictive/calendar
+/alms/<serial>/predictive/location
+/alms/<serial>/predictive
+/alms/<serial>/state
+/alms/<serial>/predictive/useradjustment
+
+delete
+/alerts/<alertid>
 ```

@@ -83,26 +83,32 @@ MOWER_STATE_DESCRIPTION = {
 
 
 MOWER_MODEL_DESCRIPTION = {
-    '3600HA2300':'Indego 1000 Connect',
-    '3600HA2301': 'Indego 1200 Connect',
-    '3600HA2302': 'Indego 1100 Connect',
+    '3600HA2300':'Indego 1000',
+    '3600HA2301': 'Indego 1200',
+    '3600HA2302': 'Indego 1100',
     '3600HA2303': 'Indego 13C',
     '3600HA2304': 'Indego 10C',
-    '3600HB0100': 'Indego 350 Connect',
-    '3600HB0101': 'Indego 400 Connect',
-    '3600HB0102': 'Indego S+ 350 Connect',
-    '3600HB0105': 'Indego S+ 350 Connect'
+    '3600HB0100': 'Indego 350',
+    '3600HB0101': 'Indego 400',
+    '3600HB0102': 'Indego S+ 350',
+    '3600HB0103': 'Indego S+ 400',
+    '3600HB0105': 'Indego S+ 350'
+    #'3600HB106'
+    #'3600HB301'
+    #'3600HB0xxx': 'Indego M+ 700' missing model number
 }
 
 MOWER_MODEL_VOLTAGE = {
-    '3600HA2300': {'min': '297','max': '369'}, # Indego 1000 Connect
-    '3600HA2301': {'min': '297','max': '369'}, # Indego 1200 Connect
-    '3600HA2302': {'min': '297','max': '369'}, # Indego 1100 Connect
+    '3600HA2300': {'min': '297','max': '369'}, # Indego 1000
+    '3600HA2301': {'min': '297','max': '369'}, # Indego 1200
+    '3600HA2302': {'min': '297','max': '369'}, # Indego 1100
     '3600HA2303': {'min': '297','max': '369'}, # Indego 13C
     '3600HA2304': {'min': '297','max': '369'}, # Indego 10C
-    '3600HB0100': {'min': '0','max': '100'},   # Indego 350 Connect
-    '3600HB0101': {'min': '0','max': '100'},   # Indego 400 Connect
-    '3600HB0102': {'min': '0','max': '100'},    # Indego S+ 350 Connect
+    '3600HB0100': {'min': '0','max': '100'},   # Indego 350
+    '3600HB0101': {'min': '0','max': '100'},   # Indego 400
+    '3600HB0102': {'min': '0','max': '100'},   # Indego S+ 350
+    '3600HB0103': {'min': '0','max': '100'},    # Indego S+ 400
+    #'3600HB0103': {'min': '0','max': '100'}    # Indego M+ 700
     '3600HB0105': {'min': '0','max': '100'}    # Indego S+ 350 Connect
 }
 
@@ -115,6 +121,7 @@ MOWING_MODE_DESCRIPTION = {
 ALERT_ERROR_CODE = {
     '104':             'Stop button pushed',
     '115':             'Mower is stuck',
+    '149':             'Mower uutside perimeter cable',
     'ntfy_blade_life': 'Reminder blade life'
 }
 
@@ -311,38 +318,38 @@ class IndegoAPI():
         _LOGGER.debug("--- getState: Start. Update State API call values")    
         # Works even if mower is offline! Returns cached values!
         # Check if mower is offline
-        if (self._online):
-            # GET core Update all self values in STATE API call
-            complete_url = 'alms/' + self._serial + '/state'
-            _LOGGER.debug("URL: " + complete_url)
-            tmp_json = self.get(complete_url)
-            self._mower_state = tmp_json.get('state')
-            _LOGGER.debug(f"self._mower_state: {self._mower_state}")
-            self._map_update_available = tmp_json.get('map_update_available')
-            _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
-            self._mowed = tmp_json.get('mowed')
-            _LOGGER.debug(f"self._mowed: {self._mowed}")    
-            self._mowmode = tmp_json.get('mowmode')
-            _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
-            self._xpos = tmp_json.get('xPos')
-            _LOGGER.debug(f"self._xPos: {self._xpos}")    
-            self._ypos = tmp_json.get('yPos')
-            _LOGGER.debug(f"self._yPos: {self._ypos}")    
-            self._runtime = tmp_json.get('runtime')
-            _LOGGER.debug(f"self._runtime: {self._runtime}")    
-            self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
-            _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
-            self._svg_xPos = tmp_json.get('svg_xPos')
-            _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
-            self._svg_yPos = tmp_json.get('svg_yPos')
-            _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
-            return tmp_json
-        else:
-            _LOGGER.debug("Mower offline, no update!")        
-            #self._offline += 1
-            if (self._offline >= 2):
-                self._mower_state = "99999"
-                _LOGGER.debug(">>>Mower offline, setting state to Offline!")        
+        #if (self._online):
+        #    # GET core Update all self values in STATE API call
+        complete_url = 'alms/' + self._serial + '/state'
+        _LOGGER.debug("URL: " + complete_url)
+        tmp_json = self.get(complete_url)
+        self._mower_state = tmp_json.get('state')
+        _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+        self._map_update_available = tmp_json.get('map_update_available')
+        _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+        self._mowed = tmp_json.get('mowed')
+        _LOGGER.debug(f"self._mowed: {self._mowed}")    
+        self._mowmode = tmp_json.get('mowmode')
+        _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+        self._xpos = tmp_json.get('xPos')
+        _LOGGER.debug(f"self._xPos: {self._xpos}")    
+        self._ypos = tmp_json.get('yPos')
+        _LOGGER.debug(f"self._yPos: {self._ypos}")    
+        self._runtime = tmp_json.get('runtime')
+        _LOGGER.debug(f"self._runtime: {self._runtime}")    
+        self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+        _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+        self._svg_xPos = tmp_json.get('svg_xPos')
+        _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+        self._svg_yPos = tmp_json.get('svg_yPos')
+        _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
+        return tmp_json
+        #else:
+        #    _LOGGER.debug("Mower offline, no update!")        
+        #    #self._offline += 1
+        #    if (self._offline >= 2):
+        #        self._mower_state = "99999"
+        #        _LOGGER.debug(">>>Mower offline, setting state to Offline!")        
         _LOGGER.debug("--- getState end")        
             
 # 2
@@ -399,6 +406,7 @@ class IndegoAPI():
 # 4
     def getOperatingData(self):
         # Does not work if mower is offline! Ued to check if mower is offline!
+        # Needs over 20 seconds to respond (timeout 30s?)
         # GET core Update all self values in state get API call
         _LOGGER.debug("--- getOperatingData: start")
         complete_url = 'alms/' + self._serial + '/operatingData'
@@ -468,28 +476,31 @@ class IndegoAPI():
         _LOGGER.debug("--- getLastCutting: end")  
         return tmp_json
 
+    def getNextCutting(self):
+        _LOGGER.debug("--- getNextPrecitedCutting: start")
+        #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/predictive/nextcutting?withReason=true]
+        #complete_url = 'alms/' + self._serial + '/predictive/nextcutting?withReason=true'
+        complete_url = 'alms/' + self._serial + '/predictive/nextcutting'
+        _LOGGER.debug("Complete URL: " + complete_url)
+        tmp_json = self.get(complete_url)
+        self._nextcutting = tmp_json
+        _LOGGER.debug(f"NextPrecitedCutting = {tmp_json}")
+        _LOGGER.debug("--- getNextPReditedCutting: end")  
+        return tmp_json
+
 # 8
     def getTest(self):
         # Works even if mower is offline!
         _LOGGER.debug("--- getTest: start")
-        complete_url = 'alms/' + self._serial + '/network?resolveMccMnc=true'
-        #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/network?resolveMccMnc=true 
+        #complete_url = 'alms/' + self._serial + '/network?resolveMccMnc=true' # NOT WORKING
+        #complete_url = 'alms/' + self._serial + '/predictive' # Get if smartmowe is enabled
+        complete_url = 'alms/' + self._serial + '/map'
         _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
         _LOGGER.debug(f"tmp_json = {tmp_json}")
         _LOGGER.debug("--- getTest: end")  
         return tmp_json
 
-#    def getLastCompletedCutting(self):
-#        _LOGGER.debug("--- getLastCompletedCutting: start")
-#        #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/predictive/nextcutting?withReason=true]
-#        complete_url = 'alms/' + self._serial + '/predictive/nextcutting?withReason=true'
-#        _LOGGER.debug("Complete URL: " + complete_url)
-#        tmp_json = self.get(complete_url)
-#        self._nextcutting = tmp_json
-#        _LOGGER.debug(f"LastCompletedCutting = {tmp_json}")
-#        _LOGGER.debug("--- getLastCompletedCutting: end")  
-#        return tmp_json
 
 # Depricated in Bosch API??? Gives no answer from API call
 #    def getNextPredicitiveCutting(self):
@@ -572,6 +583,7 @@ class IndegoAPI():
             tmp = tmp.get('total')
             if (tmp):
                 self._total_operation = round(tmp.get('operate')/100)
+                self._total_operation_raw = tmp.get('operate') ### Only for testing purposes!
                 self._total_charge = round(tmp.get('charge')/100)
                 self._total_cut = round(self._total_operation - self._total_charge)
                 return tmp
@@ -1000,7 +1012,7 @@ class IndegoAPI():
         url = self._api_url + method
         _LOGGER.debug("      >>>API CALL: " + url)
         try:
-            response = requests.get(url, headers=headers, timeout=15)
+            response = requests.get(url, headers=headers, timeout=30)
         except requests.exceptions.Timeout:
             _LOGGER.debug("      Failed to update Indego status. Timeout!")
             return None

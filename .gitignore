@@ -9,6 +9,13 @@
 __pycache__/
 pyIndego/__pycache__/
 
+# Imported libraries
+certifi/
+chardet/
+idna/
+requests/
+urllib3/
+
 # Test script
 config.py
 test_pyIndego.py
