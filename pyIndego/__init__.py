@@ -107,11 +107,17 @@ MOWER_MODEL_VOLTAGE = {
     '3600HB0100': {'min': '0','max': '100'},   # Indego 350
     '3600HB0101': {'min': '0','max': '100'},   # Indego 400
     '3600HB0102': {'min': '0','max': '100'},   # Indego S+ 350
+<<<<<<< HEAD
     '3600HB0103': {'min': '0','max': '100'}    # Indego S+ 400
     '3600HB0105': {'min': '0','max': '100'},   # Indego S+ 350
     #'3600HB0106': {'min': '0','max': '100'}    # ???
     #'3600HB0301': {'min': '0','max': '100'}    # ???
     #'3600HB0xxx': {'min': '0','max': '100'}    # Indego M+ 700
+=======
+    '3600HB0103': {'min': '0','max': '100'},    # Indego S+ 400
+    #'3600HB0103': {'min': '0','max': '100'}    # Indego M+ 700
+    '3600HB0105': {'min': '0','max': '100'}    # Indego S+ 350 Connect
+>>>>>>> a592ebea2a808f6a3311d1a0e9d7bc2f2839d913
 }
 
 MOWING_MODE_DESCRIPTION = {
