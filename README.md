@@ -1,4 +1,4 @@
-[![PyPI](https://img.shields.io/pypi/v)](https://pypi.python.org/pypi/pyIndego/)
+[![PyPI](https://img.shields.io/pypi/v/pyIndego)](https://pypi.python.org/pypi/pyIndego/)
 
 # API for Bosch Indego lawnmowers
 
