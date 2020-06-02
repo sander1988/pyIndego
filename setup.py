@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyIndego",
-    version="0.8.0",
+    version="0.8.8",
     author="jm-73",
     author_email="jens@myretyr.se",
     description="API for Bosch Indego mower",
@@ -20,7 +20,5 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-    ],
-    test_suite='nose.collector',
-    tests_require=['nose'],
+    ]
 )

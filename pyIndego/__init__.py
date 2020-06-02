@@ -4,6 +4,7 @@ import requests
 import json
 from requests.auth import HTTPBasicAuth
 import logging
+#from datetime import datetime
 
 DEFAULT_URL = "https://api.indego.iot.bosch-si.com:443/api/v1/"
 # CONST TAKEN FROM homeassistant.const
@@ -107,17 +108,11 @@ MOWER_MODEL_VOLTAGE = {
     '3600HB0100': {'min': '0','max': '100'},   # Indego 350
     '3600HB0101': {'min': '0','max': '100'},   # Indego 400
     '3600HB0102': {'min': '0','max': '100'},   # Indego S+ 350
-<<<<<<< HEAD
-    '3600HB0103': {'min': '0','max': '100'}    # Indego S+ 400
-    '3600HB0105': {'min': '0','max': '100'},   # Indego S+ 350
+    '3600HB0103': {'min': '0','max': '100'},    # Indego S+ 400
+    '3600HB0105': {'min': '0','max': '100'}   # Indego S+ 350
     #'3600HB0106': {'min': '0','max': '100'}    # ???
     #'3600HB0301': {'min': '0','max': '100'}    # ???
     #'3600HB0xxx': {'min': '0','max': '100'}    # Indego M+ 700
-=======
-    '3600HB0103': {'min': '0','max': '100'},    # Indego S+ 400
-    #'3600HB0103': {'min': '0','max': '100'}    # Indego M+ 700
-    '3600HB0105': {'min': '0','max': '100'}    # Indego S+ 350 Connect
->>>>>>> a592ebea2a808f6a3311d1a0e9d7bc2f2839d913
 }
 
 MOWING_MODE_DESCRIPTION = {
@@ -210,7 +205,9 @@ class IndegoAPI():
         self._alert3_friendly_description   = None
         self._online                        = False
         self._offline = 0
-
+        self._last_cutting = None
+        self._next_cutting = None
+        
         ## Logging in
         self.login()
         
@@ -309,8 +306,12 @@ class IndegoAPI():
         # self.getUpdates()
         _LOGGER.debug(f"self._firmware_available: {self._firmware_available}")
         
+        # self.getLastCutting()
+        _LOGGER.debug(f"self._last_cutting: {self._last_cutting}")
+        
         # self.getNextCutting()
-
+        _LOGGER.debug(f"self._next_cutting: {self._next_cutting}")
+        
         # Not updated in the getState API call
         #_LOGGER.debug("Not updated in the getState API call")        
         #_LOGGER.debug(f"self._model = {self._model}")
@@ -323,6 +324,8 @@ class IndegoAPI():
 ###########################################################
 # 1
     def getState(self):
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         _LOGGER.debug("--- getState: Start. Update State API call values")    
         # Works even if mower is offline! Returns cached values!
         # Check if mower is offline
@@ -364,6 +367,8 @@ class IndegoAPI():
     def getUsers(self):
         # Works even if mower is offline!
         # GET Core Update all self values in USERS API call
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         _LOGGER.debug("--- getUsers: start")
         complete_url = 'users/' + self._userid
         _LOGGER.debug(">>>API Call: " + complete_url)
@@ -390,6 +395,8 @@ class IndegoAPI():
     def getGenericData(self):
         # Works even if mower is offline!
         # GET Core Update all self values in SERIAL API call
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         _LOGGER.debug("--- getGenericData: start")
         complete_url = 'alms/' + self._serial
         _LOGGER.debug(f">>>API call: {complete_url}")
@@ -416,6 +423,8 @@ class IndegoAPI():
         # Does not work if mower is offline! Ued to check if mower is offline!
         # Needs over 20 seconds to respond (timeout 30s?)
         # GET core Update all self values in state get API call
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         _LOGGER.debug("--- getOperatingData: start")
         complete_url = 'alms/' + self._serial + '/operatingData'
         _LOGGER.debug(">>>API Call: " + complete_url)
@@ -444,6 +453,8 @@ class IndegoAPI():
             return None
 # 5
     def getUpdates(self):
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         # Does not works if mower is offline!
         _LOGGER.debug("--- getUpdates: start")  
         # Need to better this class with better error handling for timeout
@@ -462,6 +473,8 @@ class IndegoAPI():
 # 6
     def getAlerts(self):
         # Works even if mower is offline!
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         _LOGGER.debug("--- getAlerts: start")
         complete_url = 'alerts'
         _LOGGER.debug(">>>API Call: " + complete_url)
@@ -473,14 +486,16 @@ class IndegoAPI():
 # 7
     def getLastCutting(self):
         # Works even if mower is offline!
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         _LOGGER.debug("--- getLastCutting: start")
         complete_url = 'alms/' + self._serial + '/predictive/lastcutting'
         _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
         tmp_datetime = tmp_json['last_mowed']
-        self._lastcutting = self.ConvertBoschDateTime(tmp_datetime)
+        self._last_cutting = self.ConvertBoschDateTime(tmp_datetime)
         _LOGGER.debug(f"tmp_json = {tmp_json}")
-        _LOGGER.debug(f"lastcutting = {self._lastcutting}")
+        _LOGGER.debug(f"last_cutting = {self._last_cutting}")
         _LOGGER.debug("--- getLastCutting: end")  
         return tmp_json
 
@@ -488,17 +503,21 @@ class IndegoAPI():
         _LOGGER.debug("--- getNextPrecitedCutting: start")
         #https://api.indego.iot.bosch-si.com/api/v1/alms/{{alm_sn}}/predictive/nextcutting?withReason=true]
         #complete_url = 'alms/' + self._serial + '/predictive/nextcutting?withReason=true'
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         complete_url = 'alms/' + self._serial + '/predictive/nextcutting'
         _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        self._nextcutting = tmp_json
-        _LOGGER.debug(f"NextPrecitedCutting = {tmp_json}")
-        _LOGGER.debug("--- getNextPReditedCutting: end")  
+        tmp_datetime = tmp_json['mow_next']
+        self._next_cutting = self.ConvertBoschDateTime(tmp_datetime)
+        _LOGGER.debug(f"NextPrecitedCutting = {self._next_cutting}")
+        _LOGGER.debug("--- getNextPreditedCutting: end")  
         return tmp_json
 
 # 8
     def getTest(self):
-        # Works even if mower is offline!
+        #now = datetime.now()
+        #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
         _LOGGER.debug("--- getTest: start")
         #complete_url = 'alms/' + self._serial + '/network?resolveMccMnc=true' # NOT WORKING
         #complete_url = 'alms/' + self._serial + '/predictive' # Get if smartmowe is enabled
@@ -870,7 +889,7 @@ class IndegoAPI():
 ### Functions for getting data from NEXTCUTTING API call cache
 
     def NextCutting(self):
-        return self._nextcutting
+        return self._next_cutting
 
 ############################################################
 ### Functions for getting data from ALERTS API call cache
@@ -1019,28 +1038,39 @@ class IndegoAPI():
         headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
         url = self._api_url + method
         _LOGGER.debug("      >>>API CALL: " + url)
-        try:
-            response = requests.get(url, headers=headers, timeout=30)
-        except requests.exceptions.Timeout:
-            _LOGGER.debug("      Failed to update Indego status. Timeout!")
-            return None
-        except requests.exceptions.TooManyRedirects:
-            _LOGGER.debug("      Failed to update Indego status. Too many redirects")
-            return None
-        except requests.exceptions.RequestException as e:
-            _LOGGER.debug("      Failed to update Indego status. Error: " + str(e))
-            return None
-        else:
-            _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
-            if response.status_code != 200:
-                _LOGGER.debug("      need to call login again")
-                self.login()
-                return
+        ###
+        ### Test with iteration
+        ###
+        try_call = 0
+        answer = False
+        while (try_call < 5) and (answer == False): 
+            try_call = try_call + 1
+            _LOGGER.debug("      GET try " + str(try_call))
+
+            try:
+                response = requests.get(url, headers=headers, timeout=30)
+            except requests.exceptions.Timeout:
+                _LOGGER.debug("      Failed to update Indego status. Timeout!")
+                return None
+            except requests.exceptions.TooManyRedirects:
+                _LOGGER.debug("      Failed to update Indego status. Too many redirects")
+                return None
+            except requests.exceptions.RequestException as e:
+                _LOGGER.debug("      Failed to update Indego status. Error: " + str(e))
+                return None
             else:
-                _LOGGER.debug("      Json:" + str(response.json()))
-                response.raise_for_status()
-                _LOGGER.debug("   --- GET: end")
-                return response.json()
+                _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
+                if response.status_code != 200:
+                    _LOGGER.debug("      need to call login again")
+                    self.login()
+                    #return
+                else:
+                    _LOGGER.debug("      Json:" + str(response.json()))
+                    response.raise_for_status()
+                    _LOGGER.debug("   --- GET: end")
+                    answer = True
+                    return response.json()
+        
         _LOGGER.debug("   --- GET: end")
     
     def put(self, url, method):
