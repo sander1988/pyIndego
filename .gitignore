@@ -19,6 +19,7 @@ urllib3/
 # Test script
 config.py
 test_pyIndego.py
+release.ps1
 
 # Log files
 *.log

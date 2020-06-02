@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.0 2020-05-25
+- Removed CI Azure Pipeline
+- Code refacturing for more stable API key cache (stil not 100%)
+- Work with logging for debugging
+
 ## 0.7.11 2019-08-27
 
 ### Changes
