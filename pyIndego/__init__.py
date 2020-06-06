@@ -509,8 +509,13 @@ class IndegoAPI():
         complete_url = 'alms/' + self._serial + '/predictive/nextcutting'
         _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        tmp_datetime = tmp_json['mow_next']
-        self._next_cutting = self.ConvertBoschDateTime(tmp_datetime)
+        
+        try:
+            tmp_datetime = tmp_json['mow_next']
+        except:
+            self._next_cutting = "None"
+        else:
+            self._next_cutting = self.ConvertBoschDateTime(tmp_datetime)
         _LOGGER.debug(f"NextPrecitedCutting = {self._next_cutting}")
         _LOGGER.debug("--- getNextPreditedCutting: end")  
         return tmp_json
