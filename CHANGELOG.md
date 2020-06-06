@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.11 2020-06-06
+- Adjusted call for Net Mow to handle when Smart Mow and Calendar are shut off to Manual mow mode.
+
 ## 0.8.0 2020-05-25
 - Removed CI Azure Pipeline
 - Code refacturing for more stable API key cache (stil not 100%)
