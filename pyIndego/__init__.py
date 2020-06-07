@@ -1083,4 +1083,46 @@ class IndegoAPI():
                 else:
                     return str(response.status_code)
         _LOGGER.debug("   --- GET: end")
+# NOT TESTED
+# Enable / Disable SmartMoving                         
+   def put_smartmow(self, url, enable):
+        """Send a PUT request and return the response as a dict."""
+        _LOGGER.debug("   --- PUT_smart: start")
+        logindata = json.loads(self._login_session.content)
+        contextId = logindata['contextId']
+        headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
+        url = self._api_url + url
+        data = '{"enabled":"' + enable + '"}'
+        _LOGGER.debug("      >>>API CALL: " + url)
+        _LOGGER.debug("      headers: " + str(headers))
+        _LOGGER.debug("      data: " + str(data))
+        try:
+            response = requests.put(url, headers=headers, data=data, timeout=30)
+        except requests.exceptions.Timeout:
+            _LOGGER.debug("      Failed to send data to Indego mower. Timeout!")
+            return None
+        except requests.exceptions.TooManyRedirects:
+            _LOGGER.debug("      Failed to send data to Indego mower. Too many redirects")
+            return None
+        except requests.exceptions.RequestException as e:
+            _LOGGER.debug("      Failed to send data to Indego mower. Error status: " + str(e))
+            return None
+        else:
+            _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
+            if response.status_code != 200:
+                _LOGGER.debug("      need to call login again")
+                self.login()
+                return str(response.status_code)
+            else:
+                #_LOGGER.debug("      Json:" + str(response.json()))
+                _LOGGER.debug("      Json:" + str(response))
+                #response.raise_for_status()
+                _LOGGER.debug("   --- PUT_smartmow: end")
+                #return response.json()
+                #return str(response)
+                if (response.status_code == 200):
+                    return "OK"
+                else:
+                    return str(response.status_code)
+        _LOGGER.debug("   --- PUT_smartmov: end")                         
 #End PYPI __init__.py
