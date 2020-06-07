@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.12
+- Added getLocation for getting the Long and Lat to the garden/mower.
+
 ## 0.8.11 2020-06-06
 - Adjusted call for Net Mow to handle when Smart Mow and Calendar are shut off to Manual mow mode.
 

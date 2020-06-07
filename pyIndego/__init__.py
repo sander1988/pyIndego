@@ -963,25 +963,39 @@ class IndegoAPI():
         _LOGGER.debug("postCommand: " + command)
         if command == "mow" or command == "pause" or command == "returnToDock":
             complete_url = "alms/" + self._serial + "/state"
-            temp = self.put(complete_url, command)    
+            _LOGGER.debug("complete_url: " + complete_url)
+            data = '{"state":"' + command + '"}'
+            temp = self.put(complete_url, data)    
             return temp
         else:
             _LOGGER.debug("postCommand " + command + " not valid!")
             return "Wrong Command!"
 
+    def putMowMode(self, command):
+        _LOGGER.debug("---")  
+        _LOGGER.debug("postCommand: " + command)
+        if command == "SmartMow":
+            complete_url = "alms/" + self._serial + "/predictive"
+            _LOGGER.debug("complete_url: " + complete_url)
+            #command2 = " "enabled": enable }"
+            data = '{"enabled":enable}'
+            temp = self.put(complete_url, data)    
+            return temp
+        else:
+            _LOGGER.debug("postCommand " + command + " not valid!")
+            return "Wrong Command!"
+
+    def getLocation(self):
+        _LOGGER.debug("---")
+        _LOGGER.debug("getLocation")
+        complete_url = 'alms/' + self._serial + '/predictive/location'
+        Runtime_temp = self.get(complete_url)
+        value = Runtime_temp
+        return value
 
 ###
 # Not properly implemented yet
 ###
-
-
-#    def getLocation(self):
-#        _LOGGER.debug("---")
-#        _LOGGER.debug("getLocation")
-#        complete_url = 'alms/' + self._serial + '/predictive/location'
-#        Runtime_temp = self.get(complete_url)
-#        value = Runtime_temp
-#        return value
 
 #    def getPredicitiveCalendar(self):
 #        _LOGGER.debug("---")
@@ -1079,17 +1093,19 @@ class IndegoAPI():
         
         _LOGGER.debug("   --- GET: end")
     
-    def put(self, url, method):
+    def put(self, url, data):
         """Send a PUT request and return the response as a dict."""
         _LOGGER.debug("   --- PUT: start")
         logindata = json.loads(self._login_session.content)
         contextId = logindata['contextId']
         headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
         url = self._api_url + url
-        data = '{"state":"' + method + '"}'
+        #url = self._api_url + data
+        #data = '{"state":"' + method + '"}'
         _LOGGER.debug("      >>>API CALL: " + url)
         _LOGGER.debug("      headers: " + str(headers))
         _LOGGER.debug("      data: " + str(data))
+        # https://api.indego.iot.bosch-si.com:443/api/v1/alms/505703041/state
         try:
             response = requests.put(url, headers=headers, data=data, timeout=30)
         except requests.exceptions.Timeout:
