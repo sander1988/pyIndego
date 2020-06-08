@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0
+- Added putMowMode for activating/deactivating Smart Mow.
+
 ## 0.8.12
 - Added getLocation for getting the Long and Lat to the garden/mower.
 
