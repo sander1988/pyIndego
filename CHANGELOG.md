@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1
+- Removed some extensive logging
+- Rewrote the putCommand and putMowMode for more simple coding
+
+## 1.0.0
+- Added putMowMode for activating/deactivating Smart Mow.
+- Corrected getLastCutting and getNextCutting, now properly implemented.
+
+## 0.8.12
+- Added getLocation for getting the Long and Lat to the garden/mower.
+
 ## 0.8.11 2020-06-06
 - Adjusted call for Net Mow to handle when Smart Mow and Calendar are shut off to Manual mow mode.
 
