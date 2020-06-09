@@ -201,77 +201,78 @@ Response:
 }
 ```
 
-
-
-## Functions for reading data from locally cached API data
-All functions that doesnt contain "get" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
-
-### AlertsCount()  Counts the current alarms on mower.
-### AlertsDescription() Get detailed list of alerts
-### AlmFirmwareVersion() Gets the mower firmware version.
-### AlmMode() Gets the mower mode.
-### AlmName() Gets the mower instance name.
-### BareToolNumber() Show the model number of the mower.
-### Battery() Get battery information.
-### BatteryAmbientTemp() Seems to be the ambient temp of the battery.
-### BatteryCycles() Dont know what this value is?
-### BatteryDischarge() Seems to be the Ah the mower is currently drawing.### BatteryPercent() Get the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 mowers it seems to be the actual percentage left in the battery.
-### BatteryPercentAdjusted() Get the adjusted value for percentage left. Calculated for Gen 1 mowers, and the actual percentage value for Gen 2.
-### BatteryTemp() Seems to be the temp of the battery.
-### BatteryVoltage() Get the voltage for the battery. For Gen 1 mowers this value seems to be correct. For Gen 2 it seems to be the same value as the percentage left in battery.
-### ConvertBoschDateTime() Convert Bosch abbreviation for time to std 24h time
-### Country() Show country for the Bosch account.
-### Displayname() Show name for the Bosch account.
-### Email() Show email adress for the Bosch account.
-### FirmwareAvailable() Checks if there are any firmware updates available for the mower.
-### FriendlyAlertErrorCode() Get user friendly alert error code description to be shown in HA GUI.
-### Garden() Dont know what this is?
-### HmiKeysn() Dont know what this is?
-### Language() Show language for the Bosch account.
-### MapSvgCacheTs() Dont know what this is...
-### MapUpdateAvailable() Show if there is an update of the map image.
-### ModelDescription() Get user friendly model name.
-### ModelVoltage() Get the predefined voltage limits in order to calculate battery percentage.
-### ModelVoltageMax() Get the maximum predefined voltage limits in order to calculate battery percentage.
-### ModelVoltageMin() Get the minimum predefined voltage limits in order to calculate battery percentage.
-### MowMode() Show mowers mow mode
-### Mowed() Show percentage of lawn mowed
-### MowerState() Show current state of mower
-### MowerStateDescription() Show simple description of current state of mower. States available are Docked, Mowing, Stuck, Diagnostics mode, End of life, Software update.
-### MowerStateDescriptionDetailed() Show description in detail of current state of mower.
-### MowingModeDescription() Get the user friendly mowing mode description.
-### NeedsService() Gets the needs service flag. Dont know when it is used.
-### NextCutting() Should get the next planned cutting session.
-### OptIn() Dont know what this are for?
-### OptInApp() Dont know what this are for?
-### Runtime() Get session and total rutime and charge time in minutes.
-### RuntimeSession() Get session runtime and charge time in minutes
-### RuntimeTotal() Get total runtime and charge time in hours
-### Serial() Get the serial number
-### ServiceCounter() Get service counter for knives
-### SvgxPos() Show svg x-position of mower.
-### SvgyPos() Show svg y-position of mower.
-### xPos() Show x-position of mower.
-### yPos() Show y-position of mower.
-
 ## Sending commands
 
 ### putCommand(command)
-Send command. Accepted commands:
+Send commands.
 
 Command     |Description         
 ------------|--------------------
-mow         |Start mowing        
-pause       |Pause mower         
-returnToDock|Return mower to dock
+putCommand('mow')          |Start mowing        
+putCommand('pause')        |Pause mower         
+putCommand('returnToDock') |Return mower to dock
 
 ### putMowMode(command)
 Send command. Accepted commands:
 
 Command     |Description         
 ------------|--------------------
-true        |Smart Mow enabled        
-false       |Smart Mow disabled   
+putMowMode('true')  |Smart Mow enabled        
+putMowMode('false') |Smart Mow disabled   
+
+## Functions for reading data from locally cached API data
+All functions that doesnt contain "get" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
+
+function                 | Description
+-------------------------|-----------------------------
+AlertsCount() | Show counts of the current alerts.
+AlertsDescription() | Show detailed list of alerts.
+AlmFirmwareVersion() | Show firmware version.
+AlmMode() | Show mow mode.
+AlmName() | Show name.
+BareToolNumber() | Show the model number.
+Battery() | Show battery information.
+BatteryAmbientTemp() | Show the ambient temp of the battery.
+BatteryCycles() | Dont know what this value is?
+BatteryDischarge() | Show the current drawn in Ah.
+BatteryPercent() Show the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 it seems to be the actual percentage left in the battery.
+BatteryPercentAdjusted() | Show the adjusted value for percentage left. Calculated for Gen 1, and the actual percentage value for Gen 2.
+BatteryTemp() | Show temp of the battery.
+BatteryVoltage() | Show voltage for the battery. For Gen 1 mowers this value seems to be correct. For Gen 2 it seems to be the same value as the percentage left in battery.
+ConvertBoschDateTime() | Convert Bosch abbreviation for time to std 24h time
+Country() | Show country for the account.
+Displayname() | Show name for the account.
+Email() | Show email adress for the account.
+FirmwareAvailable() | Show if there are any firmware updates available.
+FriendlyAlertErrorCode() | Show user friendly alert error code description to be shown in HA GUI.
+Garden() | Dont know what this is?
+HmiKeysn() | Dont know what this is?
+Language() | Show language for the account.
+MapSvgCacheTs() | Dont know what this is...
+MapUpdateAvailable() | Show if there is an update of the map image.
+ModelDescription() | Show user friendly model name.
+ModelVoltage() | Show the predefined voltage limits in order to calculate battery percentage.
+ModelVoltageMax() | Show the maximum predefined voltage limits in order to calculate battery percentage.
+ModelVoltageMin() | Show the minimum predefined voltage limits in order to calculate battery percentage.
+MowMode() | Show mow mode
+Mowed() | Show percentage of lawn mowed
+MowerState() | Show current state
+MowerStateDescription() | Show simple description of current state. States available are Docked, Mowing, Stuck, Diagnostics mode, End of life, Software update.
+MowerStateDescriptionDetailed() | Show description in detail of current state.
+MowingModeDescription() | Show the user friendly mow mode description.
+NeedsService() | Show needs service flag. Dont know when it is used.
+NextCutting() | Show next planned cutting session.
+OptIn() | Dont know what this are for?
+OptInApp() | Dont know what this are for?
+Runtime() | Show session and total rutime and charge time in minutes.
+RuntimeSession() | show session runtime and charge time in minutes
+RuntimeTotal() | Show total runtime and charge time in hours
+Serial() | Show serial number
+ServiceCounter() | Show service counter for knives
+SvgxPos() | Show svg x-position of mower.
+SvgyPos() | Show svg y-position of mower.
+xPos() | Show x-position of mower.
+yPos() | Show y-position of mower.
 
 ## Not working
 
