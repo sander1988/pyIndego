@@ -329,7 +329,7 @@ class IndegoAPI():
         complete_url = 'alerts'
         #_LOGGER.debug(">>>API Call: " + complete_url)
         tmp_json = self.get(complete_url)
-        if idd: self._alerts = tmp_json
+        self._alerts = tmp_json
         _LOGGER.debug("--- getAlerts: end")
         return tmp_json
 

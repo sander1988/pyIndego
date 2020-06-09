@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.2
+- Fixed a bug in Alert handling
+
 ## 1.0.1
 - Removed some extensive logging
 - Rewrote the putCommand and putMowMode for more simple coding
