@@ -208,8 +208,8 @@ class IndegoAPI():
         self._alert3_friendly_description   = None
         self._online                        = False
         self._offline = 0
-        self._last_cutting = None
-        self._next_cutting = None
+        self._last_complete_mow = None
+        self._next_mow = None
         
         ## Logging in
         self.login()
@@ -308,11 +308,11 @@ class IndegoAPI():
         # self.getUpdates()
         _LOGGER.debug(f"self._firmware_available: {self._firmware_available}")
         
-        # self.getLastCutting()
-        _LOGGER.debug(f"self._last_cutting: {self._last_cutting}")
+        # self.getLastCompleteMow()
+        _LOGGER.debug(f"self._last_complete_mow: {self._last_complete_mow}")
         
-        # self.getNextCutting()
-        _LOGGER.debug(f"self._next_cutting: {self._next_cutting}")
+        # self.getNextMow()
+        _LOGGER.debug(f"self._next_mow: {self._next_mow}")
         
         # Not updated in the getState API call
         #_LOGGER.debug("Not updated in the getState API call")        
@@ -353,16 +353,16 @@ class IndegoAPI():
         _LOGGER.debug("--- getGenericData: end")
         return tmp_json
 
-    def getLastCutting(self):
-        _LOGGER.debug("--- getLastCutting: start")
+    def getLastCompleteMow(self):
+        _LOGGER.debug("--- getLastCompleteMow: start")
         complete_url = 'alms/' + self._serial + '/predictive/lastcutting'
         if idd: _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
         tmp_datetime = tmp_json['last_mowed']
-        self._last_cutting = self.ConvertBoschDateTime(tmp_datetime)
+        self._last_complete_mow = self.ConvertBoschDateTime(tmp_datetime)
         _LOGGER.debug(f"tmp_json = {tmp_json}")
-        if idd: _LOGGER.debug(f"last_cutting = {self._last_cutting}")
-        _LOGGER.debug("--- getLastCutting: end")  
+        if idd: _LOGGER.debug(f"last_complete_mow = {self._last_complete_mow}")
+        _LOGGER.debug("--- getLastCompleteMow: end")  
         return tmp_json
 
     def getLocation(self):
@@ -373,19 +373,19 @@ class IndegoAPI():
         _LOGGER.debug("--- getLocation: end")
         return value
 
-    def getNextCutting(self):
-        _LOGGER.debug("--- getNextPrecitedCutting: start")
+    def getNextMow(self):
+        _LOGGER.debug("--- getNextMow: start")
         complete_url = 'alms/' + self._serial + '/predictive/nextcutting'
         if idd: _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
         try:
             tmp_datetime = tmp_json['mow_next']
         except:
-            self._next_cutting = "None"
+            self._next_mow = "None"
         else:
-            self._next_cutting = self.ConvertBoschDateTime(tmp_datetime)
-        if idd: _LOGGER.debug(f"NextPrecitedCutting = {self._next_cutting}")
-        _LOGGER.debug("--- getNextPreditedCutting: end")  
+            self._next_mow = self.ConvertBoschDateTime(tmp_datetime)
+        if idd: _LOGGER.debug(f"NextMow = {self._next_mow}")
+        _LOGGER.debug("--- getNextMow: end")  
         return tmp_json
 
     def getOperatingData(self):
@@ -824,8 +824,14 @@ class IndegoAPI():
 ############################################################
 ### Functions for getting data from NEXTCUTTING API call cache
 
-    def NextCutting(self):
-        return self._next_cutting
+    def NextMow(self):
+        return self._next_mow
+
+############################################################
+### Functions for getting data from LASTCUTTING API call cache
+
+    def LastCompleteMow(self):
+        return self._last_complete_mow
 
 ############################################################
 ### Functions for getting data from ALERTS API call cache
