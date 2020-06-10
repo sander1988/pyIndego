@@ -32,7 +32,8 @@ API Call                 | Bosch API | Mower | Mower needs to be online
 -------------------------|-----------|-------|-------------------------
 getAlerts                |    X      |       |
 getGenericData           |    X      |       |
-getLastComletedCutting   |    X      |       |
+getLastComletedMow       |    X      |       |
+getNextMow               |           |       |
 getOperatingData         |           |  X    |   X
 getState                 |    X      |       |
 getUpdates               |           |  X    |   X
@@ -75,7 +76,7 @@ Response:
 }
 ```
 
-### getLastCutting()
+### getLastCompletedMow()
 Collects data on the last completed mow. .
 
 ```python
@@ -97,8 +98,8 @@ Response:
 }
 ```
 
-### getNextCutting()
-Collects data on next cutting. Returns none if mower is set to manual mode.
+### getNextMow()
+Collects data on next mow. Returns none if mower is set to manual mode.
 
 ```python
 Response:
@@ -261,7 +262,7 @@ MowerStateDescription() | Show simple description of current state. States avail
 MowerStateDescriptionDetailed() | Show description in detail of current state.
 MowingModeDescription() | Show the user friendly mow mode description.
 NeedsService() | Show needs service flag. Dont know when it is used.
-NextCutting() | Show next planned cutting session.
+NextMow() | Show next planned mow session.
 OptIn() | Dont know what this are for?
 OptInApp() | Dont know what this are for?
 Runtime() | Show session and total rutime and charge time in minutes.
@@ -279,13 +280,13 @@ yPos() | Show y-position of mower.
 ### Not properly implemented yet
 
     getPredicitiveCalendar()
-Get the calender for predicted cutting sessions
+Get the calender for predicted mow sessions
 
     getUserAdjustment()
-Get the user adjustment of the cutting frequency
+Get the user adjustment of the mowing frequency
 
     getCalendar()
-Get the calendar for allowed cutting times
+Get the calendar for allowed mowing times
 
     getSecurity()
 Get the security settings

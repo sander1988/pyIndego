@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+- Renamed getLastCutting to getLastCompletedMow
+- Renamed getNextCutting to getNextMow
+
 ## 1.0.2
 - Fixed a bug in Alert handling
 
