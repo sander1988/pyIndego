@@ -824,7 +824,7 @@ class IndegoAPI():
 ############################################################
 ### Functions for getting data from NEXTCUTTING API call cache
 
-    def NextMowg(self):
+    def NextMow(self):
         return self._next_mow
 
 ############################################################
