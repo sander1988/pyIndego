@@ -20,6 +20,7 @@ urllib3/
 config.py
 test_pyIndego.py
 release.ps1
+release_pyIndego.ps1
 
 # Log files
 *.log
