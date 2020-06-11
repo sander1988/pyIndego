@@ -723,6 +723,7 @@ class IndegoAPI():
             self._model_voltage_min = tmp['min']
             return self._model_voltage_min
         else:
+            _LOGGER.error(f"ModelVoltageMin bareToolnumber ERROR!!! = {self._bareToolnumber}")
             return None
 
     def ModelVoltageMax(self):
@@ -731,6 +732,7 @@ class IndegoAPI():
             self._model_voltage_max = tmp['max']
             return self._model_voltage_max
         else:
+            _LOGGER.error(f"ModelVoltageMax bareToolnumber ERROR!!! = {self._bareToolnumber}")
             return None
 
     def MowingModeDescription(self):
