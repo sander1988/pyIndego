@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.5
+- Added better handling for unknowm mower models. Warning messages are raised in log file with model number.
+
 ## 1.0.4
 - Corrected misspelling on getLastCompletedMow and related functions
 
