@@ -193,6 +193,7 @@ This function can be used instead of polling the status every couple of seconds:
 ```python
 Response:
 --> same as getState(), but might also include less information
+--> if the status is not updated until the timeout, the return is empty
 --> functions reading data from locally cached API data will provide the latest availabe data
 ```
 
