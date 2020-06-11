@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.7
+- Added logging if error occurs when fetching Battery max/min from database.
+
+## 1.0.6
+- Misconfiguration in mower database.
+
 ## 1.0.5
 - Added better handling for unknowm mower models. Warning messages are raised in log file with model number.
 
