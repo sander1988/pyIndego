@@ -177,6 +177,26 @@ Response:
 }
 ```
 
+### getForcedState()
+Collects state of mower, % lawn mowed, position, runtime, map coordinates. Compared to the getState() command, it forces the server to update all information - including the position of the mower.
+
+```python
+Response:
+--> same as getState()
+```
+
+### getLongpollState(timeout)
+Collects state of mower only if there are updated values. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
+
+This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
+
+```python
+Response:
+--> same as getState(), but might also include less information
+--> if the status is not updated until the timeout, the return is empty
+--> functions reading data from locally cached API data will provide the latest availabe data
+```
+
 ### getUpdates()
 Check if there are any updates apllicable to the mower.
 
