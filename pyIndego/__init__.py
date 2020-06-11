@@ -5,8 +5,8 @@ import json
 from requests.auth import HTTPBasicAuth
 import logging
 #from datetime import datetime
-#idd = False
-idd = True
+idd = False
+#idd = True
 
 DEFAULT_URL = "https://api.indego.iot.bosch-si.com:443/api/v1/"
 # CONST TAKEN FROM homeassistant.const
@@ -102,7 +102,7 @@ MOWER_MODEL_DESCRIPTION = {
 }
 
 MOWER_MODEL_VOLTAGE = {
-    '3600HA2200': {'min': '297','max': '369'}, # Indego 1000
+    '3600HA2300': {'min': '297','max': '369'}, # Indego 1000
     '3600HA2301': {'min': '297','max': '369'}, # Indego 1200
     '3600HA2302': {'min': '297','max': '369'}, # Indego 1100
     '3600HA2303': {'min': '297','max': '369'}, # Indego 13C
@@ -766,6 +766,7 @@ class IndegoAPI():
             self._battery_percent_adjusted = round((int(starttemp) - int(self._model_voltage_min)) / ((int(self._model_voltage_max) - int(self._model_voltage_min))/100))
             return self._battery_percent_adjusted
         else:
+            _LOGGER.error(f"BatteryPerCentAdjusted ERROR!")
             return None
     
     def BatteryVoltage(self):
