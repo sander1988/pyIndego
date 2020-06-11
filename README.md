@@ -272,8 +272,8 @@ Serial() | Show serial number
 ServiceCounter() | Show service counter for knives
 SvgxPos() | Show svg x-position of mower.
 SvgyPos() | Show svg y-position of mower.
-xPos() | Show x-position of mower.
-yPos() | Show y-position of mower.
+XPos() | Show x-position of mower.
+YPos() | Show y-position of mower.
 
 ## Not working
 

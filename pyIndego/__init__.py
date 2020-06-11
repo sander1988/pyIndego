@@ -444,6 +444,79 @@ class IndegoAPI():
         _LOGGER.debug("--- getState end")        
         return tmp_json
 
+    def getForcedState(self):
+        # Forces server to also update the location!
+        _LOGGER.debug("--- getForcedState: Start. Update State API call values")    
+        complete_url = 'alms/' + self._serial + '/state' + '?forceRefresh=true'
+        _LOGGER.debug("URL: " + complete_url)
+        tmp_json = self.get(complete_url)
+        self._mower_state = tmp_json.get('state')
+        _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+        self._map_update_available = tmp_json.get('map_update_available')
+        _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+        self._mowed = tmp_json.get('mowed')
+        _LOGGER.debug(f"self._mowed: {self._mowed}")    
+        self._mowmode = tmp_json.get('mowmode')
+        _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+        self._xpos = tmp_json.get('xPos')
+        _LOGGER.debug(f"self._xPos: {self._xpos}")    
+        self._ypos = tmp_json.get('yPos')
+        _LOGGER.debug(f"self._yPos: {self._ypos}")    
+        self._runtime = tmp_json.get('runtime')
+        _LOGGER.debug(f"self._runtime: {self._runtime}")    
+        self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+        _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+        self._svg_xPos = tmp_json.get('svg_xPos')
+        _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+        self._svg_yPos = tmp_json.get('svg_yPos')
+        _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
+        return tmp_json
+        _LOGGER.debug("--- getForcedState end")        
+
+    def getLongpollState(self, timeout):
+        # The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver.
+        _LOGGER.debug("--- getLongpollState: Start. Update State API call values")    
+        laststate = 0
+        if (self._mower_state != ""): # check if state variable is already available
+            laststate = self._mower_state 
+        complete_url = 'alms/' + self._serial + '/state' + '?longpoll=true&timeout=' + str(timeout) + "&last=" + str(laststate) # server will wait with answering until state data has updated values
+        _LOGGER.debug("URL: " + complete_url)
+        tmp_json = self.get(complete_url, timeout=timeout+10)
+        if tmp_json != None:
+            # Longpoll requests do only provide a limited set of status variables
+            if tmp_json.get('state') != None:
+                self._mower_state = tmp_json.get('state')
+                _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+            if tmp_json.get('map_update_available') != None:
+                self._map_update_available = tmp_json.get('map_update_available')
+                _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+            if tmp_json.get('mowed') != None:
+                self._mowed = tmp_json.get('mowed')
+                _LOGGER.debug(f"self._mowed: {self._mowed}")    
+            if tmp_json.get('mowmode') != None:
+                self._mowmode = tmp_json.get('mowmode')
+                _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+            if tmp_json.get('xPos') != None:
+                self._xpos = tmp_json.get('xPos')
+                _LOGGER.debug(f"self._xPos: {self._xpos}")    
+            if tmp_json.get('yPos') != None:
+                self._ypos = tmp_json.get('yPos')
+                _LOGGER.debug(f"self._yPos: {self._ypos}")    
+            if tmp_json.get('runtime') != None:
+                self._runtime = tmp_json.get('runtime')
+                _LOGGER.debug(f"self._runtime: {self._runtime}")    
+            if tmp_json.get('mapsvgcache_ts') != None:
+                self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+                _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+            if tmp_json.get('svg_xPos') != None:
+                self._svg_xPos = tmp_json.get('svg_xPos')
+                _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+            if tmp_json.get('svg_yPos') != None:
+                self._svg_yPos = tmp_json.get('svg_yPos')
+                _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
+        return tmp_json
+        _LOGGER.debug("--- getLongpollState end")        
+
     def getUpdates(self):
         _LOGGER.debug("--- getUpdates: start")  
         if (self._online):
@@ -999,7 +1072,7 @@ class IndegoAPI():
 
 ##########################################################################
 ### Basics for API calls
-    def get(self, method):
+    def get(self, method, timeout=30):
         """Send a GET request and return the response as a dict."""
         _LOGGER.debug("   --- GET start")
         logindata = json.loads(self._login_session.content)
@@ -1017,7 +1090,7 @@ class IndegoAPI():
             try_call = try_call + 1
             _LOGGER.debug("      GET try " + str(try_call))
             try:
-                response = requests.get(url, headers=headers, timeout=30)
+                response = requests.get(url, headers=headers, timeout=timeout)
             except requests.exceptions.Timeout:
                 _LOGGER.debug("      Failed to update Indego status. Timeout!")
                 return None
@@ -1029,7 +1102,10 @@ class IndegoAPI():
                 return None
             else:
                 _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
-                if response.status_code != 200:
+                if response.status_code == 504:
+                    _LOGGER.debug("      server backend did not have an update before timeout")
+                    return None
+                elif response.status_code != 200:
                     _LOGGER.debug("      need to call login again")
                     self.login()
                     #return
