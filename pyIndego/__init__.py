@@ -208,7 +208,7 @@ class IndegoAPI():
         self._alert3_friendly_description   = None
         self._online                        = False
         self._offline = 0
-        self._last_complete_mow = None
+        self._last_completed_mow = None
         self._next_mow = None
         
         ## Logging in
@@ -308,8 +308,8 @@ class IndegoAPI():
         # self.getUpdates()
         _LOGGER.debug(f"self._firmware_available: {self._firmware_available}")
         
-        # self.getLastCompleteMow()
-        _LOGGER.debug(f"self._last_complete_mow: {self._last_complete_mow}")
+        # self.getLastCompletedMow()
+        _LOGGER.debug(f"self._last_completed_mow: {self._last_completed_mow}")
         
         # self.getNextMow()
         _LOGGER.debug(f"self._next_mow: {self._next_mow}")
@@ -353,16 +353,16 @@ class IndegoAPI():
         _LOGGER.debug("--- getGenericData: end")
         return tmp_json
 
-    def getLastCompleteMow(self):
-        _LOGGER.debug("--- getLastCompleteMow: start")
+    def getLastCompletedMow(self):
+        _LOGGER.debug("--- getLastCompletedMow: start")
         complete_url = 'alms/' + self._serial + '/predictive/lastcutting'
         if idd: _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
         tmp_datetime = tmp_json['last_mowed']
-        self._last_complete_mow = self.ConvertBoschDateTime(tmp_datetime)
+        self._last_completed_mow = self.ConvertBoschDateTime(tmp_datetime)
         _LOGGER.debug(f"tmp_json = {tmp_json}")
-        if idd: _LOGGER.debug(f"last_complete_mow = {self._last_complete_mow}")
-        _LOGGER.debug("--- getLastCompleteMow: end")  
+        if idd: _LOGGER.debug(f"last_completed_mow = {self._last_completed_mow}")
+        _LOGGER.debug("--- getLastCompletedMow: end")  
         return tmp_json
 
     def getLocation(self):
@@ -830,8 +830,8 @@ class IndegoAPI():
 ############################################################
 ### Functions for getting data from LASTCUTTING API call cache
 
-    def LastCompleteMow(self):
-        return self._last_complete_mow
+    def LastCompletedMow(self):
+        return self._last_completed_mow
 
 ############################################################
 ### Functions for getting data from ALERTS API call cache

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.4
+- Corrected misspelling on getLastCompletedMow and related functions
+
 ## 1.0.3
 - Renamed getLastCutting to getLastCompletedMow
 - Renamed getNextCutting to getNextMow
