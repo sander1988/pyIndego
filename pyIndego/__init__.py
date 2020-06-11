@@ -96,9 +96,9 @@ MOWER_MODEL_DESCRIPTION = {
     '3600HB0102': 'Indego S+ 350',
     '3600HB0103': 'Indego S+ 400',
     '3600HB0105': 'Indego S+ 350'
-    #'3600HB0106'
-    #'3600HB0301'
-    #'3600HB0xxx': 'Indego M+ 700' missing model number
+#    '3600HB0106': 'Model description missing!',
+#    '3600HB0301': 'Model description missing!'
+#    '3600HB0xxx': 'Indego M+ 700' missing model number
 }
 
 MOWER_MODEL_VOLTAGE = {
@@ -110,11 +110,11 @@ MOWER_MODEL_VOLTAGE = {
     '3600HB0100': {'min': '0','max': '100'},   # Indego 350
     '3600HB0101': {'min': '0','max': '100'},   # Indego 400
     '3600HB0102': {'min': '0','max': '100'},   # Indego S+ 350
-    '3600HB0103': {'min': '0','max': '100'},    # Indego S+ 400
+    '3600HB0103': {'min': '0','max': '100'},   # Indego S+ 400
     '3600HB0105': {'min': '0','max': '100'}   # Indego S+ 350
-    #'3600HB0106': {'min': '0','max': '100'}    # ???
-    #'3600HB0301': {'min': '0','max': '100'}    # ???
-    #'3600HB0xxx': {'min': '0','max': '100'}    # Indego M+ 700
+#    '3600HB0106': {'min': '0','max': '100'},   # ???
+#    '3600HB0301': {'min': '0','max': '100'}    # ???
+#    '3600HB0xxx': {'min': '0','max': '100'}   # Indego M+ 700
 }
 
 MOWING_MODE_DESCRIPTION = {
@@ -208,7 +208,7 @@ class IndegoAPI():
         self._alert3_friendly_description   = None
         self._online                        = False
         self._offline = 0
-        self._last_complete_mow = None
+        self._last_completed_mow = None
         self._next_mow = None
         
         ## Logging in
@@ -308,8 +308,8 @@ class IndegoAPI():
         # self.getUpdates()
         _LOGGER.debug(f"self._firmware_available: {self._firmware_available}")
         
-        # self.getLastCompleteMow()
-        _LOGGER.debug(f"self._last_complete_mow: {self._last_complete_mow}")
+        # self.getLastCompletedMow()
+        _LOGGER.debug(f"self._last_completed_mow: {self._last_completed_mow}")
         
         # self.getNextMow()
         _LOGGER.debug(f"self._next_mow: {self._next_mow}")
@@ -353,16 +353,16 @@ class IndegoAPI():
         _LOGGER.debug("--- getGenericData: end")
         return tmp_json
 
-    def getLastCompleteMow(self):
-        _LOGGER.debug("--- getLastCompleteMow: start")
+    def getLastCompletedMow(self):
+        _LOGGER.debug("--- getLastCompletedMow: start")
         complete_url = 'alms/' + self._serial + '/predictive/lastcutting'
         if idd: _LOGGER.debug("Complete URL: " + complete_url)
         tmp_json = self.get(complete_url)
         tmp_datetime = tmp_json['last_mowed']
-        self._last_complete_mow = self.ConvertBoschDateTime(tmp_datetime)
+        self._last_completed_mow = self.ConvertBoschDateTime(tmp_datetime)
         _LOGGER.debug(f"tmp_json = {tmp_json}")
-        if idd: _LOGGER.debug(f"last_complete_mow = {self._last_complete_mow}")
-        _LOGGER.debug("--- getLastCompleteMow: end")  
+        if idd: _LOGGER.debug(f"last_completed_mow = {self._last_completed_mow}")
+        _LOGGER.debug("--- getLastCompletedMow: end")  
         return tmp_json
 
     def getLocation(self):
@@ -663,7 +663,8 @@ class IndegoAPI():
             if str(self._mower_state) in MOWER_STATE_DESCRIPTION.keys():
                 self._mower_state_description = MOWER_STATE_DESCRIPTION.get(str(self._mower_state))
             else:
-                self._mower_state_description = "Value not in database: " + str(self._mower_state)
+                _LOGGER.warning(f"Mower State Description not in database! " + str(self._mower_state))
+                self._mower_state_description = "Value not in database!"
             return self._mower_state_description
         else:
             return None
@@ -674,7 +675,8 @@ class IndegoAPI():
             if str(self._mower_state) in MOWER_STATE_DESCRIPTION_DETAILED.keys():
                 self._mower_state_description_detailed = MOWER_STATE_DESCRIPTION_DETAILED.get(str(self._mower_state))
             else:
-                self._mower_state_description_detailed = "Value not in database: " + str(self._mower_state)
+                _LOGGER.warning(f"Mower State Description Detailed in database! " + str(self._mower_state))
+                self._mower_state_description_detailed = "Value not in database!"
             return self._mower_state_description_detailed
         else:
             return None
@@ -764,23 +766,28 @@ class IndegoAPI():
 ### --- User readable get functions
 
     def ModelDescription(self):
+        _LOGGER.debug(f"Start ModelDescription")
         if hasattr(self, '_bareToolnumber'):
+            if idd: _LOGGER.debug(f"bareToolnumber = {self._bareToolnumber}")
             if str(self._bareToolnumber) in MOWER_MODEL_DESCRIPTION.keys():
                 self._model_description = MOWER_MODEL_DESCRIPTION.get(str(self._bareToolnumber))
             else:
-                self._model_description = "Value not in database: " + str(self._bareToolnumber)
+                _LOGGER.warning(f"Mower Model Description not in database! ModelMumber {self._bareToolnumber}")
+                self._model_description = "Value not in database!"
             return self._model_description
         else:
+            _LOGGER.error(f"ModelDescription bareToolnumber ERROR!!! = {self._bareToolnumber}")
             return None
 
     def ModelVoltage(self):
         if hasattr(self, '_bareToolnumber'):
             if str(self._bareToolnumber) in MOWER_MODEL_VOLTAGE.keys():
                 self._model_voltage = MOWER_MODEL_VOLTAGE.get(str(self._bareToolnumber))
+                return self._model_voltage
             else:
-                self._model_description = "Value not in database: " + str(self._bareToolnumber)
-            return self._model_voltage
+                _LOGGER.warning(f"Mower Model Voltage not in database! ModelMumber {self._bareToolnumber}")
         else:
+            _LOGGER.error(f"ModelVoltage bareToolnumber ERROR!!! = {self._bareToolnumber}")
             return None
     
     def ModelVoltageMin(self):
@@ -789,6 +796,7 @@ class IndegoAPI():
             self._model_voltage_min = tmp['min']
             return self._model_voltage_min
         else:
+            _LOGGER.error(f"ModelVoltageMin bareToolnumber ERROR!!! = {self._bareToolnumber}")
             return None
 
     def ModelVoltageMax(self):
@@ -797,13 +805,15 @@ class IndegoAPI():
             self._model_voltage_max = tmp['max']
             return self._model_voltage_max
         else:
+            _LOGGER.error(f"ModelVoltageMax bareToolnumber ERROR!!! = {self._bareToolnumber}")
             return None
 
     def MowingModeDescription(self):
         if str(self._alm_mode) in MOWING_MODE_DESCRIPTION.keys():
             self._mowingmode_description = MOWING_MODE_DESCRIPTION.get(str(self._alm_mode))
         else:
-            self._mowingmode_description = "Value not in database: " + str(self._alm_mode)
+            _LOGGER.warning(f"Mowing Mode Description not in database! Mowing Mode {self._alm_mode}")
+            self._mowingmode_description = "Value not in database!"
         return self._mowingmode_description
 
 
@@ -831,6 +841,7 @@ class IndegoAPI():
             self._battery_percent_adjusted = round((int(starttemp) - int(self._model_voltage_min)) / ((int(self._model_voltage_max) - int(self._model_voltage_min))/100))
             return self._battery_percent_adjusted
         else:
+            _LOGGER.error(f"BatteryPerCentAdjusted ERROR!")
             return None
     
     def BatteryVoltage(self):
@@ -903,8 +914,8 @@ class IndegoAPI():
 ############################################################
 ### Functions for getting data from LASTCUTTING API call cache
 
-    def LastCompleteMow(self):
-        return self._last_complete_mow
+    def LastCompletedMow(self):
+        return self._last_completed_mow
 
 ############################################################
 ### Functions for getting data from ALERTS API call cache
@@ -949,6 +960,7 @@ class IndegoAPI():
         if str(tmp_val) in ALERT_ERROR_CODE.keys():
             alert_description = ALERT_ERROR_CODE[tmp_val]
         else:
+            _LOGGER.warning(f"Alert Error Code not in database! Alert Code {str(tmp_val)}")
             alert_description = "Not in database!"
         return alert_description
 
