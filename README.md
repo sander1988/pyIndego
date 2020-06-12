@@ -242,23 +242,6 @@ Response:
 }
 ```
 
-### getUsers()
-Collect network data.
-
-```python
-Response:
-{
-	'mcc': 262,
-	'mnc': 2,
-	'rssi': -79,
-	'currMode': 's',
-	'configMode': 's',
-	'steeredRssi': -100,
-	'networkCount': 3,
-	'networks': [26201, 26202, 26203]
-}
-```
-
 ## Sending commands
 
 ### putCommand(command)
