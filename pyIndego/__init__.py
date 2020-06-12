@@ -551,6 +551,13 @@ class IndegoAPI():
         _LOGGER.debug("--- getUsers: end")
         return tmp_json
 
+    def getNetwork(self):
+        _LOGGER.debug("--- getNetwork: start")
+        complete_url = 'alms/' + self._serial + '/network'
+        Runtime_temp = self.get(complete_url)
+        value = Runtime_temp
+        _LOGGER.debug("--- getNetwork: end")
+        return value
 
 # 8
     def getTest(self):
