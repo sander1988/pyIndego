@@ -31,10 +31,11 @@ Description for the functions updating data from API and mower. The functions co
 API Call                 | Bosch API | Mower | Mower needs to be online
 -------------------------|-----------|-------|-------------------------
 getAlerts                |    X      |       |
-getForcedState           |    ?      |  ?    | ?
+getForcedState           |    ?      |  ?    |   ?
 getGenericData           |    X      |       |
-getLastCompletedMow      |    X      |       |
-getLongpollState         |    ?      |  ?    | ?
+getLastComletedMow       |    X      |       |
+getLongpollState         |    ?      |  ?    |   ?
+getNetwork               |    ?      |  ?    |   ?
 getNextMow               |           |       |
 getOperatingData         |           |  X    |   X
 getState                 |    X      |       |
@@ -97,6 +98,23 @@ Response:
     'latitude': '59.742950', 
     'longitude': '17.380440', 
     'timezone': 'Europe/Berlin'
+}
+```
+
+### getNetwork()
+Collects data on the mobile network the Indego is connected to.
+
+```python
+Response:
+{
+    'mcc': 262,
+    'mnc': 2,
+    'rssi': -76,
+    'currMode': 's',
+    'configMode': 's',
+    'steeredRssi': -100,
+    'networkCount': 3,
+    'networks': [26201, 26202, 26203]
 }
 ```
 
@@ -258,7 +276,7 @@ Battery() | Show battery information.
 BatteryAmbientTemp() | Show the ambient temp of the battery.
 BatteryCycles() | Dont know what this value is?
 BatteryDischarge() | Show the current drawn in Ah.
-BatteryPercent() Show the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 it seems to be the actual percentage left in the battery.
+BatteryPercent() | Show the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 it seems to be the actual percentage left in the battery.
 BatteryPercentAdjusted() | Show the adjusted value for percentage left. Calculated for Gen 1, and the actual percentage value for Gen 2.
 BatteryTemp() | Show temp of the battery.
 BatteryVoltage() | Show voltage for the battery. For Gen 1 mowers this value seems to be correct. For Gen 2 it seems to be the same value as the percentage left in battery.
@@ -331,6 +349,7 @@ get
 /alms/<serial>/automaticUpdate
 /alms/<serial>/calendar
 /alms/<serial>/map
+/alms/<serial>/network
 /alms/<serial>/updates
 /alms/<serial>/operatingData
 /alms/<serial>/predictive

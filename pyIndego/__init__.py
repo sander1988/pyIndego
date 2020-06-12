@@ -432,28 +432,33 @@ class IndegoAPI():
         complete_url = 'alms/' + self._serial + '/state'
         _LOGGER.debug("URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        self._mower_state = tmp_json.get('state')
-        _LOGGER.debug(f"self._mower_state: {self._mower_state}")
-        self._map_update_available = tmp_json.get('map_update_available')
-        _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
-        self._mowed = tmp_json.get('mowed')
-        _LOGGER.debug(f"self._mowed: {self._mowed}")    
-        self._mowmode = tmp_json.get('mowmode')
-        _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
-        self._xpos = tmp_json.get('xPos')
-        _LOGGER.debug(f"self._xPos: {self._xpos}")    
-        self._ypos = tmp_json.get('yPos')
-        _LOGGER.debug(f"self._yPos: {self._ypos}")    
-        self._runtime = tmp_json.get('runtime')
-        _LOGGER.debug(f"self._runtime: {self._runtime}")    
-        self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
-        _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
-        self._svg_xPos = tmp_json.get('svg_xPos')
-        _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
-        self._svg_yPos = tmp_json.get('svg_yPos')
-        _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")
-        _LOGGER.debug("--- getState end")        
-        return tmp_json
+        if tmp_json:
+            self._mower_state = tmp_json.get('state')
+            _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+            self._map_update_available = tmp_json.get('map_update_available')
+            _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+            self._mowed = tmp_json.get('mowed')
+            _LOGGER.debug(f"self._mowed: {self._mowed}")    
+            self._mowmode = tmp_json.get('mowmode')
+            _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+            self._xpos = tmp_json.get('xPos')
+            _LOGGER.debug(f"self._xPos: {self._xpos}")    
+            self._ypos = tmp_json.get('yPos')
+            _LOGGER.debug(f"self._yPos: {self._ypos}")    
+            self._runtime = tmp_json.get('runtime')
+            _LOGGER.debug(f"self._runtime: {self._runtime}")    
+            self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+            _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+            self._svg_xPos = tmp_json.get('svg_xPos')
+            _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+            self._svg_yPos = tmp_json.get('svg_yPos')
+            _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")
+            _LOGGER.debug("--- getState end")
+            return tmp_json
+        else:
+            _LOGGER.error("--- getState gave no value when fetching form API")
+            _LOGGER.debug("--- getState end")
+            return None
 
     def getForcedState(self):
         # Forces server to also update the location!
@@ -562,6 +567,15 @@ class IndegoAPI():
         _LOGGER.debug("--- getUsers: end")
         return tmp_json
 
+    def getNetwork(self):
+        _LOGGER.debug("--- getNetwork: start")
+        complete_url = 'alms/' + self._serial + '/network'
+        Runtime_temp = self.get(complete_url)
+        value = Runtime_temp
+        _LOGGER.debug("--- getNetwork: end")
+        return value
+
+# 8
     def getTest(self):
         #now = datetime.now()
         #_LOGGER.debug(">>>>>>" + now.strftime("%Y-%m-%d %H:%M:%S"))    
