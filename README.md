@@ -31,10 +31,11 @@ Description for the functions updating data from API and mower. The functions co
 API Call                 | Bosch API | Mower | Mower needs to be online
 -------------------------|-----------|-------|-------------------------
 getAlerts                |    X      |       |
-getForcedState           |    ?      |  ?    | ?
+getForcedState           |    ?      |  ?    |   ?
 getGenericData           |    X      |       |
 getLastComletedMow       |    X      |       |
-getLongpollState         |    ?      |  ?    | ?
+getLongpollState         |    ?      |  ?    |   ?
+getNetwork               |    ?      |  ?    |   ?
 getNextMow               |           |       |
 getOperatingData         |           |  X    |   X
 getState                 |    X      |       |
