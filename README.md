@@ -349,6 +349,7 @@ get
 /alms/<serial>/automaticUpdate
 /alms/<serial>/calendar
 /alms/<serial>/map
+/alms/<serial>/network
 /alms/<serial>/updates
 /alms/<serial>/operatingData
 /alms/<serial>/predictive
