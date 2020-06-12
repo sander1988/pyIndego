@@ -31,10 +31,11 @@ Description for the functions updating data from API and mower. The functions co
 API Call                 | Bosch API | Mower | Mower needs to be online
 -------------------------|-----------|-------|-------------------------
 getAlerts                |    X      |       |
-getForcedState           |    ?      |  ?    | ?
+getForcedState           |    ?      |  ?    |   ?
 getGenericData           |    X      |       |
 getLastComletedMow       |    X      |       |
-getLongpollState         |    ?      |  ?    | ?
+getLongpollState         |    ?      |  ?    |   ?
+getNetwork               |    ?      |  ?    |   ?
 getNextMow               |           |       |
 getOperatingData         |           |  X    |   X
 getState                 |    X      |       |
@@ -97,6 +98,23 @@ Response:
     'latitude': '59.742950', 
     'longitude': '17.380440', 
     'timezone': 'Europe/Berlin'
+}
+```
+
+### getNetwork()
+Collects data on the mobile network the Indego is connected to.
+
+```python
+Response:
+{
+    'mcc': 262,
+    'mnc': 2,
+    'rssi': -76,
+    'currMode': 's',
+    'configMode': 's',
+    'steeredRssi': -100,
+    'networkCount': 3,
+    'networks': [26201, 26202, 26203]
 }
 ```
 
