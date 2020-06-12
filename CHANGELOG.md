@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.9
+- Added mower "Indego 400+ 2020" to database
+- Divided logging of python module to different levels. Info, warning, error.
+
 ## 1.0.8
 - Added getForcedState: force the API-server to get a complete update of the status. Can be used to  obtain a new position every 5-6 seconds and to replicate the moving mower on a map (like the official  app).
 - Added getLongpollState. This can be used to make a call to the API aserver and then wait for a change in state instead of polling often to catch a state. Reduces traffic to/from the API server.

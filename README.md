@@ -33,7 +33,7 @@ API Call                 | Bosch API | Mower | Mower needs to be online
 getAlerts                |    X      |       |
 getForcedState           |    ?      |  ?    | ?
 getGenericData           |    X      |       |
-getLastComletedMow       |    X      |       |
+getLastCompletedMow      |    X      |       |
 getLongpollState         |    ?      |  ?    | ?
 getNextMow               |           |       |
 getOperatingData         |           |  X    |   X
