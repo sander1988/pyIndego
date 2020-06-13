@@ -461,28 +461,38 @@ class IndegoAPI():
         complete_url = 'alms/' + self._serial + '/state' + '?forceRefresh=true'
         _LOGGER.debug("URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        self._mower_state = tmp_json.get('state')
-        _LOGGER.debug(f"self._mower_state: {self._mower_state}")
-        self._map_update_available = tmp_json.get('map_update_available')
-        _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
-        self._mowed = tmp_json.get('mowed')
-        _LOGGER.debug(f"self._mowed: {self._mowed}")    
-        self._mowmode = tmp_json.get('mowmode')
-        _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
-        self._xpos = tmp_json.get('xPos')
-        _LOGGER.debug(f"self._xPos: {self._xpos}")    
-        self._ypos = tmp_json.get('yPos')
-        _LOGGER.debug(f"self._yPos: {self._ypos}")    
-        self._runtime = tmp_json.get('runtime')
-        _LOGGER.debug(f"self._runtime: {self._runtime}")    
-        self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
-        _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
-        self._svg_xPos = tmp_json.get('svg_xPos')
-        _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
-        self._svg_yPos = tmp_json.get('svg_yPos')
-        _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
-        return tmp_json
-        _LOGGER.debug("--- getForcedState end")        
+        if tmp_json:
+            self._mower_state = tmp_json.get('state')
+            _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+            self._map_update_available = tmp_json.get('map_update_available')
+            _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+            self._mowed = tmp_json.get('mowed')
+            _LOGGER.debug(f"self._mowed: {self._mowed}")    
+            self._mowmode = tmp_json.get('mowmode')
+            _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+            self._xpos = tmp_json.get('xPos')
+            _LOGGER.debug(f"self._xPos: {self._xpos}")    
+            self._ypos = tmp_json.get('yPos')
+            _LOGGER.debug(f"self._yPos: {self._ypos}")    
+            self._runtime = tmp_json.get('runtime')
+            _LOGGER.debug(f"self._runtime: {self._runtime}")    
+            self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+            _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+            self._svg_xPos = tmp_json.get('svg_xPos')
+            _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+            self._svg_yPos = tmp_json.get('svg_yPos')
+            _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
+            _LOGGER.debug("--- getForcedState end")        
+            return tmp_json
+        else:
+            self._offline += 1
+            self._online = False
+            _LOGGER.warning("Mower offline!!!")    
+            _LOGGER.debug("Online: " + str(self._online) + " - Offline: " + str(self._offline))
+            _LOGGER.debug("self._online: " + str(self._online))
+            _LOGGER.debug("--- getOperatingData: end")
+            _LOGGER.debug("--- getForcedState end")        
+            return None
 
     def getLongpollState(self, timeout):
         # The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver.
@@ -568,6 +578,22 @@ class IndegoAPI():
         Runtime_temp = self.get(complete_url)
         value = Runtime_temp
         _LOGGER.debug("--- getNetwork: end")
+        return value
+
+    def getConfig(self):
+        _LOGGER.debug("--- getConfig: start")
+        complete_url = 'alms/' + self._serial + '/config'
+        Runtime_temp = self.get(complete_url)
+        value = Runtime_temp
+        _LOGGER.debug("--- getConfig: end")
+        return value
+
+    def getPredictiveSetup(self):
+        _LOGGER.debug("--- getPredictiveSetup: start")
+        complete_url = 'alms/' + self._serial + '/predictive/setup'
+        Runtime_temp = self.get(complete_url)
+        value = Runtime_temp
+        _LOGGER.debug("--- getPredictiveSetup: end")
         return value
 
 # 8
