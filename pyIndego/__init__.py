@@ -100,8 +100,8 @@ MOWER_MODEL_DESCRIPTION = {
     '3600HB0102': 'Indego S+ 350',
     '3600HB0103': 'Indego S+ 400',
     '3600HB0105': 'Indego S+ 350 2020',
-    '3600HB0106': 'Indego S+ 400 2020'
-#    '3600HB0301': 'Model description missing!'
+    '3600HB0106': 'Indego S+ 400 2020',
+    '3600HB0301': 'Indego M+ 700'
 #    '3600HB0xxx': 'Indego M+ 700' missing model number
 }
 
@@ -116,8 +116,8 @@ MOWER_MODEL_VOLTAGE = {
     '3600HB0102': {'min': '0','max': '100'},   # Indego S+ 350
     '3600HB0103': {'min': '0','max': '100'},   # Indego S+ 400
     '3600HB0105': {'min': '0','max': '100'},   # Indego S+ 350
-    '3600HB0106': {'min': '0','max': '100'}    # Indego S+ 400
-#    '3600HB0301': {'min': '0','max': '100'}    # ???
+    '3600HB0106': {'min': '0','max': '100'},    # Indego S+ 400
+    '3600HB0301': {'min': '0','max': '100'}    # Indego M+ 700
 #    '3600HB0xxx': {'min': '0','max': '100'}   # Indego M+ 700
 }
 
@@ -1127,6 +1127,8 @@ class IndegoAPI():
                 elif response.status_code != 200:
                     _LOGGER.error("      need to call login again")
                     self.login()
+                    logindata = json.loads(self._login_session.content)
+                    contextId = logindata['contextId']
                     #return
                 else:
                     _LOGGER.debug("      Json:" + str(response.json()))
