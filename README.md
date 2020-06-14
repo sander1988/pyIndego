@@ -349,7 +349,7 @@ Battery() | Show battery information.
 BatteryAmbientTemp() | Show the ambient temp of the battery.
 BatteryCycles() | Dont know what this value is?
 BatteryDischarge() | Show the current drawn in Ah.
-BatteryPercent() Show the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 it seems to be the actual percentage left in the battery.
+BatteryPercent() | Show the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 it seems to be the actual percentage left in the battery.
 BatteryPercentAdjusted() | Show the adjusted value for percentage left. Calculated for Gen 1, and the actual percentage value for Gen 2.
 BatteryTemp() | Show temp of the battery.
 BatteryVoltage() | Show voltage for the battery. For Gen 1 mowers this value seems to be correct. For Gen 2 it seems to be the same value as the percentage left in battery.

@@ -100,8 +100,8 @@ MOWER_MODEL_DESCRIPTION = {
     '3600HB0102': 'Indego S+ 350',
     '3600HB0103': 'Indego S+ 400',
     '3600HB0105': 'Indego S+ 350 2020',
-    '3600HB0106': 'Indego S+ 400 2020'
-#    '3600HB0301': 'Model description missing!'
+    '3600HB0106': 'Indego S+ 400 2020',
+    '3600HB0301': 'Indego M+ 700'
 #    '3600HB0xxx': 'Indego M+ 700' missing model number
 }
 
@@ -116,8 +116,8 @@ MOWER_MODEL_VOLTAGE = {
     '3600HB0102': {'min': '0','max': '100'},   # Indego S+ 350
     '3600HB0103': {'min': '0','max': '100'},   # Indego S+ 400
     '3600HB0105': {'min': '0','max': '100'},   # Indego S+ 350
-    '3600HB0106': {'min': '0','max': '100'}    # Indego S+ 400
-#    '3600HB0301': {'min': '0','max': '100'}    # ???
+    '3600HB0106': {'min': '0','max': '100'},    # Indego S+ 400
+    '3600HB0301': {'min': '0','max': '100'}    # Indego M+ 700
 #    '3600HB0xxx': {'min': '0','max': '100'}   # Indego M+ 700
 }
 
@@ -432,28 +432,33 @@ class IndegoAPI():
         complete_url = 'alms/' + self._serial + '/state'
         _LOGGER.debug("URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        self._mower_state = tmp_json.get('state')
-        _LOGGER.debug(f"self._mower_state: {self._mower_state}")
-        self._map_update_available = tmp_json.get('map_update_available')
-        _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
-        self._mowed = tmp_json.get('mowed')
-        _LOGGER.debug(f"self._mowed: {self._mowed}")    
-        self._mowmode = tmp_json.get('mowmode')
-        _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
-        self._xpos = tmp_json.get('xPos')
-        _LOGGER.debug(f"self._xPos: {self._xpos}")    
-        self._ypos = tmp_json.get('yPos')
-        _LOGGER.debug(f"self._yPos: {self._ypos}")    
-        self._runtime = tmp_json.get('runtime')
-        _LOGGER.debug(f"self._runtime: {self._runtime}")    
-        self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
-        _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
-        self._svg_xPos = tmp_json.get('svg_xPos')
-        _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
-        self._svg_yPos = tmp_json.get('svg_yPos')
-        _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")
-        _LOGGER.debug("--- getState end")        
-        return tmp_json
+        if tmp_json:
+            self._mower_state = tmp_json.get('state')
+            _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+            self._map_update_available = tmp_json.get('map_update_available')
+            _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+            self._mowed = tmp_json.get('mowed')
+            _LOGGER.debug(f"self._mowed: {self._mowed}")    
+            self._mowmode = tmp_json.get('mowmode')
+            _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+            self._xpos = tmp_json.get('xPos')
+            _LOGGER.debug(f"self._xPos: {self._xpos}")    
+            self._ypos = tmp_json.get('yPos')
+            _LOGGER.debug(f"self._yPos: {self._ypos}")    
+            self._runtime = tmp_json.get('runtime')
+            _LOGGER.debug(f"self._runtime: {self._runtime}")    
+            self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+            _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+            self._svg_xPos = tmp_json.get('svg_xPos')
+            _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+            self._svg_yPos = tmp_json.get('svg_yPos')
+            _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")
+            _LOGGER.debug("--- getState end")
+            return tmp_json
+        else:
+            _LOGGER.error("--- getState gave no value when fetching form API")
+            _LOGGER.debug("--- getState end")
+            return None
 
     def getForcedState(self):
         # Forces server to also update the location!
@@ -1148,6 +1153,8 @@ class IndegoAPI():
                 elif response.status_code != 200:
                     _LOGGER.error("      need to call login again")
                     self.login()
+                    logindata = json.loads(self._login_session.content)
+                    contextId = logindata['contextId']
                     #return
                 else:
                     _LOGGER.debug("      Json:" + str(response.json()))
