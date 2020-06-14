@@ -31,13 +31,15 @@ Description for the functions updating data from API and mower. The functions co
 API Call                 | Bosch API | Mower | Mower needs to be online
 -------------------------|-----------|-------|-------------------------
 getAlerts                |    X      |       |
-getForcedState           |    ?      |  ?    |   ?
+getConfig                |    X      |       |
+getForcedState           |           |  X    |   ?
 getGenericData           |    X      |       |
 getLastComletedMow       |    X      |       |
 getLongpollState         |    ?      |  ?    |   ?
-getNetwork               |    ?      |  ?    |   ?
+getNetwork               |    X      |       |
 getNextMow               |           |       |
 getOperatingData         |           |  X    |   X
+getPredictiveSetup       |    X      |       |
 getState                 |    X      |       |
 getUpdates               |           |  X    |   X
 getUsers                 |    X      |       |
@@ -60,6 +62,22 @@ Response:
     'read_status': 'unread', 
     'flag': 'warning', 
     'push': True
+}
+```
+
+### getConfig()
+Collects the configuration of the mower.
+
+```python
+Response:
+{
+    'region': 0,
+    'language': 1,
+    'border_cut': 0,
+    'is_pin_set': True,
+    'wire_id': 4,
+    'bump_sensitivity': 0,
+    'alarm_mode': True
 }
 ```
 
@@ -166,6 +184,61 @@ Response:
         'last_mow': 4
     }, 
     'hmiKeys': 1344
+}
+```
+
+### getPredictiveSetup()
+
+```python
+Response:
+{
+    'garden_size': 93,
+    'mowing_duration': 3,
+    'rain_factor': 1.4,
+    'temperature_factor': 1.1,
+    'garden_location': {
+        'latitude': '48.7357',
+        'longitude': '8.9505',
+        'timezone': 'Europe/Berlin'
+    },
+    'full_cuts': 3,
+    'avoid_rain': True,
+    'avoid_temperature': True,
+    'use_grass_growth': True,
+    'no_mow_calendar_days': [
+        {
+            'day': 0,
+            'slots': [
+                {
+                    'En': True,
+                    'StHr': 0,
+                    'StMin': 0,
+                    'EnHr': 8,
+                    'EnMin': 0
+                },
+                {
+                    'En': True,
+                    'StHr': 20,
+                    'StMin': 0,
+                    'EnHr': 23,
+                    'EnMin': 59
+                }
+            ]
+        },
+        ...
+        {
+            'day': 6,
+            'slots': [
+                {
+                    'En': True,
+                    'StHr': 0,
+                    'StMin': 0,
+                    'EnHr': 23,
+                    'EnMin': 59
+                }
+            ]
+        }
+    ]
 }
 ```
 
