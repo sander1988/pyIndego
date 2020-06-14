@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.11
+- Added support for the Indego m+ 700 mower.
+- Updated get code in order to be able to login if sessin cookie is not accepted
+
 ## 1.0.10
 - Added getNetwork, collects data on the mobile network the Indego is connected to.
 - Added errorhandling for getState
