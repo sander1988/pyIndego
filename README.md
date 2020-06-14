@@ -85,7 +85,7 @@ Collects data on the last completed mow. .
 ```python
 Response:
 {
-    'mow_next': '2020-05-25T10:00:00+02:00'
+    'last_mowed': '2020-05-25T10:00:00+02:00'
 }
 ```
 
