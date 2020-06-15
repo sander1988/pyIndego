@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.12
+- Added control for the getLongpollState to make sure that getState has been called.
+- Added better handling and logging when mower is offline.
+- Cleaned up some logging.
+
 ## 1.0.11
 - Added support for the Indego m+ 700 mower.
 - Updated get code in order to be able to login if sessin cookie is not accepted
