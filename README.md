@@ -81,6 +81,14 @@ Response:
 }
 ```
 
+### getForcedState()
+Collects state of mower, % lawn mowed, position, runtime, map coordinates. Compared to the getState() command, it forces the server to update all information - including the position of the mower.
+
+```python
+Response:
+--> same as getState()
+```
+
 ### getGenericData()
 Collect serial, service counter, name, mowing mode, model number and firmware.
 
@@ -117,6 +125,18 @@ Response:
     'longitude': '17.380440', 
     'timezone': 'Europe/Berlin'
 }
+```
+
+### getLongpollState(timeout)
+Function getState must have been called before using this call. It sends a state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
+
+This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
+
+```python
+Response:
+--> same as getState(), but might also include less information
+--> if the status is not updated until the timeout, the return is empty
+--> functions reading data from locally cached API data will provide the latest availabe data
 ```
 
 ### getNetwork()
@@ -268,26 +288,6 @@ Response:
     'svg_xPos': 928, 
     'svg_yPos': 264
 }
-```
-
-### getForcedState()
-Collects state of mower, % lawn mowed, position, runtime, map coordinates. Compared to the getState() command, it forces the server to update all information - including the position of the mower.
-
-```python
-Response:
---> same as getState()
-```
-
-### getLongpollState(timeout)
-Function getState must have been called before using this call. It sends a state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
-
-This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
-
-```python
-Response:
---> same as getState(), but might also include less information
---> if the status is not updated until the timeout, the return is empty
---> functions reading data from locally cached API data will provide the latest availabe data
 ```
 
 ### getUpdates()
