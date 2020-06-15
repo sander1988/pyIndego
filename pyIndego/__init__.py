@@ -4,11 +4,7 @@ import requests
 import json
 from requests.auth import HTTPBasicAuth
 import logging
-import urllib
-from urllib import *
-import urllib.request
 from urllib.request import urlretrieve
-#from datetime import datetime
 
 DEFAULT_URL = "https://api.indego.iot.bosch-si.com:443/api/v1/"
 # CONST TAKEN FROM homeassistant.const
