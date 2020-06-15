@@ -11,6 +11,7 @@ DEFAULT_URL = "https://api.indego.iot.bosch-si.com:443/api/v1/"
 CONTENT_TYPE_JSON = "application/json"
 #const taken from aiohttp.hdrs
 CONTENT_TYPE = "Content-Type"
+OFFLINE_TRESHOLD = 5
 
 _LOGGER = logging.getLogger(__name__)
 #_LOGGER.setLevel(logging.INFO)
@@ -217,7 +218,8 @@ class IndegoAPI():
         self._alert3_error                  = None
         self._alert3_time                   = None
         self._alert3_friendly_description   = None
-        self._online                        = False
+        #self._online                        = False
+        self._online                        = True #For testing mower offline in all API calls
         self._offline = 0
         self._last_completed_mow = None
         self._next_mow = None
@@ -248,12 +250,12 @@ class IndegoAPI():
         # For debug: writing all vars to log
         _LOGGER.info("Call show_vars")
 
-        _LOGGER.debug("-Catched from authenticate")
+        _LOGGER.debug("*** Catched from authenticate ***")
         _LOGGER.debug(f"self._contextid: {self._contextid}")
         _LOGGER.debug(f"self._userid: {self._userid}")
         _LOGGER.debug(f"self._serial: {self._serial}")
 
-        _LOGGER.debug("-self.getState")
+        _LOGGER.debug("*** self.getState ***")
         _LOGGER.debug(f"self._mower_state: {self._mower_state}")
         _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")
         _LOGGER.debug(f"self._mowed: {self._mowed}")
@@ -266,23 +268,23 @@ class IndegoAPI():
         _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")                
 
         # User-friendly mower state
-        _LOGGER.debug("-self.MowerStateDescription()")
+        _LOGGER.debug("*** self.MowerStateDescription() ***")
         _LOGGER.debug(f"self._mower_state_description = {self._mower_state_description}")
 
         # split runtime into total        
-        _LOGGER.debug("-self.RuntimeTotal()")
+        _LOGGER.debug("*** self.RuntimeTotal() ***")
         _LOGGER.debug(f"self._total_operation: {self._total_operation}")
         _LOGGER.debug(f"self._total_charge: {self._total_charge}")
         _LOGGER.debug(f"self._total_cut: {self._total_cut}")
 
         # split runtime into session
-        _LOGGER.debug("-self.RuntimeSession()")
+        _LOGGER.debug("*** self.RuntimeSession() ***")
         _LOGGER.debug(f"self._session_operation: {self._session_operation}")
         _LOGGER.debug(f"self._session_charge: {self._session_charge}")
         _LOGGER.debug(f"self._session_cut: {self._session_cut}")
 
         # self.getUsers()
-        _LOGGER.debug("-self.getUsers")
+        _LOGGER.debug("*** self.getUsers ***")
         _LOGGER.debug(f"self._email: {self._email}")                
         _LOGGER.debug(f"self._display_name: {self._display_name}")                
         _LOGGER.debug(f"self._language: {self._language}")                
@@ -291,7 +293,7 @@ class IndegoAPI():
         _LOGGER.debug(f"self._optInApp = {self._optinapp}")
 
         # self.getGenericData()
-        _LOGGER.debug("-self.getGenericData")
+        _LOGGER.debug("*** self.getGenericData ***")
         #_LOGGER.debug(f"self._alm_sn ignored: {self._alm_sn}")
         _LOGGER.debug(f"self._alm_name: {self._alm_name}")
         _LOGGER.debug(f"self._service_counter: {self._service_counter}")
@@ -301,11 +303,11 @@ class IndegoAPI():
         _LOGGER.debug(f"self._alm_firmware_version: {self._alm_firmware_version}")
 
         # User-friendly mower model
-        _LOGGER.debug("-self._model_description")
+        _LOGGER.debug("*** self._model_description ***")
         _LOGGER.debug(f"self._model_description = {self._model_description}")
 
         # self.getOperationalData()
-        _LOGGER.debug("-self.getOperatingData")
+        _LOGGER.debug("*** self.getOperatingData ***")
         _LOGGER.debug(f"battery: {self._battery}")
         _LOGGER.debug(f"garden: {self._garden}")
         _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
@@ -317,14 +319,22 @@ class IndegoAPI():
         _LOGGER.debug(f"self._battery_temp: {self._battery_temp}")
 
         # self.getUpdates()
+        _LOGGER.debug(f"*** getUpdates() ***")
         _LOGGER.debug(f"self._firmware_available: {self._firmware_available}")
         
         # self.getLastCompletedMow()
+        _LOGGER.debug(f"*** getLastCompletedMow() ***")
         _LOGGER.debug(f"self._last_completed_mow: {self._last_completed_mow}")
         
         # self.getNextMow()
+        _LOGGER.debug(f"*** getNextMow() ***")
         _LOGGER.debug(f"self._next_mow: {self._next_mow}")
-        
+
+        # Other variables()
+        _LOGGER.debug(f"*** Other variables ***")
+        _LOGGER.debug(f"self._online: {self._online}")
+        _LOGGER.debug(f"self._offline: {self._offline}")
+
         # Not updated in the getState API call
         #_LOGGER.debug("Not updated in the getState API call")        
         #_LOGGER.debug(f"self._model = {self._model}")
@@ -415,13 +425,13 @@ class IndegoAPI():
             _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
             self._online = True
             self._offline = 0
-            _LOGGER.debug(f"Online: {self._online} - Offline: {self._offline}")
+            _LOGGER.debug(f"Online: {self._online} - Offline count: {self._offline}")
             _LOGGER.debug("--- getOperatingData: end") 
             return tmp_json
         else:
             self._offline += 1
-            self._online = False
-            _LOGGER.warning("Mower offline!!!")    
+            #self._online = False
+            _LOGGER.warning("Mower offline! Not able to get Operating Data!")    
             _LOGGER.debug("Online: " + str(self._online) + " - Offline: " + str(self._offline))
             _LOGGER.debug("self._online: " + str(self._online))
             _LOGGER.debug("--- getOperatingData: end")
@@ -466,71 +476,89 @@ class IndegoAPI():
         complete_url = 'alms/' + self._serial + '/state' + '?forceRefresh=true'
         _LOGGER.debug("URL: " + complete_url)
         tmp_json = self.get(complete_url)
-        self._mower_state = tmp_json.get('state')
-        _LOGGER.debug(f"self._mower_state: {self._mower_state}")
-        self._map_update_available = tmp_json.get('map_update_available')
-        _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
-        self._mowed = tmp_json.get('mowed')
-        _LOGGER.debug(f"self._mowed: {self._mowed}")    
-        self._mowmode = tmp_json.get('mowmode')
-        _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
-        self._xpos = tmp_json.get('xPos')
-        _LOGGER.debug(f"self._xPos: {self._xpos}")    
-        self._ypos = tmp_json.get('yPos')
-        _LOGGER.debug(f"self._yPos: {self._ypos}")    
-        self._runtime = tmp_json.get('runtime')
-        _LOGGER.debug(f"self._runtime: {self._runtime}")    
-        self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
-        _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
-        self._svg_xPos = tmp_json.get('svg_xPos')
-        _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
-        self._svg_yPos = tmp_json.get('svg_yPos')
-        _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
-        return tmp_json
-        _LOGGER.debug("--- getForcedState end")        
+        if (self._online):
+            if tmp_json:
+                self._mower_state = tmp_json.get('state')
+                _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+                self._map_update_available = tmp_json.get('map_update_available')
+                _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+                self._mowed = tmp_json.get('mowed')
+                _LOGGER.debug(f"self._mowed: {self._mowed}")    
+                self._mowmode = tmp_json.get('mowmode')
+                _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+                self._xpos = tmp_json.get('xPos')
+                _LOGGER.debug(f"self._xPos: {self._xpos}")    
+                self._ypos = tmp_json.get('yPos')
+                _LOGGER.debug(f"self._yPos: {self._ypos}")    
+                self._runtime = tmp_json.get('runtime')
+                _LOGGER.debug(f"self._runtime: {self._runtime}")    
+                self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+                _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+                self._svg_xPos = tmp_json.get('svg_xPos')
+                _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+                self._svg_yPos = tmp_json.get('svg_yPos')
+                _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
+                _LOGGER.debug("--- getForcedState end")        
+                return tmp_json
+            else:
+                self._offline += 1
+                #self._online = False
+                _LOGGER.warning("Mower offline! Not able to get Forced State!!")    
+                _LOGGER.debug("Online: " + str(self._online))
+                _LOGGER.debug(f"Online: {self._online} - Offline count: {self._offline}")
+                _LOGGER.debug("--- getForcedState end")        
+        else:
+            _LOGGER.warning("self._online set to true!")    
+            _LOGGER.debug(f"Online: {self._online} - Offline count: {self._offline}")
+            _LOGGER.debug("--- getForcedState end")        
+            return None
 
     def getLongpollState(self, timeout):
         # The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver.
         _LOGGER.info("Call getLongpollState")    
         laststate = 0
-        if (self._mower_state != ""): # check if state variable is already available
+        _LOGGER.debug(f"self._mowerstate {self._mower_state}")  
+        if (self._mower_state != None): # check if state variable is already available
+
             laststate = self._mower_state 
-        complete_url = 'alms/' + self._serial + '/state' + '?longpoll=true&timeout=' + str(timeout) + "&last=" + str(laststate) # server will wait with answering until state data has updated values
-        _LOGGER.debug("URL: " + complete_url)
-        tmp_json = self.get(complete_url, timeout=timeout+10)
-        if tmp_json != None:
-            # Longpoll requests do only provide a limited set of status variables
-            if tmp_json.get('state') != None:
-                self._mower_state = tmp_json.get('state')
-                _LOGGER.debug(f"self._mower_state: {self._mower_state}")
-            if tmp_json.get('map_update_available') != None:
-                self._map_update_available = tmp_json.get('map_update_available')
-                _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
-            if tmp_json.get('mowed') != None:
-                self._mowed = tmp_json.get('mowed')
-                _LOGGER.debug(f"self._mowed: {self._mowed}")    
-            if tmp_json.get('mowmode') != None:
-                self._mowmode = tmp_json.get('mowmode')
-                _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
-            if tmp_json.get('xPos') != None:
-                self._xpos = tmp_json.get('xPos')
-                _LOGGER.debug(f"self._xPos: {self._xpos}")    
-            if tmp_json.get('yPos') != None:
-                self._ypos = tmp_json.get('yPos')
-                _LOGGER.debug(f"self._yPos: {self._ypos}")    
-            if tmp_json.get('runtime') != None:
-                self._runtime = tmp_json.get('runtime')
-                _LOGGER.debug(f"self._runtime: {self._runtime}")    
-            if tmp_json.get('mapsvgcache_ts') != None:
-                self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
-                _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
-            if tmp_json.get('svg_xPos') != None:
-                self._svg_xPos = tmp_json.get('svg_xPos')
-                _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
-            if tmp_json.get('svg_yPos') != None:
-                self._svg_yPos = tmp_json.get('svg_yPos')
-                _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
-        return tmp_json
+            complete_url = 'alms/' + self._serial + '/state' + '?longpoll=true&timeout=' + str(timeout) + "&last=" + str(laststate) # server will wait with answering until state data has updated values
+            _LOGGER.debug("URL: " + complete_url)
+            tmp_json = self.get(complete_url, timeout=timeout+10)
+            if tmp_json != None:
+                # Longpoll requests do only provide a limited set of status variables
+                if tmp_json.get('state') != None:
+                    self._mower_state = tmp_json.get('state')
+                    _LOGGER.debug(f"self._mower_state: {self._mower_state}")
+                if tmp_json.get('map_update_available') != None:
+                    self._map_update_available = tmp_json.get('map_update_available')
+                    _LOGGER.debug(f"self._map_update_available: {self._map_update_available}")    
+                if tmp_json.get('mowed') != None:
+                    self._mowed = tmp_json.get('mowed')
+                    _LOGGER.debug(f"self._mowed: {self._mowed}")    
+                if tmp_json.get('mowmode') != None:
+                    self._mowmode = tmp_json.get('mowmode')
+                    _LOGGER.debug(f"self._mowmode: {self._mowmode}")    
+                if tmp_json.get('xPos') != None:
+                    self._xpos = tmp_json.get('xPos')
+                    _LOGGER.debug(f"self._xPos: {self._xpos}")    
+                if tmp_json.get('yPos') != None:
+                    self._ypos = tmp_json.get('yPos')
+                    _LOGGER.debug(f"self._yPos: {self._ypos}")    
+                if tmp_json.get('runtime') != None:
+                    self._runtime = tmp_json.get('runtime')
+                    _LOGGER.debug(f"self._runtime: {self._runtime}")    
+                if tmp_json.get('mapsvgcache_ts') != None:
+                    self._mapsvgcache_ts = tmp_json.get('mapsvgcache_ts')
+                    _LOGGER.debug(f"self._mapsvgcache_ts: {self._mapsvgcache_ts}")    
+                if tmp_json.get('svg_xPos') != None:
+                    self._svg_xPos = tmp_json.get('svg_xPos')
+                    _LOGGER.debug(f"self._svg_xPos: {self._svg_xPos}")    
+                if tmp_json.get('svg_yPos') != None:
+                    self._svg_yPos = tmp_json.get('svg_yPos')
+                    _LOGGER.debug(f"self._svg_yPos: {self._svg_yPos}")    
+            return tmp_json
+        else:
+            _LOGGER.warning("getLongpollState needs a getState before in order to use this API call.")                    
         _LOGGER.debug("--- getLongpollState end")        
 
     def getUpdates(self):
@@ -538,13 +566,21 @@ class IndegoAPI():
         if (self._online):
             complete_url = 'alms/' + self._serial + '/updates'
             tmp_json = self.get(complete_url)
-            self._firmware_available = tmp_json.get('available')
-            _LOGGER.debug("--- getUpdates: end")  
-            return tmp_json
+            if (tmp_json):
+                self._firmware_available = tmp_json.get('available')
+                _LOGGER.debug("--- getUpdates: end")  
+                return tmp_json
+            else:
+                _LOGGER.warning("Mower offline! Not able to get Updates!")  
+                self._offline += 1
+                #self._online = False
+                _LOGGER.debug(f"Online: {self._online} - Offline count: {self._offline}")
         else:
-            _LOGGER.warning("Mower offline, no update")  
-            _LOGGER.debug("--- getUpdates: end")  
+            _LOGGER.warning("Mower offline!!!")    
+            _LOGGER.debug("Online: " + str(self._online) + " - Offline: " + str(self._offline))
+            _LOGGER.debug("End getUpdates")
             return None
+
 
     def getUsers(self):
         _LOGGER.info("Call getUsers")
@@ -570,9 +606,26 @@ class IndegoAPI():
     def getNetwork(self):
         _LOGGER.debug("--- getNetwork: start")
         complete_url = 'alms/' + self._serial + '/network'
+        tmp_json = self.get(complete_url)
+        #value = Runtime_temp
+        _LOGGER.debug(f"Result = {tmp_json}")
+        _LOGGER.debug("--- getNetwork: end")
+        return tmp_json
+
+    def getConfig(self):
+        _LOGGER.debug("--- getConfig: start")
+        complete_url = 'alms/' + self._serial + '/config'
         Runtime_temp = self.get(complete_url)
         value = Runtime_temp
-        _LOGGER.debug("--- getNetwork: end")
+        _LOGGER.debug("--- getConfig: end")
+        return value
+
+    def getPredictiveSetup(self):
+        _LOGGER.debug("--- getPredictiveSetup: start")
+        complete_url = 'alms/' + self._serial + '/predictive/setup'
+        Runtime_temp = self.get(complete_url)
+        value = Runtime_temp
+        _LOGGER.debug("--- getPredictiveSetup: end")
         return value
 
 # 8
@@ -863,7 +916,7 @@ class IndegoAPI():
             self._battery_percent_adjusted = round((int(starttemp) - int(self._model_voltage_min)) / ((int(self._model_voltage_max) - int(self._model_voltage_min))/100))
             return self._battery_percent_adjusted
         else:
-            _LOGGER.error(f"BatteryPerCentAdjusted ERROR!")
+            _LOGGER.error(f"BatteryPercentAdjusted ERROR!")
             return None
     
     def BatteryVoltage(self):
@@ -872,6 +925,7 @@ class IndegoAPI():
             self._battery_voltage = tmp.get('voltage')
             return self._battery_voltage
         else:
+            _LOGGER.error(f"BatteryVoltage ERROR!")
             return None
 
     def BatteryCycles(self):
@@ -880,6 +934,7 @@ class IndegoAPI():
             self._battery_cycles = tmp.get('cycles')
             return self._battery_cycles
         else:
+            _LOGGER.error(f"BatteryCycles ERROR!")
             return None
 
     def BatteryDischarge(self):
@@ -888,6 +943,7 @@ class IndegoAPI():
             self._battery_discharge = tmp.get('discharge')
             return self._battery_discharge
         else:
+            _LOGGER.error(f"BatteryDischarge ERROR!")
             return None
 
     def BatteryAmbientTemp(self):
@@ -896,6 +952,7 @@ class IndegoAPI():
             self._battery_ambient_temp = tmp.get('ambient_temp')
             return self._battery_ambient_temp
         else:
+            _LOGGER.error(f"BatteryAmbientTemp ERROR!")
             return None
 
     def BatteryTemp(self):
@@ -904,18 +961,21 @@ class IndegoAPI():
             self._battery_temp = tmp.get('battery_temp')
             return self._battery_temp
         else:
+            _LOGGER.error(f"BatteryTemp ERROR!")
             return None
 
     def Garden(self):
         if hasattr(self, '_garden'):
             return self._garden
         else:
+            _LOGGER.error(f"Garden ERROR!")
             return None
 
     def HmiKeys(self):
         if hasattr(self, '_hmikeys'):
             return self._hmikeys
         else:
+            _LOGGER.error(f"HmiKeys ERROR!")
             return None
 
 ############################################################
@@ -1097,6 +1157,11 @@ class IndegoAPI():
         logindata = json.loads(self._login_session.content)
         contextId = logindata['contextId']
         _LOGGER.debug("      ContextID: " + contextId)
+        #Check mower online status
+        if (self._offline >= 5):
+            self._online = False
+        else:
+            self._online = True
         headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
         url = self._api_url + method
         _LOGGER.debug("      >>>API CALL: " + url)
@@ -1121,8 +1186,17 @@ class IndegoAPI():
                 return None
             else:
                 _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
+                if response.status_code == 400:
+                    _LOGGER.error("      server answer: Bad Request")
+                    return None
+                if response.status_code == 500:
+                    _LOGGER.error("      Server answer: Internal Server Error")
+                    return None
+                if response.status_code == 501:
+                    _LOGGER.error("      Server answer: not implemented yet")
+                    return None
                 if response.status_code == 504:
-                    _LOGGER.error("      server backend did not have an update before timeout")
+                    _LOGGER.info("      server backend did not have an update before timeout")
                     return None
                 elif response.status_code != 200:
                     _LOGGER.error("      need to call login again")
@@ -1182,8 +1256,8 @@ class IndegoAPI():
                     self.login()
                 return str(response.status_code)
             else:
-                _LOGGER.error("      Json:" + str(response))
-                _LOGGER.error("   --- GET: end")
+                _LOGGER.debug("      Json:" + str(response))
+                _LOGGER.debug("   --- GET: end")
                 if (response.status_code == 200):
                     return "OK"
                 else:
