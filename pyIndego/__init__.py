@@ -14,7 +14,7 @@ CONTENT_TYPE = "Content-Type"
 OFFLINE_TRESHOLD = 5
 
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.setLevel(logging.INFO)
+#_LOGGER.setLevel(logging.INFO)
 #_LOGGER.setLevel(logging.WARNING)
 #_LOGGER.setLevel(logging.CRITICAL)
 #_LOGGER.setLevel(logging.ERROR)
