@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.13
+- Better handling of server responding with no content.
+- Better information in log messages.
+- Added getMap for downloading map image in SVN format.
+
 ## 1.0.12
 - Added control for the getLongpollState to make sure that getState has been called.
 - Added better handling and logging when mower is offline.
