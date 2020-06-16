@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.0b1
+- Totally rewritten all code (thanks to Eduard!)
+
 ## 1.0.14
 - Corrected error in login call
 
