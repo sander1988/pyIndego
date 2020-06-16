@@ -13,12 +13,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/jm-73/pyIndego",
     packages=setuptools.find_packages(),
-    install_requires=[
-        'requests'
-    ],
+    install_requires=["requests", "aiohttp", "aiofile"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-    ]
+    ],
 )
