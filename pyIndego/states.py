@@ -77,6 +77,7 @@ class Battery:
 
 @nested_dataclass
 class GenericData:
+    alm_name: str = None
     alm_sn: str = None
     service_counter: int = None
     needs_service: bool = None
