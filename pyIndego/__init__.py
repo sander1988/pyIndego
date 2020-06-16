@@ -131,7 +131,7 @@ MOWING_MODE_DESCRIPTION = {
 ALERT_ERROR_CODE = {
     '104':             'Stop button pushed',
     '115':             'Mower is stuck',
-    '149':             'Mower uutside perimeter cable',
+    '149':             'Mower outside perimeter cable',
     '151':             'Perimeter cable signal missing',
     'ntfy_blade_life': 'Reminder blade life'
 }
@@ -1180,7 +1180,8 @@ class IndegoAPI():
             self._online = False
         else:
             self._online = True
-        headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
+        # Moved to while down under
+        # headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
         url = self._api_url + method
         _LOGGER.debug("      >>>API CALL: " + url)
         ###
@@ -1190,6 +1191,7 @@ class IndegoAPI():
         answer = False
         while (try_call < 5) and (answer == False): 
             try_call = try_call + 1
+            headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
             _LOGGER.debug("      GET try " + str(try_call))
             try:
                 response = requests.get(url, headers=headers, timeout=timeout)

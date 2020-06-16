@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.14
+- Corrected error in login call
+
 ## 1.0.13
 - Better handling of server responding with no content.
 - Better information in log messages.
