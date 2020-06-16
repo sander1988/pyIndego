@@ -421,6 +421,7 @@ get
 /alms/<serial>
 /alms/<serial>/automaticUpdate
 /alms/<serial>/calendar
+/alms/<serial>/config
 /alms/<serial>/map
 /alms/<serial>/network
 /alms/<serial>/updates
