@@ -31,13 +31,15 @@ Description for the functions updating data from API and mower. The functions co
 API Call                 | Bosch API | Mower | Mower needs to be online
 -------------------------|-----------|-------|-------------------------
 getAlerts                |    X      |       |
-getForcedState           |    ?      |  ?    |   ?
+getConfig                |    X      |       |
+getForcedState           |           |  X    |   ?
 getGenericData           |    X      |       |
 getLastComletedMow       |    X      |       |
 getLongpollState         |    ?      |  ?    |   ?
-getNetwork               |    ?      |  ?    |   ?
+getNetwork               |    X      |       |
 getNextMow               |           |       |
 getOperatingData         |           |  X    |   X
+getPredictiveSetup       |    X      |       |
 getState                 |    X      |       |
 getUpdates               |           |  X    |   X
 getUsers                 |    X      |       |
@@ -63,6 +65,30 @@ Response:
 }
 ```
 
+### getConfig()
+Collects the configuration of the mower.
+
+```python
+Response:
+{
+    'region': 0,
+    'language': 1,
+    'border_cut': 0,
+    'is_pin_set': True,
+    'wire_id': 4,
+    'bump_sensitivity': 0,
+    'alarm_mode': True
+}
+```
+
+### getForcedState()
+Collects state of mower, % lawn mowed, position, runtime, map coordinates. Compared to the getState() command, it forces the server to update all information - including the position of the mower.
+
+```python
+Response:
+--> same as getState()
+```
+
 ### getGenericData()
 Collect serial, service counter, name, mowing mode, model number and firmware.
 
@@ -85,7 +111,7 @@ Collects data on the last completed mow. .
 ```python
 Response:
 {
-    'mow_next': '2020-05-25T10:00:00+02:00'
+    'last_mowed': '2020-05-25T10:00:00+02:00'
 }
 ```
 
@@ -99,6 +125,18 @@ Response:
     'longitude': '17.380440', 
     'timezone': 'Europe/Berlin'
 }
+```
+
+### getLongpollState(timeout)
+Function getState must have been called before using this call. It sends a state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
+
+This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
+
+```python
+Response:
+--> same as getState(), but might also include less information
+--> if the status is not updated until the timeout, the return is empty
+--> functions reading data from locally cached API data will provide the latest availabe data
 ```
 
 ### getNetwork()
@@ -169,6 +207,61 @@ Response:
 }
 ```
 
+### getPredictiveSetup()
+
+```python
+Response:
+{
+    'garden_size': 93,
+    'mowing_duration': 3,
+    'rain_factor': 1.4,
+    'temperature_factor': 1.1,
+    'garden_location': {
+        'latitude': '48.7357',
+        'longitude': '8.9505',
+        'timezone': 'Europe/Berlin'
+    },
+    'full_cuts': 3,
+    'avoid_rain': True,
+    'avoid_temperature': True,
+    'use_grass_growth': True,
+    'no_mow_calendar_days': [
+        {
+            'day': 0,
+            'slots': [
+                {
+                    'En': True,
+                    'StHr': 0,
+                    'StMin': 0,
+                    'EnHr': 8,
+                    'EnMin': 0
+                },
+                {
+                    'En': True,
+                    'StHr': 20,
+                    'StMin': 0,
+                    'EnHr': 23,
+                    'EnMin': 59
+                }
+            ]
+        },
+        ...
+        {
+            'day': 6,
+            'slots': [
+                {
+                    'En': True,
+                    'StHr': 0,
+                    'StMin': 0,
+                    'EnHr': 23,
+                    'EnMin': 59
+                }
+            ]
+        }
+    ]
+}
+```
+
 ### getState()
 Collects state of mower, % lawn mowed, position, runtime, map coordinates.
 
@@ -195,26 +288,6 @@ Response:
     'svg_xPos': 928, 
     'svg_yPos': 264
 }
-```
-
-### getForcedState()
-Collects state of mower, % lawn mowed, position, runtime, map coordinates. Compared to the getState() command, it forces the server to update all information - including the position of the mower.
-
-```python
-Response:
---> same as getState()
-```
-
-### getLongpollState(timeout)
-Collects state of mower only if there are updated values. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
-
-This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
-
-```python
-Response:
---> same as getState(), but might also include less information
---> if the status is not updated until the timeout, the return is empty
---> functions reading data from locally cached API data will provide the latest availabe data
 ```
 
 ### getUpdates()
@@ -348,6 +421,7 @@ get
 /alms/<serial>
 /alms/<serial>/automaticUpdate
 /alms/<serial>/calendar
+/alms/<serial>/config
 /alms/<serial>/map
 /alms/<serial>/network
 /alms/<serial>/updates
