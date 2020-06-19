@@ -11,7 +11,7 @@ DEFAULT_URL = "https://api.indego.iot.bosch-si.com:443/api/v1/"
 CONTENT_TYPE_JSON = "application/json"
 #const taken from aiohttp.hdrs
 CONTENT_TYPE = "Content-Type"
-OFFLINE_TRESHOLD = 5
+OFFLINE_TRESHOLD = 2
 
 _LOGGER = logging.getLogger(__name__)
 #_LOGGER.setLevel(logging.INFO)
@@ -25,20 +25,29 @@ _LOGGER = logging.getLogger(__name__)
 
 MOWER_STATE_DESCRIPTION_DETAILED = {
     '0'    : 'Reading status',
+    '101'  : 'Mower lifted',
     '257'  : 'Charging',
     '258'  : 'Docked',
     '259'  : 'Docked - Software update',
-    '260'  : 'Docked',
+    '260'  : 'Charging',
     '261'  : 'Docked',
     '262'  : 'Docked - Loading map',
     '263'  : 'Docked - Saving map',
+    '266'  : 'Docked - Leaving dock',
+    '512'  : 'Mowing - Leaving dock',
     '513'  : 'Mowing',
-    '514'  : 'Relocalising',
-    '515'  : 'Loading map',
-    '516'  : 'Learning lawn',
-    '517'  : 'Paused',
+    '514'  : 'Mowing - Relocalising',
+    '515'  : 'Mowing - Loading map',
+    '516'  : 'Mowing - Learning lawn',
+    '517'  : 'Mowing - Paused',
     '518'  : 'Border cut',
     '519'  : 'Idle in lawn',
+    '520'  : 'Mowing - Learning lawn paused',',
+    '521'  : 'Border cut',
+    '523'  : 'Mowing - Spot mowing',
+    '524'  : 'Mowing - Random',
+    '525'  : 'Mowing - Random complete',
+    '768'  : 'Returning to Dock',
     '769'  : 'Returning to Dock',
     '770'  : 'Returning to Dock',
     '771'  : 'Returning to Dock - Battery low',
@@ -47,8 +56,11 @@ MOWER_STATE_DESCRIPTION_DETAILED = {
     '774'  : 'Returning to dock - requested by user/app',
     '775'  : 'Returning to dock - Lawn complete',
     '776'  : 'Returning to dock - Relocalising',
+    '1005' : 'Connection to dockingstation failed',
     '1025' : 'Diagnostic mode',
     '1026' : 'End of life',
+    '1027' : "Service Requesting Status",
+    '1038' : 'Mower immobilized',
     '1281' : 'Software update',
     '1537' : 'Stuck on lawn, help needed',
     '64513': 'Sleeping',
@@ -56,8 +68,10 @@ MOWER_STATE_DESCRIPTION_DETAILED = {
     'None' : 'None'
 }
 
+
 MOWER_STATE_DESCRIPTION = {
     '0'    : 'Docked',
+    '101'  : 'Docked',
     '257'  : 'Docked',
     '258'  : 'Docked',
     '259'  : 'Docked',
@@ -80,8 +94,10 @@ MOWER_STATE_DESCRIPTION = {
     '774'  : 'Mowing',
     '775'  : 'Mowing',
     '776'  : 'Mowing',
+    '1005' : 'Mowing',
     '1025' : 'Diagnostic mode',
     '1026' : 'End of life',
+    '1038' : 'Mower immobilized',
     '1281' : 'Software update',
     '1537' : 'Stuck',
     '64513': 'Docked',
@@ -412,28 +428,49 @@ class IndegoAPI():
         _LOGGER.info("Call getOperatingData")
         complete_url = 'alms/' + self._serial + '/operatingData'
         _LOGGER.debug(">>>API Call: " + complete_url)
-        tmp_json = self.get(complete_url)
-        ### Dont pay attention to runtime values as they are collected in the STATE call also
-        if tmp_json:
-            _LOGGER.debug(f"runtime: {tmp_json.get('runtime')}")
-            self._battery = tmp_json.get('battery')
-            _LOGGER.debug(f"battery: {self._battery}")
-            self._garden = tmp_json.get('garden')
-            _LOGGER.debug(f"garden: {self._garden}")
-            self._hmikeys = tmp_json.get('hmiKeys')
-            _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
-            self._online = True
-            self._offline = 0
-            _LOGGER.debug(f"Online: {self._online} - Offline count: {self._offline}")
-            return tmp_json
+        if (not self._online):
+            _LOGGER.debug(f"Mower offline when calling getOperationgData")
+            self._offline = OFFLINE_TRESHOLD - 1
         else:
-            self._offline += 1
-            #self._online = False
-            _LOGGER.warning("Mower offline! Not able to get Operating Data!")    
-            _LOGGER.debug("Online: " + str(self._online) + " - Offline: " + str(self._offline))
-            _LOGGER.debug("self._online: " + str(self._online))
-            return None
+            self._offline = 0
+        _LOGGER.debug(f"Begin with self._offline = {self._offline}")
+        tmp_json = None
+        while (tmp_json == None) and (self._offline < OFFLINE_TRESHOLD):
+            _LOGGER.debug(f"   Call mower # {self._offline}")
+            tmp_json = self.get(complete_url)
+            ### Dont pay attention to runtime values as they are collected in the STATE call also
+            if tmp_json:
+                _LOGGER.debug(f"Mower online!") 
+                _LOGGER.debug(f"runtime: {tmp_json.get('runtime')}")
+                self._battery = tmp_json.get('battery')
+                _LOGGER.debug(f"battery: {self._battery}")
+                self._garden = tmp_json.get('garden')
+                _LOGGER.debug(f"garden: {self._garden}")
+                self._hmikeys = tmp_json.get('hmiKeys')
+                _LOGGER.debug(f"hmiKeys: {self._hmikeys}")
+                self._online = True
+                self._offline = 0
+                _LOGGER.debug(f"Online: {self._online} - Offline count: {self._offline}")
+                return tmp_json
+            else:
+                self._offline += 1
+                _LOGGER.debug(f"Mower offline!") 
+                _LOGGER.debug(f"self._offline = {self._offline}") 
+                _LOGGER.warning("Mower offline! Not able to get Operating Data!")    
+                _LOGGER.debug("Online: " + str(self._online) + " - Offline: " + str(self._offline))
+                _LOGGER.debug("self._online: " + str(self._online))
+                #return None
+        if (self._offline >= (OFFLINE_TRESHOLD-1)):
+            self._online = False
+            _LOGGER.warning(f"Mower offline for {self._offline} consecituve times")   
+        else:
+            _LOGGER.debug("Mower online!")   
+        _LOGGER.debug("self._online: " + str(self._online))
+        _LOGGER.debug(f"self._offline = {self._offline}") 
+        _LOGGER.debug(f"OFFLINE_TRESHOLD = {OFFLINE_TRESHOLD}") 
+        _LOGGER.debug(f"tmp_json = {tmp_json}") 
         _LOGGER.debug("Call getOperatingData end") 
+        return None
 
     def getState(self):
         _LOGGER.info("Call getState")    
@@ -499,7 +536,6 @@ class IndegoAPI():
                 return tmp_json
             else:
                 self._offline += 1
-                #self._online = False
                 _LOGGER.warning("Mower offline! Not able to get Forced State!!")    
                 _LOGGER.debug("Online: " + str(self._online))
                 _LOGGER.debug(f"Online: {self._online} - Offline count: {self._offline}")
@@ -569,7 +605,6 @@ class IndegoAPI():
             else:
                 _LOGGER.warning("Mower offline! Not able to get Updates!")  
                 self._offline += 1
-                #self._online = False
                 _LOGGER.debug(f"Online: {self._online} - Offline count: {self._offline}")
         else:
             _LOGGER.warning("Mower offline!!!")    
@@ -1176,10 +1211,6 @@ class IndegoAPI():
         contextId = logindata['contextId']
         _LOGGER.debug("      ContextID: " + contextId)
         #Check mower online status
-        if (self._offline >= 5):
-            self._online = False
-        else:
-            self._online = True
         # Moved to while down under
         # headers = {CONTENT_TYPE: CONTENT_TYPE_JSON, 'x-im-context-id': contextId}
         url = self._api_url + method

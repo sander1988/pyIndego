@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.17
+- Added a bunch of state descriptions
+
+## 1.0.16
+- Better detection of offline mower
+
+## 1.0.15
+- Corrected state 260 as Charging (was Docked)
+
 ## 1.0.14
 - Corrected error in login call
 
