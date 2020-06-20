@@ -42,7 +42,7 @@ MOWER_STATE_DESCRIPTION_DETAILED = {
     '517'  : 'Mowing - Paused',
     '518'  : 'Border cut',
     '519'  : 'Idle in lawn',
-    '520'  : 'Mowing - Learning lawn paused',',
+    '520'  : 'Mowing - Learning lawn paused',
     '521'  : 'Border cut',
     '523'  : 'Mowing - Spot mowing',
     '524'  : 'Mowing - Random',
@@ -79,6 +79,8 @@ MOWER_STATE_DESCRIPTION = {
     '261'  : 'Docked',
     '262'  : 'Docked',
     '263'  : 'Docked',
+    '266'  : 'Mowing',
+    '512'  : 'Mowing',
     '513'  : 'Mowing',
     '514'  : 'Mowing',
     '515'  : 'Mowing',
@@ -86,6 +88,13 @@ MOWER_STATE_DESCRIPTION = {
     '517'  : 'Mowing',
     '518'  : 'Mowing',
     '519'  : 'Mowing',
+    '520'  : 'Mowing',
+    '521'  : 'Mowing',
+    '522'  : 'Mowing',
+    '523'  : 'Mowing',
+    '524'  : 'Mowing',
+    '525'  : 'Mowing',
+    '768'  : 'Mowing',
     '769'  : 'Mowing',
     '770'  : 'Mowing',
     '771'  : 'Mowing',
@@ -97,6 +106,7 @@ MOWER_STATE_DESCRIPTION = {
     '1005' : 'Mowing',
     '1025' : 'Diagnostic mode',
     '1026' : 'End of life',
+    '1027' : 'Service Requesting Status',
     '1038' : 'Mower immobilized',
     '1281' : 'Software update',
     '1537' : 'Stuck',
@@ -462,6 +472,7 @@ class IndegoAPI():
                 #return None
         if (self._offline >= (OFFLINE_TRESHOLD-1)):
             self._online = False
+            self._mower_state = 99999
             _LOGGER.warning(f"Mower offline for {self._offline} consecituve times")   
         else:
             _LOGGER.debug("Mower online!")   

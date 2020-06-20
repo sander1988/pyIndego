@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.20
+- Added mower state for offline
+
+## 1.0.19
+- Corrected error in database
+
+## 1.0.18
+- Added version control with new branch in github
+
 ## 1.0.17
 - Added a bunch of state descriptions
 
