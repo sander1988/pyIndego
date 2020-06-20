@@ -79,6 +79,7 @@ class IndegoClient(IndegoBaseClient):
 
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
         path = f"alms/{self._serial}/state"
+        #_LOGGER.debug("---Update State")
         if longpoll:
             if self.state:
                 last_state = self.state.state

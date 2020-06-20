@@ -67,6 +67,7 @@ class IndegoBaseClient(ABC):
         self.battery = Battery()
         self.runtime = Runtime()
         self.location = Location()
+        self.state_description = None
         self.last_completed_mow = None
         self.next_mow = None
         self.update_available = None
@@ -142,8 +143,10 @@ class IndegoBaseClient(ABC):
         pass
 
     def _update_state(self, new):
+        #_LOGGER.debug("---Update State")
         if new:
             self.state = replace(self.state, **new)
+        self.state_description = MOWER_STATE_DESCRIPTION.get(str(self.state.state))
 
     @abstractmethod
     def update_updates_available(self):
@@ -221,4 +224,4 @@ class IndegoBaseClient(ABC):
         pass
 
     def __repr__(self):
-        return f"{self.generic_data.model_description} ({self.generic_data.alm_sn}) owned by {self.users.display_name}. {self.generic_data}, {self.state}, {self.operating_data}, last mowed: {self.last_completed_mow}, next mow: {self.next_mow}, {self.location}, {self.network}, {self.alerts}, map filename: {self.map_filename}, {self.runtime}, {self.battery}, update available: {self.update_available}."
+        return f"{self.generic_data.model_description} ({self.generic_data.alm_sn}) owned by {self.users.display_name}. {self.generic_data}, {self.state}, {self.operating_data}, last mowed: {self.last_completed_mow}, next mow: {self.next_mow}, {self.location}, {self.network}, {self.alerts}, map filename: {self.map_filename}, {self.runtime}, {self.battery}, update available: {self.update_available}, State Descr: {self.state_description}."

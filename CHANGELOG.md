@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2
+- Adjusted State Sensor code
+
 ## 2.0.1
 - Removing AIOFile from the package to get the pypi packgare to load
 

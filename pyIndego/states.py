@@ -179,11 +179,9 @@ class State:
     config_change: bool = None
     mow_trig: bool = None
 
-
 @dataclass
 class Updates:
     available: str = None
-
 
 @dataclass
 class Users:
