@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.21
+- Spelling errors fixed
+- Removed some uneccesary log messages
+
 ## 1.0.20
 - Added mower state for offline
 

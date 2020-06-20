@@ -473,7 +473,7 @@ class IndegoAPI():
         if (self._offline >= (OFFLINE_TRESHOLD-1)):
             self._online = False
             self._mower_state = 99999
-            _LOGGER.warning(f"Mower offline for {self._offline} consecituve times")   
+            _LOGGER.warning(f"Mower offline for {self._offline} consecutive times")   
         else:
             _LOGGER.debug("Mower online!")   
         _LOGGER.debug("self._online: " + str(self._online))
@@ -957,7 +957,7 @@ class IndegoAPI():
             self._battery_percent_adjusted = round((int(starttemp) - int(self._model_voltage_min)) / ((int(self._model_voltage_max) - int(self._model_voltage_min))/100))
             return self._battery_percent_adjusted
         else:
-            _LOGGER.error(f"BatteryPercentAdjusted ERROR!")
+            #_LOGGER.error(f"BatteryPercentAdjusted ERROR!")
             return None
     
     def BatteryVoltage(self):
@@ -966,7 +966,7 @@ class IndegoAPI():
             self._battery_voltage = tmp.get('voltage')
             return self._battery_voltage
         else:
-            _LOGGER.error(f"BatteryVoltage ERROR!")
+            #_LOGGER.error(f"BatteryVoltage ERROR!")
             return None
 
     def BatteryCycles(self):
@@ -975,7 +975,7 @@ class IndegoAPI():
             self._battery_cycles = tmp.get('cycles')
             return self._battery_cycles
         else:
-            _LOGGER.error(f"BatteryCycles ERROR!")
+            #_LOGGER.error(f"BatteryCycles ERROR!")
             return None
 
     def BatteryDischarge(self):
@@ -984,7 +984,7 @@ class IndegoAPI():
             self._battery_discharge = tmp.get('discharge')
             return self._battery_discharge
         else:
-            _LOGGER.error(f"BatteryDischarge ERROR!")
+            #_LOGGER.error(f"BatteryDischarge ERROR!")
             return None
 
     def BatteryAmbientTemp(self):
@@ -993,7 +993,7 @@ class IndegoAPI():
             self._battery_ambient_temp = tmp.get('ambient_temp')
             return self._battery_ambient_temp
         else:
-            _LOGGER.error(f"BatteryAmbientTemp ERROR!")
+            #_LOGGER.error(f"BatteryAmbientTemp ERROR!")
             return None
 
     def BatteryTemp(self):
@@ -1002,7 +1002,7 @@ class IndegoAPI():
             self._battery_temp = tmp.get('battery_temp')
             return self._battery_temp
         else:
-            _LOGGER.error(f"BatteryTemp ERROR!")
+            #_LOGGER.error(f"BatteryTemp ERROR!")
             return None
 
     def Garden(self):
