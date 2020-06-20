@@ -11,27 +11,30 @@ _LOGGER.setLevel(logging.DEBUG)
 
 async def main(config):
     async with IndegoAsyncClient(**config) as indego:
-        await indego.update_all()
-        # await asyncio.gather(
-        #     *[
-        #         # indego.update_generic_data(),
-        #         # indego.update_state(),
-        #         # indego.update_last_completed_mow(),
-        #         # indego.update_location(),
-        #         # indego.update_next_mow(),
-        #         indego.update_operating_data(),
-        #         # indego.update_updates(),
-        #         # indego.update_users(),
-        #         # indego.update_network(),
-        #         # indego.update_map()
-        #         # indego.update_longpoll_state(120),
-        #         # indego.update_alerts(),
-        #     ]
-        # )
-        print(indego)
+        #await indego.update_all()
+        await asyncio.gather(
+            *[
+                # indego.update_generic_data(),
+                indego.update_state(),
+                # indego.update_last_completed_mow(),
+                # indego.update_location(),
+                # indego.update_next_mow(),
+                indego.update_operating_data(),
+                # indego.update_updates(),
+                # indego.update_users(),
+                # indego.update_network(),
+                # indego.update_map()
+                # indego.update_longpoll_state(120),
+                # indego.update_alerts(),
+            ]
+        )
+        #print(indego)
         # print("map: ", indego.map_filename)
         # print("network ", indego.network)
-        # print("state: ", indego.state)
+        print("state: ", indego.state)
+        print("state: ", indego.state.state)
+        print("state description: ", indego.state_description)
+        print("state descrption detail: ", indego.state_description_detail)
         # print("users: ", indego.users)
         # print("Generic data: ", indego.generic_data)
         # # print("Generic data min voltage: ", indego.generic_data.model_voltage.min)

@@ -24,7 +24,7 @@ def main(config):
         print("=[state_description]====")
         print(indego.state_description)
         print("=[state_description_detail]====")
-        print(indego.state_description_detail)
+        print(indego.state_detail)
 
         # indego.update_last_completed_mow()
         # indego.update_location()

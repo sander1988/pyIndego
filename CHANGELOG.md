@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.4
+- Adjusted State Sensor Detail async code
+
 ## 2.0.3
 - Adjusted State Sensor Detail code
 
