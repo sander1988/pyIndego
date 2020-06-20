@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.1
+- Removing AIOFile from the package to get the pypi packgare to load
+
+## 2.0.0
+- Fix problems with pypi pakcgae not loading
+
+## 2.0.0b2
+- Tryong out new code
+
 ## 2.0.0b1
 - Totally rewritten all code (thanks to Eduard!)
 

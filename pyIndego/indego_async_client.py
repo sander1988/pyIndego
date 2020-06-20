@@ -6,7 +6,7 @@ import typing
 
 import aiohttp
 import requests
-from aiofile import AIOFile
+#from aiofile import AIOFile
 from aiohttp import ClientResponseError
 from aiohttp import ServerTimeoutError
 from aiohttp import TooManyRedirects
@@ -123,8 +123,12 @@ class IndegoAsyncClient(IndegoBaseClient):
         if not self.map_filename:
             _LOGGER.error("No map filename defined.")
             return
-        async with AIOFile(self.map_filename, "wb") as afp:
-            await afp.write(await self.get(f"alms/{self._serial}/map"))
+        #async with AIOFile(self.map_filename, "wb") as afp:
+        #    await afp.write(await self.get(f"alms/{self._serial}/map"))
+        map = self.get(f"alms/{self._serial}/map")
+        if map:
+            with open(self.map_filename, "wb") as afp:
+                afp.write(map)
 
     async def put_command(self, command: str):
         if command in COMMANDS:
