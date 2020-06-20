@@ -15,7 +15,7 @@ from .const import DEFAULT_URL
 from .const import MOWER_MODEL_DESCRIPTION
 from .const import MOWER_MODEL_VOLTAGE
 from .const import MOWER_STATE_DESCRIPTION
-from .const import MOWER_STATE_DESCRIPTION_DETAILED
+from .const import MOWER_STATE_DESCRIPTION_DETAIL
 from .const import MOWING_MODE_DESCRIPTION
 from .helpers import convert_bosch_datetime
 from .states import Alerts
@@ -68,6 +68,7 @@ class IndegoBaseClient(ABC):
         self.runtime = Runtime()
         self.location = Location()
         self.state_description = None
+        self.state_description_detail = None
         self.last_completed_mow = None
         self.next_mow = None
         self.update_available = None
@@ -147,6 +148,7 @@ class IndegoBaseClient(ABC):
         if new:
             self.state = replace(self.state, **new)
         self.state_description = MOWER_STATE_DESCRIPTION.get(str(self.state.state))
+        self.state_description_detail = MOWER_STATE_DESCRIPTION_DETAIL.get(str(self.state.state))
 
     @abstractmethod
     def update_updates_available(self):

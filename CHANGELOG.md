@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.3
+- Adjusted State Sensor Detail code
+
 ## 2.0.2
 - Adjusted State Sensor code
 

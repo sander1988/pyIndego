@@ -154,7 +154,7 @@ DEFAULT_CALENDAR = {
             ],
         }
 
-MOWER_STATE_DESCRIPTION_DETAILED = {
+MOWER_STATE_DESCRIPTION_DETAIL = {
     "0": "Reading status",
     "257": "Charging",
     "258": "Docked",
