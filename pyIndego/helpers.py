@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from dataclasses import is_dataclass
 from datetime import datetime
 
-
 def nested_dataclass(*args, **kwargs):
     def wrapper(cls):
         cls = dataclass(cls, **kwargs)
@@ -24,5 +23,6 @@ def nested_dataclass(*args, **kwargs):
 
 def convert_bosch_datetime(boschdatetime=None):
     if boschdatetime:
-        return datetime.fromisoformat(boschdatetime)
+        tmp = '{:%Y-%m-%d %H:%M}'.format(datetime.fromisoformat(boschdatetime))
+        return tmp
     return None

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.6
+- Adjusted time conversino for BoshTime to Swedish time format
+
 ## 2.0.5
 - Adjusted session cut to convert None to 0
 

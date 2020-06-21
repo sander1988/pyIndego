@@ -156,20 +156,29 @@ DEFAULT_CALENDAR = {
 
 MOWER_STATE_DESCRIPTION_DETAIL = {
     "0": "Reading status",
+    "101": "Mower lifted",
     "257": "Charging",
     "258": "Docked",
     "259": "Docked - Software update",
-    "260": "Docked",
+    "260": "Charging",
     "261": "Docked",
     "262": "Docked - Loading map",
     "263": "Docked - Saving map",
+    "266": "Docked - Leaving dock",
+    "512": "Mowing - Leaving dock",
     "513": "Mowing",
-    "514": "Relocalising",
-    "515": "Loading map",
-    "516": "Learning lawn",
-    "517": "Paused",
+    "514": "Mowing - Relocalising",
+    "515": "Mowing - Loading map",
+    "516": "Mowing - Learning lawn",
+    "517": "Mowing - Paused",
     "518": "Border cut",
     "519": "Idle in lawn",
+    "520": "Mowing - Learning lawn paused",
+    "521": "Border cut",
+    "523": "Mowing - Spot mowing",
+    "524": "Mowing - Random",
+    "525": "Mowing - Random complete",
+    "768": "Returning to Dock",
     "769": "Returning to Dock",
     "770": "Returning to Dock",
     "771": "Returning to Dock - Battery low",
@@ -178,17 +187,22 @@ MOWER_STATE_DESCRIPTION_DETAIL = {
     "774": "Returning to dock - requested by user/app",
     "775": "Returning to dock - Lawn complete",
     "776": "Returning to dock - Relocalising",
+    "1005": "Connection to dockingstation failed",
     "1025": "Diagnostic mode",
     "1026": "End of life",
+    "1027": "Service Requesting Status",
+    "1038": "Mower immobilized",
     "1281": "Software update",
     "1537": "Stuck on lawn, help needed",
     "64513": "Sleeping",
     "99999": "Offline",
-    "None": "None",
+    "None": "None"
 }
+
 
 MOWER_STATE_DESCRIPTION = {
     "0": "Docked",
+    "101": "Docked",
     "257": "Docked",
     "258": "Docked",
     "259": "Docked",
@@ -196,6 +210,8 @@ MOWER_STATE_DESCRIPTION = {
     "261": "Docked",
     "262": "Docked",
     "263": "Docked",
+    "266": "Mowing",
+    "512": "Mowing",
     "513": "Mowing",
     "514": "Mowing",
     "515": "Mowing",
@@ -203,6 +219,13 @@ MOWER_STATE_DESCRIPTION = {
     "517": "Mowing",
     "518": "Mowing",
     "519": "Mowing",
+    "520": "Mowing",
+    "521": "Mowing",
+    "522": "Mowing",
+    "523": "Mowing",
+    "524": "Mowing",
+    "525": "Mowing",
+    "768": "Mowing",
     "769": "Mowing",
     "770": "Mowing",
     "771": "Mowing",
@@ -211,15 +234,17 @@ MOWER_STATE_DESCRIPTION = {
     "774": "Mowing",
     "775": "Mowing",
     "776": "Mowing",
+    "1005": "Mowing",
     "1025": "Diagnostic mode",
     "1026": "End of life",
+    "1027": "Service Requesting Status",
+    "1038": "Mower immobilized",
     "1281": "Software update",
     "1537": "Stuck",
     "64513": "Docked",
     "99999": "Offline",
-    "None": "None",
+    "None": "None"
 }
-
 
 MOWER_MODEL_DESCRIPTION = {
     "3600HA2300": "Indego 1000",
@@ -229,13 +254,13 @@ MOWER_MODEL_DESCRIPTION = {
     "3600HA2304": "Indego 10C",
     "3600HB0100": "Indego 350",
     "3600HB0101": "Indego 400",
-    "3600HB0102": "Indego S+ 350",
-    "3600HB0103": "Indego S+ 400",
-    "3600HB0105": "Indego S+ 350 2020",
-    "3600HB0106": "Indego S+ 400 2020",
+    "3600HB0102": "Indego S+ 350 1gen",
+    "3600HB0103": "Indego S+ 400 1gen",
+    "3600HB0105": "Indego S+ 350 2gen",
+    "3600HB0106": "Indego S+ 400 2gen",
     "3600HB0301": "Indego M+ 700"
-    #    '3600HB0xxx': 'Indego M+ 700' missing model number
 }
+
 MOWER_MODEL_VOLTAGE = {
     "3600HA2300": {"min": "297", "max": "369"},  # Indego 1000
     "3600HA2301": {"min": "297", "max": "369"},  # Indego 1200
@@ -249,7 +274,6 @@ MOWER_MODEL_VOLTAGE = {
     "3600HB0105": {"min": "0", "max": "100"},  # Indego S+ 350
     "3600HB0106": {"min": "0", "max": "100"},  # Indego S+ 400
     "3600HB0301": {"min": "0", "max": "100"}  # Indego M+ 700
-    #    '3600HB0xxx': {'min': '0','max': '100'}   # Indego M+ 700
 }
 
 MOWING_MODE_DESCRIPTION = {
