@@ -93,6 +93,7 @@ class IndegoBaseClient(ABC):
     def _update_alerts(self, new):
         if new:
             self.alerts = [Alerts(**a) for a in new]
+            self.alerts_count = len(self.alerts)
 
     @abstractmethod
     def update_last_completed_mow(self):
@@ -101,7 +102,7 @@ class IndegoBaseClient(ABC):
     def _update_last_completed_mow(self, new):
         if new:
             self.last_completed_mow = convert_bosch_datetime(new["last_mowed"])
-            
+
     @abstractmethod
     def update_location(self):
         pass
