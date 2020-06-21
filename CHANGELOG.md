@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.5
+- Adjusted session cut to convert None to 0
+
 ## 2.0.4
 - Adjusted State Sensor Detail async code
 
