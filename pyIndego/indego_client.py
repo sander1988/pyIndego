@@ -167,15 +167,37 @@ class IndegoClient(IndegoBaseClient):
             except Exception as e:
                 _LOGGER.error("Get gave a unhandled error: %s", e)
                 return None
-
-            if response.status == 504:
-                _LOGGER.error("Server backend did not have an update before timeout")
-                return None
-            elif response.status != 200:
-                # relogin for other codes
-                self.login()
-                headers["x-im-context-id"] = self._contextid
-                continue
+            else:
+                _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
+                if response.status_code == 400:
+                    _LOGGER.error("      server answer: Bad Request")
+                    return None
+                if response.status_code == 500:
+                    #_LOGGER.error("      Server answer: Internal Server Error")
+                    _LOGGER.info("      Server answer: Internal Server Error")
+                    return None
+                if response.status_code == 501:
+                    #_LOGGER.error("      Server answer: not implemented yet")
+                    _LOGGER.info("      Server answer: not implemented yet")
+                    return None
+                if response.status_code == 504:
+                    _LOGGER.info("      Server backend did not have an update before timeout")
+                    return None
+                if response.status_code == 204:
+                    _LOGGER.info("      No content in response from server")
+                    return None
+    
+                elif response.status != 200:
+                    # relogin for other codes
+                    self.login()
+                    headers["x-im-context-id"] = self._contextid
+                    continue
+                else:
+                    _LOGGER.debug("      Json:" + str(response.json()))
+                    response.raise_for_status()
+                    _LOGGER.debug("   --- GET: end")
+                    answer = True
+                    return response.json()
 
         if attempts >= 5:
             _LOGGER.warning("Tried 5 times to get data but did not succeed")

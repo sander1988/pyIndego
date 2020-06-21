@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.8
+- Added some logging
+- More error messages in log when get request fails
+
+## 2.0.7
+- Fixed Alerts_count for alert sensor
+
 ## 2.0.6
 - Adjusted time conversino for BoshTime to Swedish time format
 

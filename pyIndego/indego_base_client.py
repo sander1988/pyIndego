@@ -198,6 +198,7 @@ class IndegoBaseClient(ABC):
 
     def _login(self, login):
         if login:
+            _LOGGER.debug("---Call login")
             self._contextid = login["contextId"]
             self._userid = login["userId"]
             self._logged_in = True
