@@ -1,5 +1,39 @@
 # Changelog
 
+## 2.0.8
+- Added some logging
+- More error messages in log when get request fails
+
+## 2.0.7
+- Fixed Alerts_count for alert sensor
+
+## 2.0.6
+- Adjusted time conversino for BoshTime to Swedish time format
+
+## 2.0.5
+- Adjusted session cut to convert None to 0
+
+## 2.0.4
+- Adjusted State Sensor Detail async code
+
+## 2.0.3
+- Adjusted State Sensor Detail code
+
+## 2.0.2
+- Adjusted State Sensor code
+
+## 2.0.1
+- Removing AIOFile from the package to get the pypi packgare to load
+
+## 2.0.0
+- Fix problems with pypi pakcgae not loading
+
+## 2.0.0b2
+- Tryong out new code
+
+## 2.0.0b1
+- Totally rewritten all code (thanks to Eduard!)
+=======
 ## 1.0.21
 - Spelling errors fixed
 - Removed some uneccesary log messages
@@ -21,6 +55,7 @@
 
 ## 1.0.15
 - Corrected state 260 as Charging (was Docked)
+
 
 ## 1.0.14
 - Corrected error in login call
