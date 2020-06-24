@@ -72,6 +72,7 @@ class IndegoBaseClient(ABC):
         self.last_completed_mow = None
         self.next_mow = None
         self.update_available = None
+        self.alerts_count = 0
 
     @abstractmethod
     def update_all(self, force=False):
