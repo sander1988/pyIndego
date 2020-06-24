@@ -189,6 +189,7 @@ class IndegoClient(IndegoBaseClient):
     
                 elif response.status != 200:
                     # relogin for other codes
+                    _LOGGER.debug("      Try to login again")
                     self.login()
                     headers["x-im-context-id"] = self._contextid
                     continue

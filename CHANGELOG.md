@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.9
+- Added init of alerts_count
+- More error messages in log when login get request fails
+
 ## 2.0.8
 - Added some logging
 - More error messages in log when get request fails

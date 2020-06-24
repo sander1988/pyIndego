@@ -285,7 +285,7 @@ MOWING_MODE_DESCRIPTION = {
 ALERT_ERROR_CODE = {
     "104": "Stop button pushed",
     "115": "Mower is stuck",
-    "149": "Mower uutside perimeter cable",
+    "149": "Mower outside perimeter cable",
     "151": "Perimeter cable signal missing",
     "ntfy_blade_life": "Reminder blade life",
 }
