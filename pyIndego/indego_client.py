@@ -24,6 +24,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class IndegoClient(IndegoBaseClient):
+    """Class for Indego Non-Async Client."""
+
     def __init__(
         self,
         username: str,
@@ -32,20 +34,34 @@ class IndegoClient(IndegoBaseClient):
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
     ):
+        """Initialize the Client
+
+        Args:
+            username (str): username for Indego Account
+            password (str): password for Indego Account
+            serial (str): serial number of the mower
+            map_filename (str, optional): Filename to store maps in. Defaults to None.
+            api_url (str, optional): url for the api, defaults to DEFAULT_URL.
+            
+        """
         super().__init__(username, password, serial, map_filename, api_url)
 
     def __enter__(self):
+        """Enter for with."""
         self.start()
         return self
 
     def __exit__(self, type, value, traceback):
+        """Exit for with."""
         pass
 
     def start(self):
+        """Login if not done."""
         if not self._logged_in:
             self.login()
 
     def update_all(self, force=False):
+        """Update all states."""
         self.update_generic_data()
         self.update_state(force)
         self.update_alerts()
@@ -58,28 +74,42 @@ class IndegoClient(IndegoBaseClient):
         self.update_network()
 
     def update_generic_data(self):
+        """Update generic data."""
         self._update_generic_data(self.get(f"alms/{self._serial}"))
 
     def update_alerts(self):
+        """Update alerts."""
         self._update_alerts(self.get("alerts"))
 
     def update_last_completed_mow(self):
+        """Update last completed mow."""
         self._update_last_completed_mow(
             self.get(f"alms/{self._serial}/predictive/lastcutting")
         )
 
     def update_location(self):
+        """Update location."""
         self._update_location(self.get(f"alms/{self._serial}/predictive/location"))
 
     def update_next_mow(self):
+        """Update next mow datetime."""
         self._update_next_mow(self.get(f"alms/{self._serial}/predictive/nextcutting"))
 
     def update_operating_data(self):
+        """Update operating data."""
         self._update_operating_data(self.get(f"alms/{self._serial}/operatingData"))
 
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
+        """Update state. Can be both forced and with longpoll.
+
+        Args:
+            force (bool, optional): Force the state refresh, wakes up the mower. Defaults to False.
+            longpoll (bool, optional): Do a longpoll. Defaults to False.
+            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120.
+
+        """
         path = f"alms/{self._serial}/state"
-        #_LOGGER.debug("---Update State")
+        # _LOGGER.debug("---Update State")
         if longpoll:
             if self.state:
                 last_state = self.state.state
@@ -92,16 +122,25 @@ class IndegoClient(IndegoBaseClient):
         self._update_state(self.get(path))
 
     def update_updates_available(self):
+        """Update updates available."""
         if self._online:
             self._update_updates_available(self.get(f"alms/{self._serial}/updates"))
 
     def update_users(self):
+        """Update users."""
         self._update_users(self.get(f"users/{self._userid}"))
 
     def update_network(self):
+        """Update network."""
         self._update_network(self.get(f"alms/{self._serial}/network"))
 
-    def download_map(self, filename=None):
+    def download_map(self, filename: str = None):
+        """Download the map.
+
+        Args:
+            filename (str, optional): Filename for the map. Defaults to None, can also be filled by the filename set in init.
+
+        """
         if filename:
             self.map_filename = filename
         if not self.map_filename:
@@ -113,21 +152,41 @@ class IndegoClient(IndegoBaseClient):
                 afp.write(map)
 
     def put_command(self, command: str):
+        """Send a command to the mower.
+
+        Args:
+            command (str): command should be one of "mow", "pause", "returnToDock"
+
+        Returns:
+            str: either result of the call or 'Wrong Command'
+
+        """
         if command in COMMANDS:
             return self.put(f"alms/{self._serial}/state", {"state": command})
         _LOGGER.warning("%s not valid", command)
         return "Wrong Command!"
 
     def put_mow_mode(self, command: typing.Any):
+        """Set the mower to mode manual (false-ish) or predictive (true-ish).
+
+        Args:
+            command (str/bool): should be str that is bool-ish (true, True, false, False) or a bool.
+
+        Returns:
+            str: either result of the call or 'Wrong Command'
+            
+        """
         if command in ("true", "false", "True", "False") or isinstance(command, bool):
             return self.put(f"alms/{self._serial}/predictive", {"enabled": command})
         _LOGGER.warning("%s not valid", command)
         return "Wrong Command!"
 
     def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
+        """Set the predictive calendar."""
         return self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
     def login(self):
+        """Login to the api and store the context."""
         response = requests.post(
             f"{self._api_url}authenticate",
             json=DEFAULT_BODY,
@@ -135,11 +194,7 @@ class IndegoClient(IndegoBaseClient):
             auth=HTTPBasicAuth(self._username, self._password),
             timeout=30,
         )
-        try:
-            response.raise_for_status()
-        except HTTPError as e:
-            _LOGGER.error("Invalid credentials: %s", e)
-            return
+        response.raise_for_status()
         self._login(response.json())
 
     def get(self, path, timeout=30):
@@ -173,20 +228,22 @@ class IndegoClient(IndegoBaseClient):
                     _LOGGER.error("      server answer: Bad Request")
                     return None
                 if response.status_code == 500:
-                    #_LOGGER.error("      Server answer: Internal Server Error")
+                    # _LOGGER.error("      Server answer: Internal Server Error")
                     _LOGGER.info("      Server answer: Internal Server Error")
                     return None
                 if response.status_code == 501:
-                    #_LOGGER.error("      Server answer: not implemented yet")
+                    # _LOGGER.error("      Server answer: not implemented yet")
                     _LOGGER.info("      Server answer: not implemented yet")
                     return None
                 if response.status_code == 504:
-                    _LOGGER.info("      Server backend did not have an update before timeout")
+                    _LOGGER.info(
+                        "      Server backend did not have an update before timeout"
+                    )
                     return None
                 if response.status_code == 204:
                     _LOGGER.info("      No content in response from server")
                     return None
-    
+
                 elif response.status != 200:
                     # relogin for other codes
                     _LOGGER.debug("      Try to login again")
