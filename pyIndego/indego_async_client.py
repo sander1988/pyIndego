@@ -148,17 +148,14 @@ class IndegoAsyncClient(IndegoBaseClient):
         return await self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
     async def login(self):
-        try:
-            async with self._session.post(
-                f"{self._api_url}authenticate",
-                json=DEFAULT_BODY,
-                headers=DEFAULT_HEADER,
-                auth=BasicAuth(self._username, self._password),
-                timeout=30,
-            ) as self._login_session:
-                self._login(await self._login_session.json())
-        except ClientResponseError as e:
-            _LOGGER.error("Invalid credentials: %s", e)
+        async with self._session.post(
+            f"{self._api_url}authenticate",
+            json=DEFAULT_BODY,
+            headers=DEFAULT_HEADER,
+            auth=BasicAuth(self._username, self._password),
+            timeout=30,
+        ) as self._login_session:
+            self._login(await self._login_session.json())
 
     async def get(self, path, timeout=30):
         """Send a GET request and return the response as a dict."""

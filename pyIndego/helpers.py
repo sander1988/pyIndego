@@ -23,6 +23,5 @@ def nested_dataclass(*args, **kwargs):
 
 def convert_bosch_datetime(boschdatetime=None):
     if boschdatetime:
-        tmp = '{:%Y-%m-%d %H:%M}'.format(datetime.fromisoformat(boschdatetime))
-        return tmp
+        return datetime.fromisoformat(boschdatetime)
     return None
