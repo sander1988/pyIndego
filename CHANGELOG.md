@@ -33,6 +33,29 @@
 
 ## 2.0.0b1
 - Totally rewritten all code (thanks to Eduard!)
+=======
+## 1.0.21
+- Spelling errors fixed
+- Removed some uneccesary log messages
+
+## 1.0.20
+- Added mower state for offline
+
+## 1.0.19
+- Corrected error in database
+
+## 1.0.18
+- Added version control with new branch in github
+
+## 1.0.17
+- Added a bunch of state descriptions
+
+## 1.0.16
+- Better detection of offline mower
+
+## 1.0.15
+- Corrected state 260 as Charging (was Docked)
+
 
 ## 1.0.14
 - Corrected error in login call
