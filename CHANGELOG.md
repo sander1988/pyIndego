@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.11
+- Changed time representation for BochTime
+- Docstrings added
+- Some updates to README
+
 ## 2.0.10
 - Changed time representation for BochTime
 - Do not handle login fail in pyIndego
