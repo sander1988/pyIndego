@@ -1,3 +1,10 @@
+from enum import Enum
+
+
+class Methods(Enum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
 
 
 DEFAULT_URL = "https://api.indego.iot.bosch-si.com:443/api/v1/"
@@ -18,141 +25,63 @@ DEFAULT_HEADER = {CONTENT_TYPE: CONTENT_TYPE_JSON}
 DEFAULT_LOOKUP_VALUE = "Not in database."
 
 DEFAULT_CALENDAR = {
-            "sel_cal": 1,
-            "cals": [
+    "sel_cal": 1,
+    "cals": [
+        {
+            "cal": 1,
+            "days": [
                 {
-                    "cal": 1,
-                    "days": [
-                        {
-                            "day": 0,
-                            "slots": [
-                                {
-                                    "En": True,
-                                    "StHr": 0,
-                                    "StMin": 0,
-                                    "EnHr": 8,
-                                    "EnMin": 0,
-                                },
-                                {
-                                    "En": True,
-                                    "StHr": 20,
-                                    "StMin": 0,
-                                    "EnHr": 23,
-                                    "EnMin": 59,
-                                },
-                            ],
-                        },
-                        {
-                            "day": 1,
-                            "slots": [
-                                {
-                                    "En": True,
-                                    "StHr": 0,
-                                    "StMin": 0,
-                                    "EnHr": 8,
-                                    "EnMin": 0,
-                                },
-                                {
-                                    "En": True,
-                                    "StHr": 20,
-                                    "StMin": 0,
-                                    "EnHr": 23,
-                                    "EnMin": 59,
-                                },
-                            ],
-                        },
-                        {
-                            "day": 2,
-                            "slots": [
-                                {
-                                    "En": True,
-                                    "StHr": 0,
-                                    "StMin": 0,
-                                    "EnHr": 8,
-                                    "EnMin": 0,
-                                },
-                                {
-                                    "En": True,
-                                    "StHr": 20,
-                                    "StMin": 0,
-                                    "EnHr": 23,
-                                    "EnMin": 59,
-                                },
-                            ],
-                        },
-                        {
-                            "day": 3,
-                            "slots": [
-                                {
-                                    "En": True,
-                                    "StHr": 0,
-                                    "StMin": 0,
-                                    "EnHr": 8,
-                                    "EnMin": 0,
-                                },
-                                {
-                                    "En": True,
-                                    "StHr": 20,
-                                    "StMin": 0,
-                                    "EnHr": 23,
-                                    "EnMin": 59,
-                                },
-                            ],
-                        },
-                        {
-                            "day": 4,
-                            "slots": [
-                                {
-                                    "En": True,
-                                    "StHr": 0,
-                                    "StMin": 0,
-                                    "EnHr": 8,
-                                    "EnMin": 0,
-                                },
-                                {
-                                    "En": True,
-                                    "StHr": 20,
-                                    "StMin": 0,
-                                    "EnHr": 23,
-                                    "EnMin": 59,
-                                },
-                            ],
-                        },
-                        {
-                            "day": 5,
-                            "slots": [
-                                {
-                                    "En": True,
-                                    "StHr": 0,
-                                    "StMin": 0,
-                                    "EnHr": 8,
-                                    "EnMin": 0,
-                                },
-                                {
-                                    "En": True,
-                                    "StHr": 20,
-                                    "StMin": 0,
-                                    "EnHr": 23,
-                                    "EnMin": 59,
-                                },
-                            ],
-                        },
-                        {
-                            "day": 6,
-                            "slots": [
-                                {
-                                    "En": True,
-                                    "StHr": 0,
-                                    "StMin": 0,
-                                    "EnHr": 23,
-                                    "EnMin": 59,
-                                }
-                            ],
-                        },
+                    "day": 0,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
                     ],
-                }
+                },
+                {
+                    "day": 1,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 2,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 3,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 4,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 5,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 6,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 23, "EnMin": 59}
+                    ],
+                },
             ],
         }
+    ],
+}
 
 MOWER_STATE_DESCRIPTION_DETAIL = {
     "0": "Reading status",
@@ -196,7 +125,7 @@ MOWER_STATE_DESCRIPTION_DETAIL = {
     "1537": "Stuck on lawn, help needed",
     "64513": "Sleeping",
     "99999": "Offline",
-    "None": "None"
+    "None": "None",
 }
 
 
@@ -243,7 +172,7 @@ MOWER_STATE_DESCRIPTION = {
     "1537": "Stuck",
     "64513": "Docked",
     "99999": "Offline",
-    "None": "None"
+    "None": "None",
 }
 
 MOWER_MODEL_DESCRIPTION = {
@@ -258,7 +187,7 @@ MOWER_MODEL_DESCRIPTION = {
     "3600HB0103": "Indego S+ 400 1gen",
     "3600HB0105": "Indego S+ 350 2gen",
     "3600HB0106": "Indego S+ 400 2gen",
-    "3600HB0301": "Indego M+ 700"
+    "3600HB0301": "Indego M+ 700",
 }
 
 MOWER_MODEL_VOLTAGE = {
@@ -273,7 +202,7 @@ MOWER_MODEL_VOLTAGE = {
     "3600HB0103": {"min": "0", "max": "100"},  # Indego S+ 400
     "3600HB0105": {"min": "0", "max": "100"},  # Indego S+ 350
     "3600HB0106": {"min": "0", "max": "100"},  # Indego S+ 400
-    "3600HB0301": {"min": "0", "max": "100"}  # Indego M+ 700
+    "3600HB0301": {"min": "0", "max": "100"},  # Indego M+ 700
 }
 
 MOWING_MODE_DESCRIPTION = {
