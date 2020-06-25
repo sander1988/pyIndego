@@ -5,15 +5,19 @@ import logging
 import typing
 
 import aiohttp
+
+# from aiohttp import hdrs
 import requests
 
 # from aiofile import AIOFile
 from aiohttp import ClientResponseError
 from aiohttp import ServerTimeoutError
 from aiohttp import TooManyRedirects
+from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGatewayTimeout
 from aiohttp.helpers import BasicAuth
 
 from . import __version__
+from .const import Methods
 from .const import COMMANDS
 from .const import CONTENT_TYPE_JSON
 from .const import DEFAULT_BODY
@@ -47,7 +51,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             
         """
         super().__init__(username, password, serial, map_filename, api_url)
-        self._session = aiohttp.ClientSession(raise_for_status=True)
+        self._session = aiohttp.ClientSession(raise_for_status=False)
 
     async def __aenter__(self):
         """Enter for async with."""
@@ -142,7 +146,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             else:
                 path = f"{path}?forceRefresh=true"
 
-        self._update_state(await self.get(path))
+        self._update_state(await self.get(path, timeout=longpoll_timeout))
 
     async def update_updates_available(self):
         """Update updates available."""
@@ -171,12 +175,10 @@ class IndegoAsyncClient(IndegoBaseClient):
         if not self.map_filename:
             _LOGGER.error("No map filename defined.")
             return
-        # async with AIOFile(self.map_filename, "wb") as afp:
-        #    await afp.write(await self.get(f"alms/{self._serial}/map"))
-        map = self.get(f"alms/{self._serial}/map")
+        map = await self.get(f"alms/{self._serial}/map")
         if map:
-            with open(self.map_filename, "wb") as afp:
-                afp.write(map)
+            with open(self.map_filename, "wb") as file:
+                file.write(map)
 
     async def put_command(self, command: str):
         """Send a command to the mower.
@@ -214,74 +216,109 @@ class IndegoAsyncClient(IndegoBaseClient):
         """Set the predictive calendar."""
         return await self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
-    async def login(self):
+    async def login(self, attempts=0):
         """Login to the api and store the context."""
-        async with self._session.post(
-            f"{self._api_url}authenticate",
-            json=DEFAULT_BODY,
-            headers=DEFAULT_HEADER,
-            auth=BasicAuth(self._username, self._password),
-            timeout=30,
-        ) as self._login_session:
-            self._login(await self._login_session.json())
+        _LOGGER.debug("Logging in, attempt: %s", attempts)
+        self._login(
+            await self._request(
+                method=Methods.POST,
+                path="authenticate",
+                data=DEFAULT_BODY,
+                headers=DEFAULT_HEADER,
+                auth=BasicAuth(self._username, self._password),
+                timeout=30,
+                attempts=attempts,
+            )
+        )
 
-    async def get(self, path, timeout=30):
-        """Send a GET request and return the response as a dict."""
-        if not self._logged_in:
-            _LOGGER.warning("Please log in before calling updates.")
+    async def _request(
+        self,
+        method: Methods,
+        path: str,
+        data: dict = None,
+        headers=None,
+        auth=None,
+        timeout: int = 30,
+        attempts: int = 0,
+    ):
+        """Send a request and return the response."""
+        if attempts > 2:
+            _LOGGER.warning("Three attempts done, waiting 30 seconds.")
+            await asyncio.sleep(30)
+        if attempts > 4:
+            _LOGGER.warning("Five attempts done, please try again later.")
             return None
-        url = self._api_url + path
-        headers = DEFAULT_HEADER.copy()
-        headers["x-im-context-id"] = self._contextid
-
-        attempts = 0
-        while attempts < 5:
-            attempts = attempts + 1
-            try:
-                async with self._session.get(
-                    url, headers=headers, timeout=timeout
-                ) as response:
+        url = f"{self._api_url}{path}"
+        if not headers:
+            headers = DEFAULT_HEADER.copy()
+            headers["x-im-context-id"] = self._contextid
+        try:
+            async with self._session.request(
+                method=method.value,
+                url=url,
+                json=data,
+                headers=headers,
+                auth=auth,
+                timeout=timeout,
+            ) as response:
+                status = response.status
+                if status == 200:
+                    if method == Methods.PUT:
+                        return True
                     if response.content_type == CONTENT_TYPE_JSON:
                         return await response.json()
-                    else:
-                        return await response.content.read()
-            except (ServerTimeoutError, TooManyRedirects, ClientResponseError) as e:
-                _LOGGER.error("Failed to update Indego status. %s", e)
-                return None
-            except Exception as e:
-                _LOGGER.error("Get gave a unhandled error: %s", e)
-                return None
-
-            if response.status == 504:
-                _LOGGER.error("Server backend did not have an update before timeout")
-                return None
-            elif response.status != 200:
-                # relogin for other codes
-                await self.login()
-                headers["x-im-context-id"] = self._contextid
-                continue
-
-        if attempts >= 5:
-            _LOGGER.warning("Tried 5 times to get data but did not succeed")
-            _LOGGER.warning(
-                "Do you initilize with the correct username, password and serial?"
-            )
-            return None
-
-    async def put(self, path, data):
-        """Send a PUT request and return the response as a dict."""
-        headers = DEFAULT_HEADER.copy()
-        headers["x-im-context-id"] = self._contextid
-
-        full_url = self._api_url + path
-        try:
-            async with self._session.put(
-                full_url, headers=headers, json=data, timeout=30
-            ):
-                return True
-        except (ServerTimeoutError, TooManyRedirects, ClientResponseError) as e:
-            _LOGGER.error("Failed to update Indego status. %s", e)
+                    return await response.content.read()
+                if status == 400:
+                    _LOGGER.error("400: Bad Request: won't retry.")
+                    return None
+                if status == 401:
+                    _LOGGER.info("401: Unauthorized: logging in again.")
+                    await self.login()
+                    return await self._request(
+                        method=method,
+                        path=path,
+                        data=data,
+                        timeout=timeout,
+                        attempts=attempts + 1,
+                    )
+                if status == 403:
+                    _LOGGER.error("403: Forbidden: won't retry.")
+                    return None
+                if status == 405:
+                    _LOGGER.error(
+                        "405: Method not allowed: Get is used but not allowerd, try a different method for path %s, won't retry.",
+                        path,
+                    )
+                    return None
+                if response.status_code == 500:
+                    _LOGGER.info("500: Internal Server Error")
+                    return None
+                if response.status_code == 501:
+                    _LOGGER.info("501: Not implemented yet")
+                    return None
+                if response.status_code == 204:
+                    _LOGGER.info("204: No content in response from server")
+                    return None
+                response.raise_for_status()
+        except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as e:
+            _LOGGER.error("%s: Timeout on Bosch servers, retrying.", e)
+            return await self.get(path, timeout, attempts + 1)
+        except (TooManyRedirects, ClientResponseError) as e:
+            _LOGGER.error("%s: Failed to update Indego status.", e)
             return None
         except Exception as e:
             _LOGGER.error("Get gave a unhandled error: %s", e)
             return None
+
+    async def get(self, path: str, timeout: int = 30, attempts: int = 0):
+        """Send a GET request and return the response as a dict."""
+        return await self._request(
+            method=Methods.GET, path=path, timeout=timeout, attempts=attempts
+        )
+
+    async def put(self, path: str, data: dict, timeout: int = 30):
+        """Send a PUT request and return the response as a dict."""
+        return await self._request(
+            method=Methods.PUT, path=path, data=data, timeout=timeout
+        )
+

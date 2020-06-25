@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.12
+- Changed login logic
+- Added logging for log in in and other responses
+
 ## 2.0.11
 - Changed time representation for BochTime
 - Docstrings added

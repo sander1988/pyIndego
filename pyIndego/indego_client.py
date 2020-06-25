@@ -2,6 +2,7 @@
 import json
 import logging
 import typing
+import time
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -11,6 +12,7 @@ from requests.exceptions import Timeout
 from requests.exceptions import TooManyRedirects
 
 from . import __version__
+from .const import Methods
 from .const import COMMANDS
 from .const import CONTENT_TYPE
 from .const import CONTENT_TYPE_JSON
@@ -109,7 +111,6 @@ class IndegoClient(IndegoBaseClient):
 
         """
         path = f"alms/{self._serial}/state"
-        # _LOGGER.debug("---Update State")
         if longpoll:
             if self.state:
                 last_state = self.state.state
@@ -117,9 +118,12 @@ class IndegoClient(IndegoBaseClient):
                 last_state = 0
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
-            path = f"{path}?forceRefresh=true"
+            if longpoll:
+                path = f"{path}&forceRefresh=true"
+            else:
+                path = f"{path}?forceRefresh=true"
 
-        self._update_state(self.get(path))
+        self._update_state(self.get(path, timeout=longpoll_timeout))
 
     def update_updates_available(self):
         """Update updates available."""
@@ -185,98 +189,108 @@ class IndegoClient(IndegoBaseClient):
         """Set the predictive calendar."""
         return self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
-    def login(self):
+    def login(self, attempts=0):
         """Login to the api and store the context."""
-        response = requests.post(
-            f"{self._api_url}authenticate",
-            json=DEFAULT_BODY,
-            headers=DEFAULT_HEADER,
-            auth=HTTPBasicAuth(self._username, self._password),
-            timeout=30,
+        _LOGGER.debug("Logging in, attempt: %s", attempts)
+        self._login(
+            self._request(
+                method=Methods.POST,
+                path="authenticate",
+                data=DEFAULT_BODY,
+                headers=DEFAULT_HEADER,
+                auth=HTTPBasicAuth(self._username, self._password),
+                timeout=30,
+                attempts=attempts,
+            )
         )
-        response.raise_for_status()
-        self._login(response.json())
 
-    def get(self, path, timeout=30):
-        """Send a GET request and return the response as a dict."""
-        if not self._logged_in:
-            _LOGGER.warning("Please log in before calling updates.")
+    def _request(
+        self,
+        method: Methods,
+        path: str,
+        data: dict = None,
+        headers=None,
+        auth=None,
+        timeout: int = 30,
+        attempts: int = 0,
+    ):
+        """Send a request and return the response."""
+        if attempts >= 3:
+            _LOGGER.warning("Three attempts done, waiting 30 seconds.")
+            time.sleep(30)
+        if attempts >= 5:
+            _LOGGER.warning("Five attempts done, please try again manually.")
             return None
-        url = self._api_url + path
-        headers = DEFAULT_HEADER.copy()
-        headers["x-im-context-id"] = self._contextid
-
-        attempts = 0
-        while attempts < 5:
-            attempts = attempts + 1
-            try:
-                response = requests.get(url, headers=headers, timeout=timeout)
-                response.raise_for_status()
+        url = f"{self._api_url}{path}"
+        if not headers:
+            headers = DEFAULT_HEADER.copy()
+            headers["x-im-context-id"] = self._contextid
+        try:
+            response = requests.request(
+                method=method.value,
+                url=url,
+                json=data,
+                headers=headers,
+                auth=auth,
+                timeout=timeout,
+            )
+            status = response.status_code
+            if status == 200:
+                if method == Methods.PUT:
+                    return True
                 if CONTENT_TYPE_JSON in response.headers[CONTENT_TYPE].split(";"):
                     return response.json()
                 else:
                     return response.content
-            except (Timeout, TooManyRedirects, RequestException) as e:
-                _LOGGER.error("Failed to update Indego status. %s", e)
+            if status == 400:
+                _LOGGER.error("400: Bad Request: won't retry.")
                 return None
-            except Exception as e:
-                _LOGGER.error("Get gave a unhandled error: %s", e)
+            if status == 401:
+                _LOGGER.info("401: Unauthorized: logging in again.")
+                self.login()
+                return self._request(
+                    method=method,
+                    path=path,
+                    data=data,
+                    timeout=timeout,
+                    attempts=attempts + 1,
+                )
+            if status == 403:
+                _LOGGER.error("403: Forbidden: won't retry.")
                 return None
-            else:
-                _LOGGER.debug("      HTTP Status code: " + str(response.status_code))
-                if response.status_code == 400:
-                    _LOGGER.error("      server answer: Bad Request")
-                    return None
-                if response.status_code == 500:
-                    # _LOGGER.error("      Server answer: Internal Server Error")
-                    _LOGGER.info("      Server answer: Internal Server Error")
-                    return None
-                if response.status_code == 501:
-                    # _LOGGER.error("      Server answer: not implemented yet")
-                    _LOGGER.info("      Server answer: not implemented yet")
-                    return None
-                if response.status_code == 504:
-                    _LOGGER.info(
-                        "      Server backend did not have an update before timeout"
-                    )
-                    return None
-                if response.status_code == 204:
-                    _LOGGER.info("      No content in response from server")
-                    return None
-
-                elif response.status != 200:
-                    # relogin for other codes
-                    _LOGGER.debug("      Try to login again")
-                    self.login()
-                    headers["x-im-context-id"] = self._contextid
-                    continue
-                else:
-                    _LOGGER.debug("      Json:" + str(response.json()))
-                    response.raise_for_status()
-                    _LOGGER.debug("   --- GET: end")
-                    answer = True
-                    return response.json()
-
-        if attempts >= 5:
-            _LOGGER.warning("Tried 5 times to get data but did not succeed")
-            _LOGGER.warning(
-                "Do you initilize with the correct username, password and serial?"
-            )
-            return None
-
-    def put(self, path, data):
-        """Send a PUT request and return the response as a dict."""
-        headers = DEFAULT_HEADER.copy()
-        headers["x-im-context-id"] = self._contextid
-
-        full_url = self._api_url + path
-        try:
-            response = requests.put(full_url, headers=headers, json=data, timeout=30)
+            if status == 405:
+                _LOGGER.error(
+                    "405: Method not allowed: Get is used but not allowerd, try a different method for path %s, won't retry.",
+                    path,
+                )
+                return None
+            if response.status_code == 500:
+                _LOGGER.info("500: Internal Server Error")
+                return None
+            if response.status_code == 501:
+                _LOGGER.info("501: Not implemented yet")
+                return None
+            if response.status_code == 204:
+                _LOGGER.info("204: No content in response from server")
+                return None
             response.raise_for_status()
-            return True
-        except (Timeout, TooManyRedirects, RequestException) as e:
-            _LOGGER.error("Failed to update Indego status. %s", e)
+        except (Timeout) as e:
+            _LOGGER.error("%s: Timeout on Bosch servers, retrying.", e)
+            return self.get(path, timeout, attempts + 1)
+        except (TooManyRedirects, RequestException) as e:
+            _LOGGER.error("%s: Failed to update Indego status.", e)
             return None
         except Exception as e:
             _LOGGER.error("Get gave a unhandled error: %s", e)
             return None
+
+    def get(self, path: str, timeout: int = 30, attempts: int = 0):
+        """Send a GET request and return the response as a dict."""
+        return self._request(
+            method=Methods.GET, path=path, timeout=timeout, attempts=attempts
+        )
+
+    def put(self, path: str, data: dict, timeout: int = 30):
+        """Send a PUT request and return the response as a dict."""
+        return self._request(method=Methods.PUT, path=path, data=data, timeout=timeout)
+
