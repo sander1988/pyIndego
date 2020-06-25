@@ -6,6 +6,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from dataclasses import replace
 
+from .const import Methods
 from .const import ALERT_ERROR_CODE
 from .const import CONTENT_TYPE
 from .const import CONTENT_TYPE_JSON
@@ -56,6 +57,7 @@ class IndegoBaseClient(ABC):
         self._api_url = api_url
         self._logged_in = False
         self._online = False
+        self._contextid = ""
 
         self.alerts = [Alerts()]
         self.generic_data = GenericData()
@@ -146,11 +148,13 @@ class IndegoBaseClient(ABC):
         pass
 
     def _update_state(self, new):
-        #_LOGGER.debug("---Update State")
+        # _LOGGER.debug("---Update State")
         if new:
             self.state = replace(self.state, **new)
         self.state_description = MOWER_STATE_DESCRIPTION.get(str(self.state.state))
-        self.state_description_detail = MOWER_STATE_DESCRIPTION_DETAIL.get(str(self.state.state))
+        self.state_description_detail = MOWER_STATE_DESCRIPTION_DETAIL.get(
+            str(self.state.state)
+        )
 
     @abstractmethod
     def update_updates_available(self):
@@ -193,7 +197,7 @@ class IndegoBaseClient(ABC):
         pass
 
     @abstractmethod
-    def login(self):
+    def login(self, attempts: int = 0):
         """Login to the Indego API."""
         pass
 
@@ -207,7 +211,31 @@ class IndegoBaseClient(ABC):
             self._logged_in = False
 
     @abstractmethod
-    def get(self, path: str, timeout: int = 30):
+    def _request(
+        self,
+        method: Methods,
+        path: str,
+        data: dict = None,
+        headers: dict = None,
+        auth: typing.Any = None,
+        timeout: int = 30,
+        attempts: int = 0,
+    ):
+        """Request implemented by the subclasses either synchronously or asynchronously.
+
+        Args:
+            method (Methods): HTTP method to be executed.
+            path (str): url to call on top of base_url.
+            data (dict, optional): if applicable, data to be sent, defaults to None.
+            headers (dict, optional): headers to be included, defaults to None, which should be filled by the method.
+            auth (BasicAuth or HTTPBasicAuth, optional): login specific attribute, defaults to None.
+            timeout (int, optional): Timeout for the api call. Defaults to 30.
+            attempts (int, optional): Number to keep track of retries, after three starts delaying, after five quites.
+        
+        """
+
+    @abstractmethod
+    def get(self, path: str, timeout: int):
         """Get implemented by the subclasses either synchronously or asynchronously.
 
         Args:
@@ -218,12 +246,13 @@ class IndegoBaseClient(ABC):
         pass
 
     @abstractmethod
-    def put(self, path: str, data: dict):
+    def put(self, path: str, data: dict, timeout: int):
         """Put implemented by the subclasses either synchronously or asynchronously.
 
         Args:
             path (str): url to call on top of base_url
             data (dict): data to put
+            timeout (int, optional): Timeout for the api call. Defaults to 30.
         
         """
         pass
