@@ -23,46 +23,76 @@ The python library is written for the login method with username (email address)
 ## Call the API and the mower
 Call the API:
 
-    IndegoApi_Instance = IndegoAPI(username='your_mail@gmail.com', password='your_password', serial='your_serial')
+    indego = IndegoClient(username='your_mail@gmail.com', password='your_password', serial='your_serial')
 
 ## get-functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 
-API Call                 | Bosch API | Mower | Mower needs to be online
--------------------------|-----------|-------|-------------------------
-getAlerts                |    X      |       |
-getConfig                |    ?      |  ?    |   ?
-getForcedState           |           |  X    |   X
-getGenericData           |    X      |       |
-getLastComletedMow       |    X      |       |
-getLongpollState         |    ?      |       |   
-getNetwork               |    ?      |  ?    |   ?
-getNextMow               |           |       |
-getOperatingData         |           |  X    |   X
-getPredictiveSetup       |    X      |       |
-getState                 |    X      |       |
-getUpdates               |           |  X    |   X
-getUsers                 |    X      |       |
-login                    |    X      |       |
+API Call                           | Bosch API | Mower | Mower needs to be online
+-----------------------------------|-----------|-------|-------------------------
+indego.download_map()
+indego.update_all()
+indego.update_alerts()             |    X      |       |
+indego.update_generic_data()       |    X      |       |
+indego.update_last_completed_mow() |    X      |       |
+indego.update_location()
+indego.update_longpoll_state()     |    ?      |       |   
+indego.update_network()            |    ?      |  ?    |   ?
+indego.update_next_mow()           |           |       |
+indego.update_operating_data()     |           |  X    |   X
+indego.update_state()              |    X      |       |
+indego.update_updates()            |           |  X    |   X
+indego.update_users()              |    X      |       |
 
-## List of get-functions
 
-### getAlerts()
-Collect alerts.
+Not implemented yet
+getConfig
+getPredictiveSetup
+login
+
+## List of update functions
+
+### indego.update_all
+Updates all sensors
+
+### indego.update_alerts()
+Updates alerts from API to indego.alerts.
+
+```python
+[Alerts(alert_id='5d48171263c5345a75dbc017', error_code='ntfy_blade_life', headline='Underhållstips.', date='2019-08-05T11:46:26.397Z', message='Kontrollera klippknivarna. Indego har klippt i 100 timmar. Ska den fungera optimalt, kontrollera klippknivarna så att de är i bra skick. Du kan beställa nya knivar via avsnittet Tillbehör.', read_status='unread', flag='warning', push=True, alert_description='Reminder blade life')]
+```
+
+### indego.update_generic_data()
+Collect serial, service counter, name, mowing mode, model number and firmware to indego.generic_data.
+
+```python
+GenericData(alm_name='Indego', alm_sn='505703041', service_counter=132436, needs_service=False, alm_mode='calendar', bareToolnumber='3600HA2300', alm_firmware_version='00837.01043', model_description='Indego 1000', model_voltage=ModelVoltage(min=297, max=369), mowing_mode_description='Calendar')
+```
+
+### indego.update_last_completed_mow()
+Updates data on the last completed mow to indego.last_completed_mow
+
+```python
+2020-06-21 21:38:50.115000+02:00
+```
+
+### indego.update_location()
+Updates the location of the garden/mower to indego.location.
+
+```python
+Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
+```
+
+### indego.update_longpoll_state( timeout )
+Function indego.update_state must have been called before using this call. It sends a state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
+
+This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
 
 ```python
 Response:
-{
-    'alm_sn': '123456789', 
-    'alert_id': '5d48171263c5345a75dbc017', 
-    'error_code': 'ntfy_blade_life', 
-    'headline': 'Underhållstips.', 
-    'date': '2019-08-05T11:46:26.397Z', 
-    'message': 'Kontrollera klippknivarna. Indego har klippt i 100 timmar. Ska den fungera optimalt, kontrollera klippknivarna så att de är i bra skick. Du kan beställa nya knivar via avsnittet Tillbehör.', 
-    'read_status': 'unread', 
-    'flag': 'warning', 
-    'push': True
-}
+--> same as getState(), but might also include less information
+--> if the status is not updated until the timeout, the return is empty
+--> functions reading data from locally cached API data will provide the latest availabe data
 ```
 
 ### getConfig()
@@ -89,55 +119,9 @@ Response:
 --> same as getState()
 ```
 
-### getGenericData()
-Collect serial, service counter, name, mowing mode, model number and firmware.
 
-```python
-Response:
-{
-    'alm_sn': '123456789', 
-    'alm_name': 'Indego', 
-    'service_counter': 60488, 
-    'needs_service': False, 
-    'alm_mode': 'manual', 
-    'bareToolnumber': '3600HA2300', 
-    'alm_firmware_version': '00837.01043'
-}
-```
 
-### getLastCompletedMow()
-Collects data on the last completed mow. .
 
-```python
-Response:
-{
-    'last_mowed': '2020-05-25T10:00:00+02:00'
-}
-```
-
-### getLocation()
-Collect location of the garden/mower.
-
-```python
-Response:
-{
-    'latitude': '59.742950', 
-    'longitude': '17.380440', 
-    'timezone': 'Europe/Berlin'
-}
-```
-
-### getLongpollState(timeout)
-Function getState must have been called before using this call. It sends a state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
-
-This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
-
-```python
-Response:
---> same as getState(), but might also include less information
---> if the status is not updated until the timeout, the return is empty
---> functions reading data from locally cached API data will provide the latest availabe data
-```
 
 ### getNetwork()
 Collects data on the mobile network the Indego is connected to.
