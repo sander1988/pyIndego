@@ -10,25 +10,29 @@ _LOGGER.setLevel(logging.DEBUG)
 
 def main(config):
     with IndegoClient(**config) as indego:
-        print("=[alerts]====")
+        # print("=[alerts]====")
+        indego.update_state()
+        print(indego.state)
+        indego.update_state(longpoll=True, longpoll_timeout=20)
+        print(indego.state)
         indego.update_alerts()
         print(indego.alerts)
-        print("=[alerts_count]====")
-        print(indego.alerts_count)
+        # print("=[alerts_count]====")
+        # print(indego.alerts_count)
 
-        print("=[generic_data]====")
-        indego.update_generic_data()
-        print(indego.generic_data)
+        # print("=[generic_data]====")
+        # indego.update_generic_data()
+        # print(indego.generic_data)
 
-        print("=[last_completed_mow]====")
-        indego.update_last_completed_mow()
-        print(indego.last_completed_mow)
+        # print("=[last_completed_mow]====")
+        # indego.update_last_completed_mow()
+        # print(indego.last_completed_mow)
 
-        print("=[location]====")
-        indego.update_location()
-        print(indego.location)
+        # print("=[location]====")
+        # indego.update_location()
+        # print(indego.location)
 
-        print("=[longpoll_state]====")
+        # print("=[longpoll_state]====")
         # indego.update_longpoll_state(40)
         # print(indego.longpoll_state)
 

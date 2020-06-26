@@ -14,8 +14,10 @@ async def main(config):
     # indego._contextid = "ajhsdbfmabsdf"
     # indego._logged_in = True
     try:
-        await indego.update_generic_data()
-        print("generic: ", indego.generic_data)
+        await indego.update_state()
+        print("State: ", indego.state)
+        await indego.update_state(longpoll=True, longpoll_timeout=5)
+        print("State: ", indego.state)
     finally:
         await indego.close()
     # async with IndegoAsyncClient(**config) as indego:
