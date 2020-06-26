@@ -112,10 +112,9 @@ class IndegoClient(IndegoBaseClient):
         """
         path = f"alms/{self._serial}/state"
         if longpoll:
-            if self.state:
+            last_state = 0
+            if self.state.state:
                 last_state = self.state.state
-            else:
-                last_state = 0
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
             if longpoll:
@@ -123,7 +122,7 @@ class IndegoClient(IndegoBaseClient):
             else:
                 path = f"{path}?forceRefresh=true"
 
-        self._update_state(self.get(path, timeout=longpoll_timeout))
+        self._update_state(self.get(path, timeout=longpoll_timeout + 30))
 
     def update_updates_available(self):
         """Update updates available."""
@@ -242,6 +241,9 @@ class IndegoClient(IndegoBaseClient):
                     return response.json()
                 else:
                     return response.content
+            if status == 204:
+                _LOGGER.info("204: No content in response from server")
+                return None
             if status == 400:
                 _LOGGER.error("400: Bad Request: won't retry.")
                 return None
@@ -264,15 +266,16 @@ class IndegoClient(IndegoBaseClient):
                     path,
                 )
                 return None
-            if response.status_code == 500:
+            if status == 500:
                 _LOGGER.info("500: Internal Server Error")
                 return None
-            if response.status_code == 501:
+            if status == 501:
                 _LOGGER.info("501: Not implemented yet")
                 return None
-            if response.status_code == 204:
-                _LOGGER.info("204: No content in response from server")
-                return None
+            if status == 504:
+                if url.find("longpoll=true") > 0:
+                    _LOGGER.info("504: longpoll stopped, no updates.")
+                    return None
             response.raise_for_status()
         except (Timeout) as e:
             _LOGGER.error("%s: Timeout on Bosch servers, retrying.", e)

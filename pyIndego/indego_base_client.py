@@ -148,7 +148,6 @@ class IndegoBaseClient(ABC):
         pass
 
     def _update_state(self, new):
-        # _LOGGER.debug("---Update State")
         if new:
             self.state = replace(self.state, **new)
         self.state_description = MOWER_STATE_DESCRIPTION.get(str(self.state.state))

@@ -179,6 +179,8 @@ class State:
     mowmode: int = None
     xPos: int = None
     yPos: int = None
+    charge: int = None
+    operate: int = None
     runtime: Runtime = field(default_factory=Runtime)
     mapsvgcache_ts: int = None
     svg_xPos: int = None

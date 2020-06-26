@@ -41,7 +41,7 @@ indego.update_network()            |    ?      |  ?    |   ?
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |   X
 indego.update_state()              |    X      |       |
-indego.update_updates()            |           |  X    |   X
+indego.update_updates_available()  |           |  X    |   X
 indego.update_users()              |    X      |       |
 
 
@@ -95,6 +95,44 @@ Response:
 --> functions reading data from locally cached API data will provide the latest availabe data
 ```
 
+### indego.update_next_mow()
+Updates the indego.next_mow with the next planned mow date and time.
+
+```python
+2020-06-29 10:00:00+02:00
+```
+
+### indego.update_operating_data()
+Update the indego.operating_data with data about battery, runtime, garden data and temperature.
+
+```python
+OperatingData(hmiKeys=1768, battery=Battery(percent=357, voltage=35.7, cycles=0, discharge=0.0, ambient_temp=26, battery_temp=26, percent_adjusted=83), garden=Garden(id=8, name=1, signal_id=1, size=769, inner_bounds=3, cuts=15, runtime=166824, charge=37702, bumps=6646, stops=29, last_mow=1, map_cell_size=None), runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=9, charge=0, cut=0)))
+```
+
+### indego.update_state()
+Updates the indego.state with state of mower, % lawn mowed, position, runtime, map coordinates.
+
+```python
+State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPos=65, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=5, charge=0, cut=0)), mapsvgcache_ts=1593207884109, svg_xPos=192, svg_yPos=544, config_change=None, mow_trig=None)
+```
+
+### indego.update_updates()
+Check if there are any updates apllicable to the mower and undates the indego.updates.
+
+```python
+Updates(available=None)
+```
+
+### indego.update_users()
+Updates the indego.users with information about the user.
+
+```python
+Users(email='youremail@mail.com', display_name='Indego', language='sv', country='SE', optIn=True, optInApp=True)
+```
+
+
+
+
 ### getConfig()
 Collects the configuration of the mower.
 
@@ -140,56 +178,7 @@ Response:
 }
 ```
 
-### getNextMow()
-Collects data on next mow. Returns none if mower is set to manual mode.
 
-```python
-Response:
-{
-    'mow_next': '2020-05-25T10:00:00+02:00'
-}
-```
-
-### getOperatingData()
-Collect operational data data: battery, runtime, garden data and temperature.
-
-```python
-Response:
-{
-    'runtime': {
-        'total': {
-            'operate': 86333, 
-            'charge': 25845
-        }, 
-        'session': {
-            'operate': 0, 
-            'charge': 0
-        }
-    }, 
-    'battery': {
-        'voltage': 33.5, 
-        'cycles': 1, 
-        'discharge': 0.0, 
-        'ambient_temp': 17, 
-        'battery_temp': 17, 
-        'percent': 335
-    }, 
-    'garden': {
-        'id': 7, 
-        'name': 1, 
-        'signal_id': 1, 
-        'size': 625, 
-        'inner_bounds': 3, 
-        'cuts': 26, 
-        'runtime': 82197, 
-        'charge': 24860, 
-        'bumps': 4650, 
-        'stops': 24, 
-        'last_mow': 4
-    }, 
-    'hmiKeys': 1344
-}
-```
 
 ### getPredictiveSetup()
 
@@ -246,58 +235,8 @@ Response:
 }
 ```
 
-### getState()
-Collects state of mower, % lawn mowed, position, runtime, map coordinates.
 
-```python
-Response:
-{
-    'state': 64513, 
-    'map_update_available': True, 
-    'mowed': 95, 
-    'mowmode': 0, 
-    'xPos': 68, 
-    'yPos': 30, 
-    'runtime': {
-        'total': {
-            'operate': 86327, 
-            'charge': 25845
-            }, 
-        'session': {
-            'operate': 4, 
-            'charge': 0
-            }
-        }, 
-    'mapsvgcache_ts': 1565381013023, 
-    'svg_xPos': 928, 
-    'svg_yPos': 264
-}
-```
 
-### getUpdates()
-Check if there are any updates apllicable to the mower.
-
-```python
-Response:
-{
-     'available': False
-}
-```
-
-### getUsers()
-Collect user data.
-
-```python
-Response:
-{
-    'email': 'mail@gmail.com', 
-    'display_name': 'Indego', 
-    'language': 'sv', 
-    'country': 'GB', 
-    'optIn': True, 
-    'optInApp': True
-}
-```
 
 ## Sending commands
 
