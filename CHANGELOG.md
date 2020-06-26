@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.13
+- Tested and made some fixes for Longpoll functionality
+- Docs updated
+
 ## 2.0.12
 - Changed login logic
 - Added logging for log in in and other responses
