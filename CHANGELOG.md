@@ -1,5 +1,96 @@
 # Changelog
 
+## 2.0.13
+- Tested and made some fixes for Longpoll functionality
+- Docs updated
+
+## 2.0.12
+- Changed login logic
+- Added logging for log in in and other responses
+
+## 2.0.11
+- Changed time representation for BochTime
+- Docstrings added
+- Some updates to README
+
+## 2.0.10
+- Changed time representation for BochTime
+- Do not handle login fail in pyIndego
+
+## 2.0.9
+- Added init of alerts_count
+- More error messages in log when login get request fails
+
+## 2.0.8
+- Added some logging
+- More error messages in log when get request fails
+
+## 2.0.7
+- Fixed Alerts_count for alert sensor
+
+## 2.0.6
+- Adjusted time conversino for BoshTime to Swedish time format
+
+## 2.0.5
+- Adjusted session cut to convert None to 0
+
+## 2.0.4
+- Adjusted State Sensor Detail async code
+
+## 2.0.3
+- Adjusted State Sensor Detail code
+
+## 2.0.2
+- Adjusted State Sensor code
+
+## 2.0.1
+- Removing AIOFile from the package to get the pypi packgare to load
+
+## 2.0.0
+- Fix problems with pypi pakcgae not loading
+
+## 2.0.0b2
+- Tryong out new code
+
+## 2.0.0b1
+- Totally rewritten all code (thanks to Eduard!)
+=======
+## 1.0.21
+- Spelling errors fixed
+- Removed some uneccesary log messages
+
+## 1.0.20
+- Added mower state for offline
+
+## 1.0.19
+- Corrected error in database
+
+## 1.0.18
+- Added version control with new branch in github
+
+## 1.0.17
+- Added a bunch of state descriptions
+
+## 1.0.16
+- Better detection of offline mower
+
+## 1.0.15
+- Corrected state 260 as Charging (was Docked)
+
+
+## 1.0.14
+- Corrected error in login call
+
+## 1.0.13
+- Better handling of server responding with no content.
+- Better information in log messages.
+- Added getMap for downloading map image in SVN format.
+
+## 1.0.12
+- Added control for the getLongpollState to make sure that getState has been called.
+- Added better handling and logging when mower is offline.
+- Cleaned up some logging.
+
 ## 1.0.11
 - Added support for the Indego m+ 700 mower.
 - Updated get code in order to be able to login if sessin cookie is not accepted
