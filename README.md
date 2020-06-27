@@ -40,7 +40,7 @@ indego.update_network()            |           |       |
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |   X
 indego.update_state()              |    X      |       |
-indego.update_updates_available()  |           |  X    |   X
+indego.update_updates()            |           |  X    |   X
 indego.update_users()              |    X      |       |
 
 
@@ -183,6 +183,81 @@ Response:
 --> same as getState()
 ```
 
+<<<<<<< HEAD
+=======
+
+
+
+
+### getNetwork()
+Collects data on the mobile network the Indego is connected to.
+
+```python
+Response:
+{
+    'mcc': 262,
+    'mnc': 2,
+    'rssi': -76,
+    'currMode': 's',
+    'configMode': 's',
+    'steeredRssi': -100,
+    'networkCount': 3,
+    'networks': [26201, 26202, 26203]
+}
+```
+
+### getNextMow()
+Collects data on next mow. Returns none if mower is set to manual mode.
+
+```python
+Response:
+{
+    'mow_next': '2020-05-25T10:00:00+02:00'
+}
+```
+
+### getOperatingData()
+Collect operational data data: battery, runtime, garden data and temperature.
+
+```python
+Response:
+{
+    'runtime': {
+        'total': {
+            'operate': 86333, 
+            'charge': 25845
+        }, 
+        'session': {
+            'operate': 0, 
+            'charge': 0
+        }
+    }, 
+    'battery': {
+        'voltage': 33.5, 
+        'cycles': 1, 
+        'discharge': 0.0, 
+        'ambient_temp': 17, 
+        'battery_temp': 17, 
+        'percent': 335
+    }, 
+    'garden': {
+        'id': 7, 
+        'name': 1, 
+        'signal_id': 1, 
+        'size': 625, 
+        'inner_bounds': 3, 
+        'cuts': 26, 
+        'runtime': 82197, 
+        'charge': 24860, 
+        'bumps': 4650, 
+        'stops': 24, 
+        'last_mow': 4
+    }, 
+    'hmiKeys': 1344
+}
+```
+
+>>>>>>> parent of ebf5e5c... Updates to longpoll
 ### getPredictiveSetup()
 
 ```python
@@ -238,8 +313,58 @@ Response:
 }
 ```
 
+### getState()
+Collects state of mower, % lawn mowed, position, runtime, map coordinates.
 
+```python
+Response:
+{
+    'state': 64513, 
+    'map_update_available': True, 
+    'mowed': 95, 
+    'mowmode': 0, 
+    'xPos': 68, 
+    'yPos': 30, 
+    'runtime': {
+        'total': {
+            'operate': 86327, 
+            'charge': 25845
+            }, 
+        'session': {
+            'operate': 4, 
+            'charge': 0
+            }
+        }, 
+    'mapsvgcache_ts': 1565381013023, 
+    'svg_xPos': 928, 
+    'svg_yPos': 264
+}
+```
 
+### getUpdates()
+Check if there are any updates apllicable to the mower.
+
+```python
+Response:
+{
+     'available': False
+}
+```
+
+### getUsers()
+Collect user data.
+
+```python
+Response:
+{
+    'email': 'mail@gmail.com', 
+    'display_name': 'Indego', 
+    'language': 'sv', 
+    'country': 'GB', 
+    'optIn': True, 
+    'optInApp': True
+}
+```
 
 
 ## Functions for reading data from locally cached API data

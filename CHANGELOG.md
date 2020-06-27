@@ -1,9 +1,5 @@
 # Changelog
 
-## 2.0.14
-- Test some new time conversion functions
-- Docs updated
-
 ## 2.0.13
 - Tested and made some fixes for Longpoll functionality
 - Docs updated
