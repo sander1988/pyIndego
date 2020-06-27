@@ -38,20 +38,3 @@ def convert_bosch_datetime(dt: str = None):
                 dt = dt.replace("+", f"{0*(4-diff)}+")
         return datetime.fromisoformat(dt)
     return None
-
-def convert_bosch_datetime2(dt: str = None):
-    """Creates a datetime object from the string from Bosch. Checks if a valid number of milliseconds is sent."""
-    _LOGGER.debug("2: Datetime to be parsed: %s", dt)
-    if dt:
-        plus_index = dt.find("+")
-        dot_index = dt.find(".")
-        if dot_index > 0 and plus_index > 0:
-            diff = plus_index - dot_index
-            if 1 <= diff <= 3:
-                dt = dt.replace("+", f"{0*(4-diff)}+")
-        
-        #return datetime.fromisoformat(dt)
-        date_time_str = '18/09/19 01:55:19'
-        date_time_obj = datetime.strptime(date_time_str, '%d/%m/%y %H:%M:%S')
-        return date_time_obj
-    return None

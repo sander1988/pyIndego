@@ -19,7 +19,6 @@ from .const import MOWER_STATE_DESCRIPTION
 from .const import MOWER_STATE_DESCRIPTION_DETAIL
 from .const import MOWING_MODE_DESCRIPTION
 from .helpers import convert_bosch_datetime
-from .helpers import convert_bosch_datetime2
 from .states import Alerts
 from .states import Battery
 from .states import GenericData
@@ -105,7 +104,7 @@ class IndegoBaseClient(ABC):
 
     def _update_last_completed_mow(self, new):
         if new:
-            self.last_completed_mow = convert_bosch_datetime2(new["last_mowed"])
+            self.last_completed_mow = convert_bosch_datetime(new["last_mowed"])
 
     @abstractmethod
     def update_location(self):

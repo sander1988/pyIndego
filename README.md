@@ -183,12 +183,6 @@ Response:
 --> same as getState()
 ```
 
-<<<<<<< HEAD
-=======
-
-
-
-
 ### getNetwork()
 Collects data on the mobile network the Indego is connected to.
 
@@ -257,7 +251,6 @@ Response:
 }
 ```
 
->>>>>>> parent of ebf5e5c... Updates to longpoll
 ### getPredictiveSetup()
 
 ```python
