@@ -1,11 +1,5 @@
 # Changelog
 
-## 2.0.15
-- Changes to state with longpoll
-- Updates to poll if apdate is available
-- Cleanup
-- Updates to doc
-
 ## 2.0.13
 - Tested and made some fixes for Longpoll functionality
 - Docs updated
