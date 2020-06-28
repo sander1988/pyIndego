@@ -112,10 +112,10 @@ State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPo
 ```
 
 ### indego.update_updates()
-Check if there are any updates apllicable to the mower and undates the indego.updates.
+Check if there are any updates apllicable to the mower and updates the (bool) indego.update_available.
 
 ```python
-Updates(available=None)
+self.indego.update_available
 ```
 
 ### indego.update_users()
