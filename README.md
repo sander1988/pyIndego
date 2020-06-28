@@ -146,19 +146,6 @@ putMowMode('false') |Smart Mow disabled
 
 ## Not implemented yet
 
-### indego.update_longpoll_state( timeout )
-Function indego.update_state must have been called before using this call. It sends a state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
-
-This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
-
-```python
-Response:
---> same as getState(), but might also include less information
---> if the status is not updated until the timeout, the return is empty
---> functions reading data from locally cached API data will provide the latest availabe data
-```
-
-
 ### getConfig()
 Collects the configuration of the mower.
 
@@ -175,14 +162,6 @@ Response:
 }
 ```
 
-### getForcedState()
-Collects state of mower, % lawn mowed, position, runtime, map coordinates. Compared to the getState() command, it forces the server to update all information - including the position of the mower.
-
-```python
-Response:
---> same as getState()
-```
-
 ### getNetwork()
 Collects data on the mobile network the Indego is connected to.
 
@@ -197,57 +176,6 @@ Response:
     'steeredRssi': -100,
     'networkCount': 3,
     'networks': [26201, 26202, 26203]
-}
-```
-
-### getNextMow()
-Collects data on next mow. Returns none if mower is set to manual mode.
-
-```python
-Response:
-{
-    'mow_next': '2020-05-25T10:00:00+02:00'
-}
-```
-
-### getOperatingData()
-Collect operational data data: battery, runtime, garden data and temperature.
-
-```python
-Response:
-{
-    'runtime': {
-        'total': {
-            'operate': 86333, 
-            'charge': 25845
-        }, 
-        'session': {
-            'operate': 0, 
-            'charge': 0
-        }
-    }, 
-    'battery': {
-        'voltage': 33.5, 
-        'cycles': 1, 
-        'discharge': 0.0, 
-        'ambient_temp': 17, 
-        'battery_temp': 17, 
-        'percent': 335
-    }, 
-    'garden': {
-        'id': 7, 
-        'name': 1, 
-        'signal_id': 1, 
-        'size': 625, 
-        'inner_bounds': 3, 
-        'cuts': 26, 
-        'runtime': 82197, 
-        'charge': 24860, 
-        'bumps': 4650, 
-        'stops': 24, 
-        'last_mow': 4
-    }, 
-    'hmiKeys': 1344
 }
 ```
 
@@ -305,60 +233,6 @@ Response:
     ]
 }
 ```
-
-### getState()
-Collects state of mower, % lawn mowed, position, runtime, map coordinates.
-
-```python
-Response:
-{
-    'state': 64513, 
-    'map_update_available': True, 
-    'mowed': 95, 
-    'mowmode': 0, 
-    'xPos': 68, 
-    'yPos': 30, 
-    'runtime': {
-        'total': {
-            'operate': 86327, 
-            'charge': 25845
-            }, 
-        'session': {
-            'operate': 4, 
-            'charge': 0
-            }
-        }, 
-    'mapsvgcache_ts': 1565381013023, 
-    'svg_xPos': 928, 
-    'svg_yPos': 264
-}
-```
-
-### getUpdates()
-Check if there are any updates apllicable to the mower.
-
-```python
-Response:
-{
-     'available': False
-}
-```
-
-### getUsers()
-Collect user data.
-
-```python
-Response:
-{
-    'email': 'mail@gmail.com', 
-    'display_name': 'Indego', 
-    'language': 'sv', 
-    'country': 'GB', 
-    'optIn': True, 
-    'optInApp': True
-}
-```
-
 
 ## Functions for reading data from locally cached API data
 All functions that doesnt contain "get" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
