@@ -24,6 +24,7 @@ from .states import Battery
 from .states import GenericData
 from .states import Location
 from .states import Network
+from .states import Config
 from .states import OperatingData
 from .states import Runtime
 from .states import State
@@ -66,6 +67,7 @@ class IndegoBaseClient(ABC):
         self.updates = Updates()
         self.users = Users()
         self.network = Network()
+        self.config = Config()
         self.battery = Battery()
         self.runtime = Runtime()
         self.location = Location()
@@ -178,6 +180,14 @@ class IndegoBaseClient(ABC):
     def _update_network(self, new):
         if new:
             self.network = replace(self.network, **new)
+
+    @abstractmethod
+    def update_config(self):
+        pass
+
+    def _update_config(self, new):
+        if new:
+            self.config = replace(self.config, **new)
 
     @abstractmethod
     def download_map(self, filename=None):
