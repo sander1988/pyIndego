@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from dataclasses import is_dataclass
 from datetime import datetime
 import logging
-
 _LOGGER = logging.getLogger(__name__)
 
 
