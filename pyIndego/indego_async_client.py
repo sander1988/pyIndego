@@ -322,7 +322,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             _LOGGER.debug("Task cancelled by task runner")
             return None
         except Exception as e:
-            _LOGGER.error("Request gave a unhandled error: %s", e)
+            _LOGGER.error("Request to %s gave a unhandled error: %s", url, e)
             return None
 
     async def get(self, path: str, timeout: int = 30, attempts: int = 0):
