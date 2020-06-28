@@ -1,4 +1,4 @@
-""" API for Bosch API server for Indego lawn mower """
+"""API for Bosch API server for Indego lawn mower."""
 import json
 import logging
 import typing
@@ -36,7 +36,7 @@ class IndegoClient(IndegoBaseClient):
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
     ):
-        """Initialize the Client
+        """Initialize the Client.
 
         Args:
             username (str): username for Indego Account
@@ -44,7 +44,7 @@ class IndegoClient(IndegoBaseClient):
             serial (str): serial number of the mower
             map_filename (str, optional): Filename to store maps in. Defaults to None.
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
-            
+
         """
         super().__init__(username, password, serial, map_filename, api_url)
 
@@ -189,7 +189,7 @@ class IndegoClient(IndegoBaseClient):
 
         Returns:
             str: either result of the call or 'Wrong Command'
-            
+
         """
         if command in ("true", "false", "True", "False") or isinstance(command, bool):
             return self.put(f"alms/{self._serial}/predictive", {"enabled": command})
@@ -215,7 +215,7 @@ class IndegoClient(IndegoBaseClient):
             )
         )
 
-    def _request(
+    def _request(  # noqa: C901
         self,
         method: Methods,
         path: str,

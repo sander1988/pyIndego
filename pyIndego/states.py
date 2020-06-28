@@ -18,6 +18,8 @@ _LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class Alerts:
+    """Alerts class."""
+
     alm_sn: str = field(repr=False, default=None)
     alert_id: str = None
     error_code: str = None
@@ -30,6 +32,7 @@ class Alerts:
     alert_description: str = None
 
     def __post_init__(self):
+        """Set alert description."""
         self.alert_description = ALERT_ERROR_CODE.get(
             self.error_code, DEFAULT_LOOKUP_VALUE
         )
@@ -37,6 +40,8 @@ class Alerts:
 
 @dataclass
 class ModelVoltage:
+    """Model voltage Class."""
+
     min: int = None
     max: int = None
 
@@ -60,6 +65,8 @@ MOWER_MODEL_VOLTAGE = {
 
 @dataclass
 class Battery:
+    """Battery Class."""
+
     percent: int = None
     voltage: float = None
     cycles: int = None
@@ -69,6 +76,7 @@ class Battery:
     percent_adjusted: int = None
 
     def update_percent_adjusted(self, voltage: ModelVoltage):
+        """Set percent adjusted."""
         if self.percent:
             self.percent_adjusted = round(
                 (int(self.percent) - voltage.min) / ((voltage.max - voltage.min) / 100)
@@ -77,6 +85,8 @@ class Battery:
 
 @nested_dataclass
 class GenericData:
+    """Generic Data Class."""
+
     alm_name: str = None
     alm_sn: str = None
     service_counter: int = None
@@ -89,6 +99,7 @@ class GenericData:
     mowing_mode_description: str = None
 
     def __post_init__(self):
+        """Set model description, voltage, mode description."""
         self.model_description = MOWER_MODEL_DESCRIPTION.get(
             self.bareToolnumber, DEFAULT_LOOKUP_VALUE
         )
@@ -102,6 +113,8 @@ class GenericData:
 
 @dataclass
 class Location:
+    """Location Class."""
+
     latitude: float = None
     longitude: float = None
     timezone: str = None
@@ -109,6 +122,8 @@ class Location:
 
 @dataclass
 class Network:
+    """Network Class."""
+
     mcc: int = None
     mnc: int = None
     rssi: int = None
@@ -143,33 +158,33 @@ class Security:
 
 @dataclass
 class RuntimeDetail:
+    """Runtime Details Class."""
+
     operate: int = None
     charge: int = None
     cut: int = field(init=False, default=None)
 
     def update_cut(self):
-        # _LOGGER.debug("---Update session cut")
+        """Update cut."""
         self.cut = round(self.operate - self.charge)
-        # _LOGGER.debug(f"---self.cut = {self.cut}")
 
 
 @nested_dataclass
-class Runtime:
+class Runtime:  # pylint: disable=no-member,assigning-non-slot
+    """Runtime Class."""
+
     total: RuntimeDetail = field(default_factory=RuntimeDetail)
     session: RuntimeDetail = field(default_factory=RuntimeDetail)
 
     def __post_init__(self):
+        """Set cuts and calc totals."""
         if self.total.charge:
-            # _LOGGER.debug("---self.total.charge")
             self.total.charge = round(self.total.charge / 100)
         if self.total.operate:
-            # _LOGGER.debug("---self.total.operate")
             self.total.operate = round(self.total.operate / 100)
         if self.total.charge:
-            # _LOGGER.debug("---self.total.charge")
             self.total.update_cut()
         if self.session.charge:
-            # _LOGGER.debug("---self.session.charge")
             self.session.update_cut()
         else:
             self.session.cut = 0
@@ -177,6 +192,8 @@ class Runtime:
 
 @dataclass
 class Garden:
+    """Garden Class."""
+
     id: int = None
     name: int = None
     signal_id: int = None
@@ -193,6 +210,8 @@ class Garden:
 
 @nested_dataclass
 class OperatingData:
+    """Operating Data Class."""
+
     hmiKeys: str = None
     battery: Battery = field(default_factory=Battery)
     garden: Garden = field(default_factory=Garden)
@@ -201,6 +220,8 @@ class OperatingData:
 
 @nested_dataclass
 class State:
+    """State Class."""
+
     state: int = None
     map_update_available: bool = None
     mowed: int = None
@@ -219,6 +240,8 @@ class State:
 
 @dataclass
 class Users:
+    """Users Class."""
+
     email: str = None
     display_name: str = None
     language: str = None

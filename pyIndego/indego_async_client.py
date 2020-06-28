@@ -1,4 +1,4 @@
-""" API for Bosch API server for Indego lawn mower """
+"""API for Bosch API server for Indego lawn mower."""
 import asyncio
 import json
 import logging
@@ -40,7 +40,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
     ):
-        """Initialize the Async Client
+        """Initialize the Async Client.
 
         Args:
             username (str): username for Indego Account
@@ -48,7 +48,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             serial (str): serial number of the mower
             map_filename (str, optional): Filename to store maps in. Defaults to None.
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
-            
+
         """
         super().__init__(username, password, serial, map_filename, api_url)
         self._session = aiohttp.ClientSession(raise_for_status=False)
@@ -214,7 +214,7 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         Returns:
             str: either result of the call or 'Wrong Command'
-            
+
         """
         if command in ("true", "false", "True", "False") or isinstance(command, bool):
             return await self.put(
@@ -242,7 +242,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             )
         )
 
-    async def _request(
+    async def _request(  # noqa: C901
         self,
         method: Methods,
         path: str,
@@ -252,7 +252,18 @@ class IndegoAsyncClient(IndegoBaseClient):
         timeout: int = 30,
         attempts: int = 0,
     ):
-        """Send a request and return the response."""
+        """Request implemented by the subclasses either synchronously or asynchronously.
+
+        Args:
+            method (Methods): HTTP method to be executed.
+            path (str): url to call on top of base_url.
+            data (dict, optional): if applicable, data to be sent, defaults to None.
+            headers (dict, optional): headers to be included, defaults to None, which should be filled by the method.
+            auth (BasicAuth or HTTPBasicAuth, optional): login specific attribute, defaults to None.
+            timeout (int, optional): Timeout for the api call. Defaults to 30.
+            attempts (int, optional): Number to keep track of retries, after three starts delaying, after five quites.
+
+        """
         if attempts >= 3:
             _LOGGER.warning("Three or four attempts done, waiting 30 seconds")
             await asyncio.sleep(30)
@@ -339,14 +350,26 @@ class IndegoAsyncClient(IndegoBaseClient):
             return None
 
     async def get(self, path: str, timeout: int = 30, attempts: int = 0):
-        """Send a GET request and return the response as a dict."""
+        """Get implemented by the subclasses either synchronously or asynchronously.
+
+        Args:
+            path (str): url to call on top of base_url
+            timeout (int, optional): Timeout for the api call. Defaults to 30.
+
+        """
         return await self._request(
             method=Methods.GET, path=path, timeout=timeout, attempts=attempts
         )
 
     async def put(self, path: str, data: dict, timeout: int = 30):
-        """Send a PUT request and return the response as a dict."""
+        """Put implemented by the subclasses either synchronously or asynchronously.
+
+        Args:
+            path (str): url to call on top of base_url
+            data (dict): data to put
+            timeout (int, optional): Timeout for the api call. Defaults to 30.
+
+        """
         return await self._request(
             method=Methods.PUT, path=path, data=data, timeout=timeout
         )
-
