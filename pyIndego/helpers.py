@@ -28,7 +28,6 @@ def nested_dataclass(*args, **kwargs):
 
 def convert_bosch_datetime(dt: str = None):
     """Creates a datetime object from the string from Bosch. Checks if a valid number of milliseconds is sent."""
-    _LOGGER.debug("Datetime to be parsed: %s", dt)
     if dt:
         plus_index = dt.find("+")
         dot_index = dt.find(".")
