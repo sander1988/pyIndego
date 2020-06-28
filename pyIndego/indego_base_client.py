@@ -161,7 +161,7 @@ class IndegoBaseClient(ABC):
 
     def _update_updates_available(self, new):
         if new:
-            self.update_available = new["available"]
+            self.update_available = bool(new["available"])
 
     @abstractmethod
     def update_users(self):
