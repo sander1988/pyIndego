@@ -302,4 +302,3 @@ class IndegoClient(IndegoBaseClient):
     def put(self, path: str, data: dict, timeout: int = 30):
         """Send a PUT request and return the response as a dict."""
         return self._request(method=Methods.PUT, path=path, data=data, timeout=timeout)
-

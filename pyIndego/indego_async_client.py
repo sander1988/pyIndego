@@ -319,7 +319,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             _LOGGER.error("%s: Failed to update Indego status", e)
             return None
         except asyncio.CancelledError:
-            _LOGGER.error("Task cancelled by task runner")
+            _LOGGER.debug("Task cancelled by task runner")
             return None
         except Exception as e:
             _LOGGER.error("Request gave a unhandled error: %s", e)
