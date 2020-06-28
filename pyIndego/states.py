@@ -112,7 +112,11 @@ class Network:
     mcc: int = None
     mnc: int = None
     rssi: int = None
-
+    currMode: str = None
+    configMode: str = None
+    steeredRssi: int = None
+    networkCount: int = None
+    networks: typing.List[int] = None
 
 @dataclass
 class RuntimeDetail:
