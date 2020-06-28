@@ -30,23 +30,23 @@ Description for the functions updating data from API and mower. The functions co
 
 API Call                           | Bosch API | Mower | Mower needs to be online
 -----------------------------------|-----------|-------|-------------------------
-indego.download_map()              |           |       |
-indego.update_all()                |           |       |
+indego.download_map()
+indego.update_all()
 indego.update_alerts()             |    X      |       |
 indego.update_generic_data()       |    X      |       |
 indego.update_last_completed_mow() |    X      |       |
-indego.update_location()           |           |       |
-indego.update_network()            |           |       |
+indego.update_location()
+indego.update_longpoll_state()     |    ?      |       |   
+indego.update_network()            |    ?      |  ?    |   ?
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |   X
 indego.update_state()              |    X      |       |
-indego.update_updates()            |           |  X    |   X
+indego.update_updates_available()  |           |  X    |   X
 indego.update_users()              |    X      |       |
 
 
 Not implemented yet
-indego.update_longpoll_state()
-indego.update_config()
+getConfig
 getPredictiveSetup
 login
 
@@ -83,11 +83,16 @@ Updates the location of the garden/mower to indego.location.
 Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
 ```
 
-### indego.update_network()
-Updates data on the mobile network the Indego is connected to.
+### indego.update_longpoll_state( timeout )
+Function indego.update_state must have been called before using this call. It sends a state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding only when there are events to deliver or the timeout (in seconds) is due.
+
+This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
 
 ```python
-TBD
+Response:
+--> same as getState(), but might also include less information
+--> if the status is not updated until the timeout, the return is empty
+--> functions reading data from locally cached API data will provide the latest availabe data
 ```
 
 ### indego.update_next_mow()
@@ -112,10 +117,10 @@ State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPo
 ```
 
 ### indego.update_updates()
-Check if there are any updates apllicable to the mower and updates the (bool) indego.update_available.
+Check if there are any updates apllicable to the mower and undates the indego.updates.
 
 ```python
-self.indego.update_available
+Updates(available=None)
 ```
 
 ### indego.update_users()
@@ -125,26 +130,8 @@ Updates the indego.users with information about the user.
 Users(email='youremail@mail.com', display_name='Indego', language='sv', country='SE', optIn=True, optInApp=True)
 ```
 
-## Sending commands
 
-### indego.put_command(command)
-Send commands.
 
-Command     |Description         
-------------|--------------------
-putCommand('mow')          |Start mowing        
-putCommand('pause')        |Pause mower         
-putCommand('returnToDock') |Return mower to dock
-
-### indego.put_mow_mode(command)
-Send command. Accepted commands:
-
-Command     |Description         
-------------|--------------------
-putMowMode('true')  |Smart Mow enabled        
-putMowMode('false') |Smart Mow disabled   
-
-## Not implemented yet
 
 ### getConfig()
 Collects the configuration of the mower.
@@ -162,6 +149,18 @@ Response:
 }
 ```
 
+### getForcedState()
+Collects state of mower, % lawn mowed, position, runtime, map coordinates. Compared to the getState() command, it forces the server to update all information - including the position of the mower.
+
+```python
+Response:
+--> same as getState()
+```
+
+
+
+
+
 ### getNetwork()
 Collects data on the mobile network the Indego is connected to.
 
@@ -178,6 +177,8 @@ Response:
     'networks': [26201, 26202, 26203]
 }
 ```
+
+
 
 ### getPredictiveSetup()
 
@@ -233,6 +234,28 @@ Response:
     ]
 }
 ```
+
+
+
+
+## Sending commands
+
+### putCommand(command)
+Send commands.
+
+Command     |Description         
+------------|--------------------
+putCommand('mow')          |Start mowing        
+putCommand('pause')        |Pause mower         
+putCommand('returnToDock') |Return mower to dock
+
+### putMowMode(command)
+Send command. Accepted commands:
+
+Command     |Description         
+------------|--------------------
+putMowMode('true')  |Smart Mow enabled        
+putMowMode('false') |Smart Mow disabled   
 
 ## Functions for reading data from locally cached API data
 All functions that doesnt contain "get" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
