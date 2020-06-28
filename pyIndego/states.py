@@ -135,9 +135,10 @@ class RuntimeDetail:
     cut: int = field(init=False, default=None)
 
     def update_cut(self):
-        #_LOGGER.debug("---Update session cut")
+        # _LOGGER.debug("---Update session cut")
         self.cut = round(self.operate - self.charge)
-        #_LOGGER.debug(f"---self.cut = {self.cut}")
+        # _LOGGER.debug(f"---self.cut = {self.cut}")
+
 
 @nested_dataclass
 class Runtime:
@@ -146,16 +147,16 @@ class Runtime:
 
     def __post_init__(self):
         if self.total.charge:
-            #_LOGGER.debug("---self.total.charge")
+            # _LOGGER.debug("---self.total.charge")
             self.total.charge = round(self.total.charge / 100)
         if self.total.operate:
-            #_LOGGER.debug("---self.total.operate")
+            # _LOGGER.debug("---self.total.operate")
             self.total.operate = round(self.total.operate / 100)
         if self.total.charge:
-            #_LOGGER.debug("---self.total.charge")
+            # _LOGGER.debug("---self.total.charge")
             self.total.update_cut()
         if self.session.charge:
-            #_LOGGER.debug("---self.session.charge")
+            # _LOGGER.debug("---self.session.charge")
             self.session.update_cut()
         else:
             self.session.cut = 0
@@ -202,9 +203,6 @@ class State:
     config_change: bool = None
     mow_trig: bool = None
 
-@dataclass
-class Updates:
-    available: str = None
 
 @dataclass
 class Users:
