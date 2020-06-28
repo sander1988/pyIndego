@@ -40,7 +40,6 @@ Description for the functions updating data from API and mower. The functions co
 
 Call                               | Bosch API | Mower | Mower needs to be online
 -----------------------------------|-----------|-------|-------------------------
-<<<<<<< HEAD
 indego.download_map()              |           |       |
 indego.update_all()                |           |       |
 indego.update_alerts()             |    X      |       |
@@ -48,19 +47,13 @@ indego.update_config()             |           |       |
 indego.update_generic_data()       |    X      |       |
 indego.update_last_completed_mow() |    X      |       |
 indego.update_location()           |           |       |
-<<<<<<< HEAD
-indego.update_network()            |           |  X    |
-=======
 indego.update_network()            |           |       |
-=======
 indego.update_all()
 indego.update_alerts()             |    X      |       |
 indego.update_generic_data()       |    X      |       |
 indego.update_last_completed_mow() |    X      |       |
 indego.update_location()
 indego.update_network()            |    ?      |  ?    |   ?
->>>>>>> added all docstrings, fixed minor linting
->>>>>>> added all docstrings, fixed minor linting
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |
 indego.update_security()           |    X      |       |
@@ -69,11 +62,11 @@ indego.update_state()              |    X      |       |
 indego.update_state(force=True)    |           |  X    |
 indego.update_updates()            |           |  X    |
 indego.update_users()              |    X      |       |
-indego.download_map()
+indego.download_map(*)
 
 
-Not implemented yet:
-indego.update_longpoll_state()
+Not implemented yet
+indego.update_config()
 getPredictiveSetup
 
 ## List of update functions
@@ -117,6 +110,7 @@ Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
 ```
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### indego.update_network()
 Updates data on the mobile network the Indego is connected to.
 
@@ -126,6 +120,8 @@ Network(mcc=262, mnc=2, rssi=-77, currMode='s', configMode='s', steeredRssi=-100
 
 =======
 >>>>>>> added all docstrings, fixed minor linting
+=======
+>>>>>>> small update to readme
 ### indego.update_next_mow()
 Updates the indego.next_mow with the next planned mow date and time.
 
@@ -194,6 +190,7 @@ putCommand('returnToDock') |Return mower to dock
 Send command. Accepted commands:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Command     |Description         
 ------------|--------------------
 putMowMode('true')  |Smart Mow enabled        
@@ -205,6 +202,8 @@ putMowMode('false') |Smart Mow disabled
 =======
 =======
 >>>>>>> added all docstrings, fixed minor linting
+=======
+>>>>>>> small update to readme
 ### getConfig()
 Collects the configuration of the mower.
 
@@ -294,9 +293,6 @@ Response:
 }
 ```
 
-<<<<<<< HEAD
-## Functions for reading data from locally cached API data
-=======
 
 
 
@@ -320,7 +316,6 @@ putMowMode('true')  |Smart Mow enabled
 putMowMode('false') |Smart Mow disabled   
 
 ## Attributes for reading data from locally cached API data
->>>>>>> added all docstrings, fixed minor linting
 All functions that doesnt contain "get" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
 
 attributes                 | Description
