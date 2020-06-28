@@ -130,11 +130,18 @@ class IndegoAsyncClient(IndegoBaseClient):
         Args:
             force (bool, optional): Force the state refresh, wakes up the mower. Defaults to False.
             longpoll (bool, optional): Do a longpoll. Defaults to False.
-            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120.
+            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120, maximum is 300.
+
+        Raises:
+            ValueError: when the longpoll timeout is longer then 300 seconds.
 
         """
         path = f"alms/{self._serial}/state"
         if longpoll:
+            if longpoll_timeout > 300:
+                raise ValueError(
+                    "Longpoll timeout must be less than or equal 300 seconds."
+                )
             last_state = 0
             if self.state.state:
                 last_state = self.state.state
@@ -326,7 +333,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                     return None
                 if status == 504:
                     if url.find("longpoll=true") > 0:
-                        _LOGGER.info("504: longpoll stopped, no updates")
+                        _LOGGER.debug("504: longpoll stopped, no updates")
                         return None
                 response.raise_for_status()
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as e:
