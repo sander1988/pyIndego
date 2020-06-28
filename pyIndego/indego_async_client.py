@@ -308,7 +308,13 @@ class IndegoAsyncClient(IndegoBaseClient):
                 response.raise_for_status()
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as e:
             _LOGGER.error("%s: Timeout on Bosch servers, retrying", e)
-            return await self.get(path, timeout, attempts + 1)
+            return await self._request(
+                method=method,
+                path=path,
+                data=data,
+                timeout=timeout,
+                attempts=attempts + 1,
+            )
         except (TooManyRedirects, ClientResponseError) as e:
             _LOGGER.error("%s: Failed to update Indego status", e)
             return None

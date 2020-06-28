@@ -279,7 +279,13 @@ class IndegoClient(IndegoBaseClient):
             response.raise_for_status()
         except (Timeout) as e:
             _LOGGER.error("%s: Timeout on Bosch servers, retrying.", e)
-            return self.get(path, timeout, attempts + 1)
+            return self._request(
+                method=method,
+                path=path,
+                data=data,
+                timeout=timeout,
+                attempts=attempts + 1,
+            )
         except (TooManyRedirects, RequestException) as e:
             _LOGGER.error("%s: Failed to update Indego status.", e)
             return None
