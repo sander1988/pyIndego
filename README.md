@@ -33,10 +33,11 @@ API Call                           | Bosch API | Mower | Mower needs to be onlin
 indego.download_map()              |           |       |
 indego.update_all()                |           |       |
 indego.update_alerts()             |    X      |       |
+indego.update_config()             |           |       |
 indego.update_generic_data()       |    X      |       |
 indego.update_last_completed_mow() |    X      |       |
 indego.update_location()           |           |       |
-indego.update_network()            |           |       |
+indego.update_network()            |           |  X    |   X
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |   X
 indego.update_state()              |    X      |       |
@@ -46,7 +47,6 @@ indego.update_users()              |    X      |       |
 
 Not implemented yet
 indego.update_longpoll_state()
-indego.update_config()
 getPredictiveSetup
 login
 
@@ -60,6 +60,13 @@ Updates alerts from API to indego.alerts.
 
 ```python
 [Alerts(alert_id='5d48171263c5345a75dbc017', error_code='ntfy_blade_life', headline='Underhållstips.', date='2019-08-05T11:46:26.397Z', message='Kontrollera klippknivarna. Indego har klippt i 100 timmar. Ska den fungera optimalt, kontrollera klippknivarna så att de är i bra skick. Du kan beställa nya knivar via avsnittet Tillbehör.', read_status='unread', flag='warning', push=True, alert_description='Reminder blade life')]
+```
+
+### indego.update_config()
+Updates config to indego.config. With some Indegos, this function gives an error (e.g., Indego 1000), with others it works (e.g., Indego S+ 400).
+
+```python
+Config(region=None, language=None, border_cut=None, is_pin_set=None, wire_id=None, bump_sensitivity=None, alarm_mode=None)
 ```
 
 ### indego.update_generic_data()
@@ -87,7 +94,7 @@ Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
 Updates data on the mobile network the Indego is connected to.
 
 ```python
-TBD
+Network(mcc=262, mnc=2, rssi=-77, currMode='s', configMode='s', steeredRssi=-100, networkCount=3, networks=[26201, 26202, 26203])
 ```
 
 ### indego.update_next_mow()
@@ -145,39 +152,6 @@ putMowMode('true')  |Smart Mow enabled
 putMowMode('false') |Smart Mow disabled   
 
 ## Not implemented yet
-
-### getConfig()
-Collects the configuration of the mower.
-
-```python
-Response:
-{
-    'region': 0,
-    'language': 1,
-    'border_cut': 0,
-    'is_pin_set': True,
-    'wire_id': 4,
-    'bump_sensitivity': 0,
-    'alarm_mode': True
-}
-```
-
-### getNetwork()
-Collects data on the mobile network the Indego is connected to.
-
-```python
-Response:
-{
-    'mcc': 262,
-    'mnc': 2,
-    'rssi': -76,
-    'currMode': 's',
-    'configMode': 's',
-    'steeredRssi': -100,
-    'networkCount': 3,
-    'networks': [26201, 26202, 26203]
-}
-```
 
 ### getPredictiveSetup()
 
