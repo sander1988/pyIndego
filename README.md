@@ -41,6 +41,7 @@ indego.update_network()            |           |  X    |   X
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |   X
 indego.update_state()              |    X      |       |
+indego.update_state(force=True)    |           |  X    |   X
 indego.update_updates()            |           |  X    |   X
 indego.update_users()              |    X      |       |
 
