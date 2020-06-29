@@ -137,6 +137,11 @@ class Setup:
     hasIntegrityCheckPassed: bool = None
 
 @dataclass
+class Security:
+    enabled: bool = None
+    autolock: bool = None
+
+@dataclass
 class RuntimeDetail:
     operate: int = None
     charge: int = None

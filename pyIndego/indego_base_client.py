@@ -26,6 +26,7 @@ from .states import Location
 from .states import Network
 from .states import Config
 from .states import Setup
+from .states import Security
 from .states import OperatingData
 from .states import Runtime
 from .states import State
@@ -68,6 +69,7 @@ class IndegoBaseClient(ABC):
         self.network = Network()
         self.config = Config()
         self.setup = Setup()
+        self.security = Security()
         self.battery = Battery()
         self.runtime = Runtime()
         self.location = Location()
@@ -197,6 +199,14 @@ class IndegoBaseClient(ABC):
     def _update_setup(self, new):
         if new:
             self.setup = replace(self.setup, **new)
+
+    @abstractmethod
+    def update_security(self):
+        pass
+
+    def _update_security(self, new):
+        if new:
+            self.security = replace(self.security, **new)
 
     @abstractmethod
     def download_map(self, filename=None):
