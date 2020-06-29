@@ -112,7 +112,21 @@ class Network:
     mcc: int = None
     mnc: int = None
     rssi: int = None
+    currMode: str = None
+    configMode: str = None
+    steeredRssi: int = None
+    networkCount: int = None
+    networks: typing.List[int] = None
 
+@dataclass
+class Config:
+    region: int = None
+    language: int = None
+    border_cut: int = None
+    is_pin_set: bool = None
+    wire_id: int = None
+    bump_sensitivity: int = None
+    alarm_mode: bool = None
 
 @dataclass
 class RuntimeDetail:
