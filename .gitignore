@@ -34,3 +34,6 @@ build/
 dist/
 pyIndego.egg-info/
 _build.cmd
+
+# vscode
+.vscode/

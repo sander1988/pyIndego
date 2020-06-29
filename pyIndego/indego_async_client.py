@@ -10,9 +10,12 @@ import aiohttp
 import requests
 
 # from aiofile import AIOFile
-from aiohttp import ClientResponseError
-from aiohttp import ServerTimeoutError
-from aiohttp import TooManyRedirects
+from aiohttp import (
+    ClientResponseError,
+    ClientConnectorError,
+    ServerTimeoutError,
+    TooManyRedirects,
+)
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGatewayTimeout
 from aiohttp.helpers import BasicAuth
 
@@ -345,7 +348,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                 timeout=timeout,
                 attempts=attempts + 1,
             )
-        except (TooManyRedirects, ClientResponseError) as e:
+        except (TooManyRedirects, ClientResponseError, ClientConnectorError) as e:
             _LOGGER.error("%s: Failed to update Indego status", e)
             return None
         except asyncio.CancelledError:
