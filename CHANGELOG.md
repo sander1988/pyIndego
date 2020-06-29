@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.16
+- Added the update_config call
+- Added the update_network call
+- Updates to doc
+
 ## 2.0.15
 - Changes to state with longpoll
 - Updates to poll if apdate is available
