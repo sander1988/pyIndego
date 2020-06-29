@@ -141,6 +141,10 @@ class IndegoClient(IndegoBaseClient):
         """Update config."""
         self._update_config(self.get(f"alms/{self._serial}/config"))
 
+    def update_setup(self):
+        """Update setup."""
+        self._update_setup(self.get(f"alms/{self._serial}/setup"))
+
     def download_map(self, filename: str = None):
         """Download the map.
 

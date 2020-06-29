@@ -166,6 +166,10 @@ class IndegoAsyncClient(IndegoBaseClient):
         """Update config."""
         self._update_config(await self.get(f"alms/{self._serial}/config"))
 
+    async def update_setup(self):
+        """Update setup."""
+        self._update_setup(await self.get(f"alms/{self._serial}/setup"))
+
     async def download_map(self, filename: str = None):
         """Download the map.
 
