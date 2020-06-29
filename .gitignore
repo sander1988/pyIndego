@@ -8,6 +8,7 @@
 # Python cache
 __pycache__/
 pyIndego/__pycache__/
+.pypirc
 
 # Imported libraries
 certifi/
