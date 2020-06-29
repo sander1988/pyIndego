@@ -37,13 +37,13 @@ indego.update_config()             |           |       |
 indego.update_generic_data()       |    X      |       |
 indego.update_last_completed_mow() |    X      |       |
 indego.update_location()           |           |       |
-indego.update_network()            |           |  X    | 
+indego.update_network()            |           |  X    |
 indego.update_next_mow()           |           |       |
-indego.update_operating_data()     |           |  X    |   X
+indego.update_operating_data()     |           |  X    |
 indego.update_setup()              |    X      |       |
 indego.update_state()              |    X      |       |
-indego.update_state(force=True)    |           |  X    |   X
-indego.update_updates()            |           |  X    |   X
+indego.update_state(force=True)    |           |  X    |
+indego.update_updates()            |           |  X    |
 indego.update_users()              |    X      |       |
 
 
