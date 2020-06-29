@@ -66,7 +66,7 @@ Updates alerts from API to indego.alerts.
 Updates config to indego.config. With some Indegos, this function gives an error (e.g., Indego 1000), with others it works (e.g., Indego S+ 400).
 
 ```python
-Config(region=None, language=None, border_cut=None, is_pin_set=None, wire_id=None, bump_sensitivity=None, alarm_mode=None)
+Config(region=0, language=1, border_cut=0, is_pin_set=True, wire_id=4, bump_sensitivity=0, alarm_mode=True)
 ```
 
 ### indego.update_generic_data()
