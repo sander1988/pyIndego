@@ -26,9 +26,9 @@ Call the API:
     indego = IndegoClient(username='your_mail@gmail.com', password='your_password', serial='your_serial')
 
 ## get-functions
-Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
+Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from the mower does wakes up the mower and prevents the mower from sleeping.
 
-API Call                           | Bosch API | Mower | Mower needs to be online
+API Call                           | Bosch API | Mower | Comment
 -----------------------------------|-----------|-------|-------------------------
 indego.download_map()              |           |       |
 indego.update_all()                |           |       |
@@ -38,9 +38,9 @@ indego.update_last_completed_mow() |    X      |       |
 indego.update_location()           |           |       |
 indego.update_network()            |           |       |
 indego.update_next_mow()           |           |       |
-indego.update_operating_data()     |           |  X    |   X
+indego.update_operating_data()     |           |  X    |   
 indego.update_state()              |    X      |       |
-indego.update_updates()            |           |  X    |   X
+indego.update_updates()            |           |  X    |  
 indego.update_users()              |    X      |       |
 
 
@@ -63,21 +63,21 @@ Updates alerts from API to indego.alerts.
 ```
 
 ### indego.update_generic_data()
-Collect serial, service counter, name, mowing mode, model number and firmware to indego.generic_data.
+Updates indego.generic_data with serial, service counter, name, mowing mode, model number and firmware version.
 
 ```python
 GenericData(alm_name='Indego', alm_sn='505703041', service_counter=132436, needs_service=False, alm_mode='calendar', bareToolnumber='3600HA2300', alm_firmware_version='00837.01043', model_description='Indego 1000', model_voltage=ModelVoltage(min=297, max=369), mowing_mode_description='Calendar')
 ```
 
 ### indego.update_last_completed_mow()
-Updates data on the last completed mow to indego.last_completed_mow
+Updates indego.last_completed_mow with date and time of the latest completed mow.
 
 ```python
 2020-06-21 21:38:50.115000+02:00
 ```
 
 ### indego.update_location()
-Updates the location of the garden/mower to indego.location.
+Updates indego.location with the location of the garden/mower.
 
 ```python
 Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
