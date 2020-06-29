@@ -3,30 +3,30 @@ import asyncio
 import json
 import logging
 import typing
-
-import aiohttp
-
-# from aiohttp import hdrs
 import requests
 
-# from aiofile import AIOFile
+import aiohttp
 from aiohttp import (
     ClientResponseError,
     ClientConnectorError,
+    ClientOSError,
     ServerTimeoutError,
     TooManyRedirects,
 )
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGatewayTimeout
 from aiohttp.helpers import BasicAuth
+from socket import error as SocketError
 
 from . import __version__
-from .const import Methods
-from .const import COMMANDS
-from .const import CONTENT_TYPE_JSON
-from .const import DEFAULT_BODY
-from .const import DEFAULT_CALENDAR
-from .const import DEFAULT_HEADER
-from .const import DEFAULT_URL
+from .const import (
+    Methods,
+    COMMANDS,
+    CONTENT_TYPE_JSON,
+    DEFAULT_BODY,
+    DEFAULT_CALENDAR,
+    DEFAULT_HEADER,
+    DEFAULT_URL,
+)
 from .indego_base_client import IndegoBaseClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -348,7 +348,15 @@ class IndegoAsyncClient(IndegoBaseClient):
                 timeout=timeout,
                 attempts=attempts + 1,
             )
-        except (TooManyRedirects, ClientResponseError, ClientConnectorError) as e:
+        except ClientOSError as e:
+            _LOGGER.debug("%s: Failed to update Indego status, longpoll timeout.", e)
+            return None
+        except (
+            TooManyRedirects,
+            ClientResponseError,
+            ClientConnectorError,
+            SocketError,
+        ) as e:
             _LOGGER.error("%s: Failed to update Indego status", e)
             return None
         except asyncio.CancelledError:
