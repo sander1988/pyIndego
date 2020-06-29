@@ -246,10 +246,10 @@ class IndegoAsyncClient(IndegoBaseClient):
     ):
         """Send a request and return the response."""
         if attempts >= 3:
-            _LOGGER.warning("Three or four attempts done, waiting 30 seconds.")
+            _LOGGER.warning("Three or four attempts done, waiting 30 seconds")
             await asyncio.sleep(30)
         if attempts == 5:
-            _LOGGER.warning("Five attempts done, please try again later.")
+            _LOGGER.warning("Five attempts done, please try again later")
             return None
         url = f"{self._api_url}{path}"
         if not headers:
@@ -281,7 +281,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                     )
                     return None
                 if status == 401:
-                    _LOGGER.info("401: Unauthorized: logging in again.")
+                    _LOGGER.info("401: Unauthorized: logging in again")
                     await self.login()
                     return await self._request(
                         method=method,
@@ -291,11 +291,11 @@ class IndegoAsyncClient(IndegoBaseClient):
                         attempts=attempts + 1,
                     )
                 if status == 403:
-                    _LOGGER.error("403: Forbidden: won't retry.")
+                    _LOGGER.error("403: Forbidden: won't retry")
                     return None
                 if status == 405:
                     _LOGGER.error(
-                        "405: Method not allowed: Get is used but not allowerd, try a different method for path %s, won't retry.",
+                        "405: Method not allowed: Get is used but not allowerd, try a different method for path %s, won't retry",
                         path,
                     )
                     return None
@@ -307,17 +307,26 @@ class IndegoAsyncClient(IndegoBaseClient):
                     return None
                 if status == 504:
                     if url.find("longpoll=true") > 0:
-                        _LOGGER.info("504: longpoll stopped, no updates.")
+                        _LOGGER.info("504: longpoll stopped, no updates")
                         return None
                 response.raise_for_status()
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as e:
-            _LOGGER.error("%s: Timeout on Bosch servers, retrying.", e)
-            return await self.get(path, timeout, attempts + 1)
+            _LOGGER.error("%s: Timeout on Bosch servers, retrying", e)
+            return await self._request(
+                method=method,
+                path=path,
+                data=data,
+                timeout=timeout,
+                attempts=attempts + 1,
+            )
         except (TooManyRedirects, ClientResponseError) as e:
-            _LOGGER.error("%s: Failed to update Indego status.", e)
+            _LOGGER.error("%s: Failed to update Indego status", e)
+            return None
+        except asyncio.CancelledError:
+            _LOGGER.debug("Task cancelled by task runner")
             return None
         except Exception as e:
-            _LOGGER.error("Get gave a unhandled error: %s", e)
+            _LOGGER.error("Request to %s gave a unhandled error: %s", url, e)
             return None
 
     async def get(self, path: str, timeout: int = 30, attempts: int = 0):

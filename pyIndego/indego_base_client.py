@@ -28,7 +28,6 @@ from .states import Config
 from .states import OperatingData
 from .states import Runtime
 from .states import State
-from .states import Updates
 from .states import Users
 
 _LOGGER = logging.getLogger(__name__)
@@ -64,7 +63,6 @@ class IndegoBaseClient(ABC):
         self.generic_data = GenericData()
         self.operating_data = OperatingData()
         self.state = State()
-        self.updates = Updates()
         self.users = Users()
         self.network = Network()
         self.config = Config()
@@ -75,7 +73,7 @@ class IndegoBaseClient(ABC):
         self.state_description_detail = None
         self.last_completed_mow = None
         self.next_mow = None
-        self.update_available = None
+        self.update_available = False
         self.alerts_count = 0
 
     @abstractmethod
@@ -162,8 +160,9 @@ class IndegoBaseClient(ABC):
         pass
 
     def _update_updates_available(self, new):
+        _LOGGER.debug("Updates response: %s", new)
         if new:
-            self.update_available = new["available"]
+            self.update_available = bool(new["available"])
 
     @abstractmethod
     def update_users(self):
