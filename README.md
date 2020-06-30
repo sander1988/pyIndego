@@ -18,9 +18,9 @@ Information   | Description
 --------------|------------
 your_username | Your username in the BoschSmartMove app
 your_password | Your password for the app
-your_serial   | Your Bosch Indego serial (found on the mover, in the mover menu or in the app)
+your_serial   | Optional: Your Bosch Indego serial (found on the mover, in the mover menu or in the app)
 
-The python library is written for the login method with username (email address) and password. Login with Facebook account is not supported.
+This library is written for the login method with username (email address) and password. Login with Facebook account is not supported.
 
 ## Call the API and the mower
 Call the API, synchronously:
@@ -35,50 +35,55 @@ Call the API, asynchronously:
 
     await indego.close()
 
-## update-functions
+## Update functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 
 Call                               | Bosch API | Mower | Mower needs to be online
 -----------------------------------|-----------|-------|-------------------------
-indego.download_map()              |           |       |
-indego.update_all()                |           |       |
 indego.update_alerts()             |    X      |       |
+indego.update_all()                |           |       |
+indego.update_calendar()           |    X      |       |
 indego.update_config()             |           |       |
 indego.update_generic_data()       |    X      |       |
 indego.update_last_completed_mow() |    X      |       |
 indego.update_location()           |           |       |
-indego.update_network()            |           |       |
-indego.update_all()
-indego.update_alerts()             |    X      |       |
-indego.update_generic_data()       |    X      |       |
-indego.update_last_completed_mow() |    X      |       |
-indego.update_location()
 indego.update_network()            |    ?      |  ?    |   ?
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |
 indego.update_security()           |    X      |       |
 indego.update_setup()              |    X      |       |
 indego.update_state()              |    X      |       |
-indego.update_state(force=True)    |           |  X    |
+indego.update_state(force=True)    |    X      |  X    |
+indego.update_state(longpoll=True, longpoll_timeout=120)|X|  X    |
 indego.update_updates()            |           |  X    |
 indego.update_users()              |    X      |       |
-indego.download_map(*)
+indego.delete_alert(alert_index)   |    X      |       |
+indego.download_map(filename='')|||
 
+### Untested
+indego.patch_alert_read(alert_index, read_status=True)
 
-Not implemented yet
-indego.update_config()
-getPredictiveSetup
+### To be implemented
+Predictive Setup
 
 ## List of update functions
 
-### indego.update_all
+### indego.update_all()
 Updates all sensors.
 
 ### indego.update_alerts()
 Updates alerts from API to indego.alerts.
 
 ```python
+indego.alert_count = 1
 [Alerts(alert_id='5d48171263c5345a75dbc017', error_code='ntfy_blade_life', headline='Underhållstips.', date='2019-08-05T11:46:26.397Z', message='Kontrollera klippknivarna. Indego har klippt i 100 timmar. Ska den fungera optimalt, kontrollera klippknivarna så att de är i bra skick. Du kan beställa nya knivar via avsnittet Tillbehör.', read_status='unread', flag='warning', push=True, alert_description='Reminder blade life')]
+```
+
+### indego.update_calendar()
+Updates the calendar with the next planned mows.
+
+```python
+Calendar(cal=3, days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0), CalendarSlot(En=False, StHr=None, StMin=None, EnHr=None, EnMin=None)]), CalendarDay(day=2, day_name='wednesday', slalendarSlot(En=False, StHr=None, StMin=None, EnHr=None, EnMin=None)])])
 ```
 
 ### indego.update_config()
@@ -99,7 +104,7 @@ GenericData(alm_name='Indego', alm_sn='505703041', service_counter=132436, needs
 Updates indego.last_completed_mow with date and time of the latest completed mow.
 
 ```python
-2020-06-21 21:38:50.115000+02:00
+indego.last_completed_mow = (DateTime) 2020-06-21 21:38:50.115000+02:00
 ```
 
 ### indego.update_location()
@@ -109,8 +114,6 @@ Updates indego.location with the location of the garden/mower.
 Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
 ```
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 ### indego.update_network()
 Updates data on the mobile network the Indego is connected to.
 
@@ -118,15 +121,11 @@ Updates data on the mobile network the Indego is connected to.
 Network(mcc=262, mnc=2, rssi=-77, currMode='s', configMode='s', steeredRssi=-100, networkCount=3, networks=[26201, 26202, 26203])
 ```
 
-=======
->>>>>>> added all docstrings, fixed minor linting
-=======
->>>>>>> small update to readme
 ### indego.update_next_mow()
 Updates the indego.next_mow with the next planned mow date and time.
 
 ```python
-2020-06-29 10:00:00+02:00
+indego.next_mow = (DateTime) 2020-06-29 10:00:00+02:00
 ```
 
 ### indego.update_operating_data()
@@ -136,7 +135,6 @@ Update the indego.operating_data with data about battery, runtime, garden data a
 OperatingData(hmiKeys=1768, battery=Battery(percent=357, voltage=35.7, cycles=0, discharge=0.0, ambient_temp=26, battery_temp=26, percent_adjusted=83), garden=Garden(id=8, name=1, signal_id=1, size=769, inner_bounds=3, cuts=15, runtime=166824, charge=37702, bumps=6646, stops=29, last_mow=1, map_cell_size=None), runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=9, charge=0, cut=0)))
 ```
 
-<<<<<<< HEAD
 ### indego.update_security()
 Updates the indego.security with information about the Indego security state.
 
@@ -151,10 +149,7 @@ Updates the indego.setup with information if the Indego is set up.
 Setup(hasOwner=True, hasPin=True, hasMap=True, hasAutoCal=False, hasIntegrityCheckPassed=True)
 ```
 
-### indego.update_state()
-=======
 ### indego.update_state(force=False, longpoll=False, longpoll_timeout=120)
->>>>>>> added all docstrings, fixed minor linting
 Updates the indego.state with state of mower, % lawn mowed, position, runtime, map coordinates.
 
 If longpoll is set to True, it sends the latest state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding and coming back only when there are events to deliver or the timeout (in seconds) is due.
@@ -189,8 +184,6 @@ putCommand('returnToDock') |Return mower to dock
 ### indego.put_mow_mode(command)
 Send command. Accepted commands:
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 Command     |Description         
 ------------|--------------------
 putMowMode('true')  |Smart Mow enabled        
@@ -198,47 +191,7 @@ putMowMode('false') |Smart Mow disabled
 
 ## Not implemented yet
 
-<<<<<<< HEAD
-=======
-=======
->>>>>>> added all docstrings, fixed minor linting
-=======
->>>>>>> small update to readme
-### getConfig()
-Collects the configuration of the mower.
-
-```python
-Response:
-{
-    'region': 0,
-    'language': 1,
-    'border_cut': 0,
-    'is_pin_set': True,
-    'wire_id': 4,
-    'bump_sensitivity': 0,
-    'alarm_mode': True
-}
-```
-
-### getNetwork()
-Collects data on the mobile network the Indego is connected to.
-
-```python
-Response:
-{
-    'mcc': 262,
-    'mnc': 2,
-    'rssi': -76,
-    'currMode': 's',
-    'configMode': 's',
-    'steeredRssi': -100,
-    'networkCount': 3,
-    'networks': [26201, 26202, 26203]
-}
-```
-
->>>>>>> added all docstrings, fixed minor linting
-### getPredictiveSetup()
+### update_predictive_setup()
 
 ```python
 Response:
@@ -303,25 +256,29 @@ Send commands.
 
 Command     |Description         
 ------------|--------------------
-putCommand('mow')          |Start mowing        
-putCommand('pause')        |Pause mower         
-putCommand('returnToDock') |Return mower to dock
+put_command('mow')          |Start mowing        
+put_command('pause')        |Pause mower         
+put_command('returnToDock') |Return mower to dock
 
 ### put_mow_mode(command)
 Send command. Accepted commands:
 
 Command     |Description         
 ------------|--------------------
-putMowMode('true')  |Smart Mow enabled        
-putMowMode('false') |Smart Mow disabled   
+put_mow_mode('true')  |Smart Mow enabled        
+put_mow_mode('false') |Smart Mow disabled   
+
+### delete_alert(alert_index)
+Delete an alert from the list, index should exist. If this is called before update_alerts it will not work.
 
 ## Attributes for reading data from locally cached API data
-All functions that doesnt contain "get" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
+All functions that doesnt contain "update" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
 
 attributes                 | Description
 -------------------------|-----------------------------
 alerts_count | Show counts of the current alerts.
 alerts | Show detailed list of alerts.
+calendar | Get the calendar of planned mows.
 AlmFirmwareVersion | Show firmware version.
 AlmMode | Show mow mode.
 AlmName | Show name.
@@ -373,19 +330,13 @@ YPos | Show y-position of mower.
 
 ### Not properly implemented yet
 
-    getPredicitiveCalendar()
+    update_predicitive_calendar()
 Get the calender for predicted mow sessions
 
-    getUserAdjustment()
+    update_user_adjustment()
 Get the user adjustment of the mowing frequency
 
-    getCalendar()
-Get the calendar for allowed mowing times
-
-    getSecurity()
-Get the security settings
-
-    getAutomaticUpdate()
+    update_automatic_update()
 Get the automatic update settings
 
 
@@ -399,6 +350,7 @@ post
 
 get
 /alerts
+/alms
 /alms/<serial>
 /alms/<serial>/automaticUpdate
 /alms/<serial>/calendar

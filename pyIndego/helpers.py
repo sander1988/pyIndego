@@ -1,8 +1,8 @@
 """Helper class for Indego."""
-from dataclasses import dataclass
-from dataclasses import is_dataclass
+from dataclasses import dataclass, is_dataclass
 from datetime import datetime
 import logging
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -16,9 +16,12 @@ def nested_dataclass(*args, **kwargs):  # noqa: D202
         def __init__(self, *args, **kwargs):
             for name, value in kwargs.items():
                 field_type = cls.__annotations__.get(name, None)
-                if is_dataclass(field_type) and isinstance(value, dict):
-                    new_obj = field_type(**value)
-                    kwargs[name] = new_obj
+                if hasattr(field_type, "__args__"):
+                    inner_type = field_type.__args__[0]
+                    if is_dataclass(inner_type):
+                        new_obj = [inner_type(**dict_) for dict_ in value]
+                        kwargs[name] = new_obj
+
             original_init(self, *args, **kwargs)
 
         cls.__init__ = __init__

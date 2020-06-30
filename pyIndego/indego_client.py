@@ -32,7 +32,7 @@ class IndegoClient(IndegoBaseClient):
         self,
         username: str,
         password: str,
-        serial: str,
+        serial: str = None,
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
     ):
@@ -62,92 +62,17 @@ class IndegoClient(IndegoBaseClient):
         if not self._logged_in:
             self.login()
 
-    def update_all(self, force=False):
-        """Update all states."""
-        self.update_generic_data()
-        self.update_state(force)
-        self.update_alerts()
-        self.update_last_completed_mow()
-        self.update_location()
-        self.update_next_mow()
-        self.update_operating_data()
-        self.update_updates_available()
-        self.update_users()
-        self.update_network()
-
-    def update_generic_data(self):
-        """Update generic data."""
-        self._update_generic_data(self.get(f"alms/{self._serial}"))
-
-    def update_alerts(self):
-        """Update alerts."""
-        self._update_alerts(self.get("alerts"))
-
-    def update_last_completed_mow(self):
-        """Update last completed mow."""
-        self._update_last_completed_mow(
-            self.get(f"alms/{self._serial}/predictive/lastcutting")
-        )
-
-    def update_location(self):
-        """Update location."""
-        self._update_location(self.get(f"alms/{self._serial}/predictive/location"))
-
-    def update_next_mow(self):
-        """Update next mow datetime."""
-        self._update_next_mow(self.get(f"alms/{self._serial}/predictive/nextcutting"))
-
-    def update_operating_data(self):
-        """Update operating data."""
-        self._update_operating_data(self.get(f"alms/{self._serial}/operatingData"))
-
-    def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
-        """Update state. Can be both forced and with longpoll.
+    def delete_alert(self, alert_index: int):
+        """Delete the alert with the specified index.
 
         Args:
-            force (bool, optional): Force the state refresh, wakes up the mower. Defaults to False.
-            longpoll (bool, optional): Do a longpoll. Defaults to False.
-            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120.
-
+            alert_index (int): index of alert to be deleted, should be in range or length of alerts.
+            
         """
-        path = f"alms/{self._serial}/state"
-        if longpoll:
-            last_state = 0
-            if self.state.state:
-                last_state = self.state.state
-            path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
-        if force:
-            if longpoll:
-                path = f"{path}&forceRefresh=true"
-            else:
-                path = f"{path}?forceRefresh=true"
-
-        self._update_state(self.get(path, timeout=longpoll_timeout + 30))
-
-    def update_updates_available(self):
-        """Update updates available."""
-        if self._online:
-            self._update_updates_available(self.get(f"alms/{self._serial}/updates"))
-
-    def update_users(self):
-        """Update users."""
-        self._update_users(self.get(f"users/{self._userid}"))
-
-    def update_network(self):
-        """Update network."""
-        self._update_network(self.get(f"alms/{self._serial}/network"))
-
-    def update_config(self):
-        """Update config."""
-        self._update_config(self.get(f"alms/{self._serial}/config"))
-
-    def update_setup(self):
-        """Update setup."""
-        self._update_setup(self.get(f"alms/{self._serial}/setup"))
-
-    def update_security(self):
-        """Update security."""
-        self._update_security(self.get(f"alms/{self._serial}/security"))
+        alert_id = self._get_alert_by_index(alert_index)
+        if alert_id:
+            return self._request(Methods.DELETE, f"alerts/{alert_id}/")
+        return None
 
     def download_map(self, filename: str = None):
         """Download the map.
@@ -165,6 +90,23 @@ class IndegoClient(IndegoBaseClient):
         if map:
             with open(self.map_filename, "wb") as afp:
                 afp.write(map)
+
+    def patch_alert_read(self, alert_index: int, read_status: bool = True):
+        """Set the alert to read.
+
+        Args:
+            alert_index (int): index of alert to be deleted, should be in range or length of alerts.
+            read_status (bool): new state
+            
+        """
+        alert_id = self._get_alert_by_index(alert_index)
+        if alert_id:
+            return self._request(
+                Methods.PATCH,
+                f"alerts/{alert_id}",
+                data={"read_status": "read" if read_status else "unread"},
+            )
+        return None
 
     def put_command(self, command: str):
         """Send a command to the mower.
@@ -200,6 +142,101 @@ class IndegoClient(IndegoBaseClient):
         """Set the predictive calendar."""
         return self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
+    def update_alerts(self):
+        """Update alerts."""
+        self._update_alerts(self.get("alerts"))
+
+    def update_all(self):
+        """Update all states."""
+        self.update_alerts()
+        self.update_calendar()
+        self.update_config()
+        self.update_generic_data()
+        self.update_last_completed_mow()
+        self.update_location()
+        self.update_network()
+        self.update_next_mow()
+        self.update_operating_data()
+        self.update_security()
+        self.update_setup()
+        self.update_state()
+        self.update_updates_available()
+        self.update_users()
+
+    def update_calendar(self):
+        """Update calendar."""
+        self._update_calendar(self.get(f"alms/{self._serial}/calendar"))
+
+    def update_config(self):
+        """Update config."""
+        self._update_config(self.get(f"alms/{self._serial}/config"))
+
+    def update_generic_data(self):
+        """Update generic data."""
+        self._update_generic_data(self.get(f"alms/{self._serial}"))
+
+    def update_last_completed_mow(self):
+        """Update last completed mow."""
+        self._update_last_completed_mow(
+            self.get(f"alms/{self._serial}/predictive/lastcutting")
+        )
+
+    def update_location(self):
+        """Update location."""
+        self._update_location(self.get(f"alms/{self._serial}/predictive/location"))
+
+    def update_network(self):
+        """Update network."""
+        self._update_network(self.get(f"alms/{self._serial}/network"))
+
+    def update_next_mow(self):
+        """Update next mow datetime."""
+        self._update_next_mow(self.get(f"alms/{self._serial}/predictive/nextcutting"))
+
+    def update_operating_data(self):
+        """Update operating data."""
+        self._update_operating_data(self.get(f"alms/{self._serial}/operatingData"))
+
+    def update_security(self):
+        """Update security."""
+        self._update_security(self.get(f"alms/{self._serial}/security"))
+
+    def update_setup(self):
+        """Update setup."""
+        self._update_setup(self.get(f"alms/{self._serial}/setup"))
+
+    def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
+        """Update state. Can be both forced and with longpoll.
+
+        Args:
+            force (bool, optional): Force the state refresh, wakes up the mower. Defaults to False.
+            longpoll (bool, optional): Do a longpoll. Defaults to False.
+            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120.
+
+        """
+        path = f"alms/{self._serial}/state"
+        if longpoll:
+            last_state = 0
+            if self.state.state:
+                last_state = self.state.state
+            path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
+        if force:
+            if longpoll:
+                path = f"{path}&forceRefresh=true"
+            else:
+                path = f"{path}?forceRefresh=true"
+
+        self._update_state(self.get(path, timeout=longpoll_timeout + 30))
+
+    def update_updates_available(self):
+        """Update updates available."""
+        if self._online:
+            self._update_updates_available(self.get(f"alms/{self._serial}/updates"))
+
+    def update_users(self):
+        """Update users."""
+        self._update_users(self.get(f"users/{self._userid}"))
+
     def login(self, attempts=0):
         """Login to the api and store the context."""
         _LOGGER.debug("Logging in, attempt: %s", attempts)
@@ -214,6 +251,9 @@ class IndegoClient(IndegoBaseClient):
                 attempts=attempts,
             )
         )
+        if not self._serial:
+            list_of_mowers = self.get("alms")
+            self._serial = list_of_mowers[0].get("alm_sn")
 
     def _request(  # noqa: C901
         self,
@@ -247,7 +287,7 @@ class IndegoClient(IndegoBaseClient):
             )
             status = response.status_code
             if status == 200:
-                if method == Methods.PUT:
+                if method in (Methods.DELETE, Methods.PATCH, Methods.PUT):
                     return True
                 if CONTENT_TYPE_JSON in response.headers[CONTENT_TYPE].split(";"):
                     return response.json()
@@ -305,12 +345,14 @@ class IndegoClient(IndegoBaseClient):
             _LOGGER.error("Get gave a unhandled error: %s", e)
             return None
 
-    def get(self, path: str, timeout: int = 30, attempts: int = 0):
+    def get(self, path: str, timeout: int = 30):
         """Send a GET request and return the response as a dict."""
-        return self._request(
-            method=Methods.GET, path=path, timeout=timeout, attempts=attempts
-        )
+        return self._request(method=Methods.GET, path=path, timeout=timeout)
 
     def put(self, path: str, data: dict, timeout: int = 30):
         """Send a PUT request and return the response as a dict."""
         return self._request(method=Methods.PUT, path=path, data=data, timeout=timeout)
+
+    def post(self, path: str, data: dict, timeout: int = 30):
+        """Send a POST request and return the response as a dict."""
+        return self._request(method=Methods.POST, path=path, data=data, timeout=timeout)

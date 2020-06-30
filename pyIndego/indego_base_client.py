@@ -1,36 +1,39 @@
 """Base class for indego."""
 import logging
 import typing
-from abc import ABC
-from abc import abstractmethod
-from dataclasses import dataclass
-from dataclasses import replace
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, replace
 
-from .const import Methods
-from .const import ALERT_ERROR_CODE
-from .const import CONTENT_TYPE
-from .const import CONTENT_TYPE_JSON
-from .const import DEFAULT_BODY
-from .const import DEFAULT_CALENDAR
-from .const import DEFAULT_URL
-from .const import MOWER_MODEL_DESCRIPTION
-from .const import MOWER_MODEL_VOLTAGE
-from .const import MOWER_STATE_DESCRIPTION
-from .const import MOWER_STATE_DESCRIPTION_DETAIL
-from .const import MOWING_MODE_DESCRIPTION
+from .const import (
+    Methods,
+    ALERT_ERROR_CODE,
+    CONTENT_TYPE,
+    CONTENT_TYPE_JSON,
+    DEFAULT_BODY,
+    DEFAULT_CALENDAR,
+    DEFAULT_URL,
+    MOWER_MODEL_DESCRIPTION,
+    MOWER_MODEL_VOLTAGE,
+    MOWER_STATE_DESCRIPTION,
+    MOWER_STATE_DESCRIPTION_DETAIL,
+    MOWING_MODE_DESCRIPTION,
+)
 from .helpers import convert_bosch_datetime
-from .states import Alerts
-from .states import Battery
-from .states import GenericData
-from .states import Location
-from .states import Network
-from .states import Config
-from .states import Setup
-from .states import Security
-from .states import OperatingData
-from .states import Runtime
-from .states import State
-from .states import Users
+from .states import (
+    Alerts,
+    Calendar,
+    Battery,
+    GenericData,
+    Location,
+    Network,
+    Config,
+    Setup,
+    Security,
+    OperatingData,
+    Runtime,
+    State,
+    Users,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -42,7 +45,7 @@ class IndegoBaseClient(ABC):
         self,
         username: str,
         password: str,
-        serial: str,
+        serial: str = None,
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
     ):
@@ -66,33 +69,87 @@ class IndegoBaseClient(ABC):
         self._contextid = ""
 
         self.alerts = [Alerts()]
-        self.generic_data = GenericData()
-        self.operating_data = OperatingData()
-        self.state = State()
-        self.users = Users()
-        self.network = Network()
-        self.config = Config()
-        self.setup = Setup()
-        self.security = Security()
+        self.alerts_count = 0
         self.battery = Battery()
-        self.runtime = Runtime()
+        self.calendar = Calendar()
+        self.config = Config()
+        self.generic_data = GenericData()
+        self.last_completed_mow = None
         self.location = Location()
+        self.network = Network()
+        self.next_mow = None
+        self.operating_data = OperatingData()
+        self.security = Security()
+        self.state = State()
+        self.setup = Setup()
+        self.runtime = Runtime()
         self.state_description = None
         self.state_description_detail = None
-        self.last_completed_mow = None
-        self.next_mow = None
         self.update_available = False
-        self.alerts_count = 0
+        self.users = Users()
 
     @abstractmethod
-    def update_all(self, force=False):
+    def delete_alert(self, alert_index: int):
+        """Delete the alert with the specified index."""
+
+    @abstractmethod
+    def download_map(self, filename=None):
+        """Download the map."""
+
+    @abstractmethod
+    def patch_alert_read(self, alert_index: int, read_status: bool):
+        """Patch the read_status of the alert with the specified index."""
+
+    @abstractmethod
+    def put_command(self, command: str):
+        """Send a command to the mower."""
+
+    @abstractmethod
+    def put_mow_mode(self, command: typing.Any):
+        """Set the mower to mode manual (false-ish) or predictive (true-ish)."""
+
+    @abstractmethod
+    def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
+        """Set the predictive calendar."""
+
+    @abstractmethod
+    def update_alerts(self):
+        """Update alerts."""
+
+    def _update_alerts(self, new):
+        """Update alerts."""
+        if new:
+            self.alerts = [Alerts(**a) for a in new]
+            self.alerts_count = len(self.alerts)
+        else:
+            self.alerts = [Alerts()]
+            self.alerts_count = 0
+
+    @abstractmethod
+    def update_all(self):
         """Update all states."""
-        pass
+
+    @abstractmethod
+    def update_calendar(self):
+        """Update calendar."""
+
+    def _update_calendar(self, new):
+        """Update calendar."""
+        if new:
+            self.calendar = replace(self.calendar, **new["cals"][0])
+
+    @abstractmethod
+    def update_config(self):
+        """Update config."""
+
+    def _update_config(self, new):
+        """Update config."""
+        if new:
+            self.config = replace(self.config, **new)
 
     @abstractmethod
     def update_generic_data(self):
         """Update generic data."""
-        pass
 
     def _update_generic_data(self, new):
         """Update generic data."""
@@ -101,20 +158,8 @@ class IndegoBaseClient(ABC):
             self._update_battery_percentage_adjusted()
 
     @abstractmethod
-    def update_alerts(self):
-        """Update alerts."""
-        pass
-
-    def _update_alerts(self, new):
-        """Update alerts."""
-        if new:
-            self.alerts = [Alerts(**a) for a in new]
-            self.alerts_count = len(self.alerts)
-
-    @abstractmethod
     def update_last_completed_mow(self):
         """Update last completed mow."""
-        pass
 
     def _update_last_completed_mow(self, new):
         """Update last completed mow."""
@@ -124,7 +169,6 @@ class IndegoBaseClient(ABC):
     @abstractmethod
     def update_location(self):
         """Update location."""
-        pass
 
     def _update_location(self, new):
         """Update location."""
@@ -132,9 +176,17 @@ class IndegoBaseClient(ABC):
             self.location = replace(self.location, **new)
 
     @abstractmethod
+    def update_network(self):
+        """Update network."""
+
+    def _update_network(self, new):
+        """Update network."""
+        if new:
+            self.network = replace(self.network, **new)
+
+    @abstractmethod
     def update_next_mow(self):
         """Update next mow datetime."""
-        pass
 
     def _update_next_mow(self, new):
         """Update next mow datetime."""
@@ -144,7 +196,6 @@ class IndegoBaseClient(ABC):
     @abstractmethod
     def update_operating_data(self):
         """Update operating data."""
-        pass
 
     def _update_operating_data(self, new):
         """Update operating data."""
@@ -155,27 +206,27 @@ class IndegoBaseClient(ABC):
         else:
             self._online = False
 
-    def _update_battery_percentage_adjusted(self):
-        """Update the battery percentage adjusted field, relies on generic and operating data populated."""
-        if (
-            self.generic_data.model_voltage.min is not None
-            and self.operating_data.battery.percent is not None
-        ):
-            self.operating_data.battery.update_percent_adjusted(
-                self.generic_data.model_voltage
-            )
+    @abstractmethod
+    def update_security(self):
+        """Update security."""
+
+    def _update_security(self, new):
+        """Update security."""
+        if new:
+            self.security = replace(self.security, **new)
+
+    @abstractmethod
+    def update_setup(self):
+        """Update setup."""
+
+    def _update_setup(self, new):
+        """Update setup."""
+        if new:
+            self.setup = replace(self.setup, **new)
 
     @abstractmethod
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
-        """Update state. Can be both forced and with longpoll.
-
-        Args:
-            force (bool, optional): Force the state refresh, wakes up the mower. Defaults to False.
-            longpoll (bool, optional): Do a longpoll. Defaults to False.
-            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120.
-
-        """
-        pass
+        """Update state. Can be both forced and with longpoll."""
 
     def _update_state(self, new):
         """Update state."""
@@ -189,7 +240,6 @@ class IndegoBaseClient(ABC):
     @abstractmethod
     def update_updates_available(self):
         """Update updates available."""
-        pass
 
     def _update_updates_available(self, new):
         """Update updates available."""
@@ -200,7 +250,6 @@ class IndegoBaseClient(ABC):
     @abstractmethod
     def update_users(self):
         """Update users."""
-        pass
 
     def _update_users(self, new):
         """Update users."""
@@ -208,89 +257,12 @@ class IndegoBaseClient(ABC):
             self.users = replace(self.users, **new)
 
     @abstractmethod
-    def update_network(self):
-        """Update network."""
-        pass
-
-    def _update_network(self, new):
-        """Update network."""
-        if new:
-            self.network = replace(self.network, **new)
-
-    @abstractmethod
-    def update_config(self):
-        pass
-
-    def _update_config(self, new):
-        if new:
-            self.config = replace(self.config, **new)
-
-    @abstractmethod
-    def update_setup(self):
-        pass
-
-    def _update_setup(self, new):
-        if new:
-            self.setup = replace(self.setup, **new)
-
-    @abstractmethod
-    def update_security(self):
-        pass
-
-    def _update_security(self, new):
-        if new:
-            self.security = replace(self.security, **new)
-
-    @abstractmethod
-    def download_map(self, filename=None):
-        """Download the map.
-
-        Args:
-            filename (str, optional): Filename for the map. Defaults to None, can also be filled by the filename set in init.
-
-        """
-        pass
-
-    @abstractmethod
-    def put_command(self, command: str):
-        """Send a command to the mower.
-
-        Args:
-            command (str): command should be one of "mow", "pause", "returnToDock"
-
-        Returns:
-            str: either result of the call or 'Wrong Command'
-
-        """
-        pass
-
-    @abstractmethod
-    def put_mow_mode(self, command: typing.Any):
-        """Set the mower to mode manual (false-ish) or predictive (true-ish).
-
-        Args:
-            command (str/bool): should be str that is bool-ish (true, True, false, False) or a bool.
-
-        Returns:
-            str: either result of the call or 'Wrong Command'
-
-        """
-        pass
-
-    @abstractmethod
-    def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
-        """Set the predictive calendar."""
-        pass
-
-    @abstractmethod
     def login(self, attempts: int = 0):
         """Login to the Indego API."""
-        pass
 
     def _login(self, login):
         """Login to the Indego API."""
         if login:
-            _LOGGER.debug("---Call login")
             self._contextid = login["contextId"]
             self._userid = login["userId"]
             self._logged_in = True
@@ -308,41 +280,38 @@ class IndegoBaseClient(ABC):
         timeout: int = 30,
         attempts: int = 0,
     ):
-        """Request implemented by the subclasses either synchronously or asynchronously.
-
-        Args:
-            method (Methods): HTTP method to be executed.
-            path (str): url to call on top of base_url.
-            data (dict, optional): if applicable, data to be sent, defaults to None.
-            headers (dict, optional): headers to be included, defaults to None, which should be filled by the method.
-            auth (BasicAuth or HTTPBasicAuth, optional): login specific attribute, defaults to None.
-            timeout (int, optional): Timeout for the api call. Defaults to 30.
-            attempts (int, optional): Number to keep track of retries, after three starts delaying, after five quites.
-
-        """
+        """Request implemented by the subclasses either synchronously or asynchronously."""
 
     @abstractmethod
     def get(self, path: str, timeout: int):
-        """Get implemented by the subclasses either synchronously or asynchronously.
+        """Get implemented by the subclasses either synchronously or asynchronously."""
 
-        Args:
-            path (str): url to call on top of base_url
-            timeout (int, optional): Timeout for the api call. Defaults to 30.
-
-        """
-        pass
+    @abstractmethod
+    def post(self, path: str, timeout: int):
+        """Post implemented by the subclasses either synchronously or asynchronously."""
 
     @abstractmethod
     def put(self, path: str, data: dict, timeout: int):
-        """Put implemented by the subclasses either synchronously or asynchronously.
+        """Put implemented by the subclasses either synchronously or asynchronously."""
 
-        Args:
-            path (str): url to call on top of base_url
-            data (dict): data to put
-            timeout (int, optional): Timeout for the api call. Defaults to 30.
+    def _get_alert_by_index(self, alert_index: int) -> int:
+        """Return the alert_id based on index."""
+        if 0 <= alert_index < self.alerts_count:
+            _LOGGER.warning(
+                "No alerts to patch, or alerts not loaded yet, use update_alerts first"
+            )
+            return None
+        return self.alerts[alert_index].alert_id
 
-        """
-        pass
+    def _update_battery_percentage_adjusted(self):
+        """Update the battery percentage adjusted field, relies on generic and operating data populated."""
+        if (
+            self.generic_data.model_voltage.min is not None
+            and self.operating_data.battery.percent is not None
+        ):
+            self.operating_data.battery.update_percent_adjusted(
+                self.generic_data.model_voltage
+            )
 
     def __repr__(self):
         """Create a string representing the mower."""

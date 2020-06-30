@@ -1,17 +1,17 @@
 """Classes for states of pyIndego."""
 import logging
-import typing
-from dataclasses import dataclass
-from dataclasses import field
-from dataclasses import is_dataclass
+from typing import List
+from dataclasses import dataclass, field, is_dataclass
 from datetime import datetime
 
-from .const import ALERT_ERROR_CODE
-from .const import DEFAULT_LOOKUP_VALUE
-from .const import MOWER_MODEL_DESCRIPTION
-from .const import MOWING_MODE_DESCRIPTION
-from .helpers import convert_bosch_datetime
-from .helpers import nested_dataclass
+from .const import (
+    ALERT_ERROR_CODE,
+    DEFAULT_LOOKUP_VALUE,
+    MOWER_MODEL_DESCRIPTION,
+    MOWING_MODE_DESCRIPTION,
+    DAY_MAPPING,
+)
+from .helpers import convert_bosch_datetime, nested_dataclass
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,6 +83,39 @@ class Battery:
             )
 
 
+@dataclass
+class CalendarSlot:
+    """Class for CalendarSlots."""
+
+    En: bool = None
+    StHr: int = None
+    StMin: int = None
+    EnHr: int = None
+    EnMin: int = None
+
+
+@nested_dataclass
+class CalendarDay:
+    """Class for CalendarDays."""
+
+    day: int = None
+    day_name: str = None
+    slots: List[CalendarSlot] = field(default_factory=lambda: [CalendarSlot])
+
+    def __post_init__(self):
+        """Update the dayname."""
+        if self.day is not None:
+            self.day_name = DAY_MAPPING[self.day]
+
+
+@nested_dataclass
+class Calendar:
+    """Class for Calendar."""
+
+    cal: int = None
+    days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
+
+
 @nested_dataclass
 class GenericData:
     """Generic Data Class."""
@@ -131,10 +164,13 @@ class Network:
     configMode: str = None
     steeredRssi: int = None
     networkCount: int = None
-    networks: typing.List[int] = None
+    networks: List[int] = None
+
 
 @dataclass
 class Config:
+    """Config Class."""
+
     region: int = None
     language: int = None
     border_cut: int = None
@@ -143,18 +179,25 @@ class Config:
     bump_sensitivity: int = None
     alarm_mode: bool = None
 
+
 @dataclass
 class Setup:
+    """Setup Class."""
+
     hasOwner: bool = None
     hasPin: bool = None
     hasMap: bool = None
     hasAutoCal: bool = None
     hasIntegrityCheckPassed: bool = None
 
+
 @dataclass
 class Security:
+    """Security Class."""
+
     enabled: bool = None
     autolock: bool = None
+
 
 @dataclass
 class RuntimeDetail:

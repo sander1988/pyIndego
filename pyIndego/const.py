@@ -5,12 +5,14 @@ class Methods(Enum):
     GET = "GET"
     POST = "POST"
     PUT = "PUT"
+    DELETE = "DELETE"
+    PATCH = "PATCH"
+    OPTIONS = "OPTIONS"
+    HEAD = "HEAD"
 
 
-DEFAULT_URL = "https://api.indego.iot.bosch-si.com:443/api/v1/"
-# CONST TAKEN FROM homeassistant.const
+DEFAULT_URL = "https://api.indego.iot.bosch-si.com/api/v1/"
 CONTENT_TYPE_JSON = "application/json"
-# const taken from aiohttp.hdrs
 CONTENT_TYPE = "Content-Type"
 DEFAULT_BODY = {
     "device": "",
@@ -217,4 +219,15 @@ ALERT_ERROR_CODE = {
     "149": "Mower outside perimeter cable",
     "151": "Perimeter cable signal missing",
     "ntfy_blade_life": "Reminder blade life",
+}
+
+
+DAY_MAPPING = {
+    0: "monday",
+    1: "teusday",
+    2: "wednesday",
+    3: "thursday",
+    4: "friday",
+    5: "saturday",
+    6: "sunday",
 }
