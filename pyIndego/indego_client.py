@@ -248,8 +248,8 @@ class IndegoClient(IndegoBaseClient):
             timeout=30,
             attempts=attempts,
         )
+        self._login(response)
         if response is not None:
-            self._login(response)
             _LOGGER.debug("Logged in")
             if not self._serial:
                 list_of_mowers = self.get("alms")

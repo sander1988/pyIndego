@@ -86,6 +86,7 @@ class IndegoBaseClient(ABC):
         self.update_available = False
         self.users = Users()
 
+    # Properties
     @property
     def serial(self):
         """Return the serial number of the mower."""
@@ -106,6 +107,7 @@ class IndegoBaseClient(ABC):
             self.state.state, DEFAULT_LOOKUP_VALUE
         )
 
+    # Methods
     @abstractmethod
     def delete_alert(self, alert_index: int):
         """Delete the alert with the specified index."""
@@ -308,6 +310,7 @@ class IndegoBaseClient(ABC):
     def put(self, path: str, data: dict, timeout: int):
         """Put implemented by the subclasses either synchronously or asynchronously."""
 
+    # internal methods
     def _get_alert_by_index(self, alert_index: int) -> int:
         """Return the alert_id based on index."""
         if 0 <= alert_index < self.alerts_count:

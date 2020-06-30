@@ -282,8 +282,8 @@ class IndegoAsyncClient(IndegoBaseClient):
             auth=BasicAuth(self._username, self._password),
             timeout=30,
         )
+        self._login(response)
         if response is not None:
-            self._login(response)
             _LOGGER.debug("Logged in")
             if not self._serial:
                 list_of_mowers = await self.get("alms")
