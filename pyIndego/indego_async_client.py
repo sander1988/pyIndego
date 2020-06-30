@@ -8,7 +8,6 @@ import requests
 import aiohttp
 from aiohttp import (
     ClientResponseError,
-    ClientConnectorError,
     ClientOSError,
     ServerTimeoutError,
     TooManyRedirects,
@@ -301,10 +300,10 @@ class IndegoAsyncClient(IndegoBaseClient):
                         return await response.json()
                     return await response.content.read()
                 if status == 204:
-                    _LOGGER.info("204: No content in response from server")
+                    _LOGGER.debug("204: No content in response from server")
                     return None
                 if status == 400:
-                    _LOGGER.error(
+                    _LOGGER.warning(
                         "400: Bad Request: won't retry. Message: %s",
                         (await response.content.read()).decode("UTF-8"),
                     )
@@ -324,15 +323,16 @@ class IndegoAsyncClient(IndegoBaseClient):
                     return None
                 if status == 405:
                     _LOGGER.error(
-                        "405: Method not allowed: Get is used but not allowerd, try a different method for path %s, won't retry",
+                        "405: Method not allowed: %s is used but not allowed, try a different method for path %s, won't retry",
+                        method,
                         path,
                     )
                     return None
                 if status == 500:
-                    _LOGGER.info("500: Internal Server Error")
+                    _LOGGER.debug("500: Internal Server Error")
                     return None
                 if status == 501:
-                    _LOGGER.info("501: Not implemented yet")
+                    _LOGGER.debug("501: Not implemented yet")
                     return None
                 if status == 504:
                     if url.find("longpoll=true") > 0:
@@ -340,7 +340,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                         return None
                 response.raise_for_status()
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as e:
-            _LOGGER.error("%s: Timeout on Bosch servers, retrying", e)
+            _LOGGER.info("%s: Timeout on Bosch servers, retrying", e)
             return await self._request(
                 method=method,
                 path=path,
@@ -349,15 +349,10 @@ class IndegoAsyncClient(IndegoBaseClient):
                 attempts=attempts + 1,
             )
         except ClientOSError as e:
-            _LOGGER.debug("%s: Failed to update Indego status, longpoll timeout.", e)
+            _LOGGER.debug("%s: Failed to update Indego status, longpoll timeout", e)
             return None
-        except (
-            TooManyRedirects,
-            ClientResponseError,
-            ClientConnectorError,
-            SocketError,
-        ) as e:
-            _LOGGER.error("%s: Failed to update Indego status", e)
+        except (TooManyRedirects, ClientResponseError, SocketError) as e:
+            _LOGGER.error("%s: Failed to update Indego status, won't retry", e)
             return None
         except asyncio.CancelledError:
             _LOGGER.debug("Task cancelled by task runner")
