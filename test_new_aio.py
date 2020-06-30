@@ -14,7 +14,8 @@ _LOGGER.setLevel(logging.DEBUG)
 
 async def main(config):
     async with IndegoAsyncClient(**config) as indego:
-        await indego.update_calendar()
+        await indego.update_state(longpoll=True)
+        print(indego.state)
         # await indego.update_next_mow()
         # await indego.update_generic_data()
         # print(indego.generic_data)

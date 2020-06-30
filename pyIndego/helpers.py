@@ -21,6 +21,10 @@ def nested_dataclass(*args, **kwargs):  # noqa: D202
                     if is_dataclass(inner_type):
                         new_obj = [inner_type(**dict_) for dict_ in value]
                         kwargs[name] = new_obj
+                else:
+                    if is_dataclass(field_type) and isinstance(value, dict):
+                        new_obj = field_type(**value)
+                        kwargs[name] = new_obj
 
             original_init(self, *args, **kwargs)
 
