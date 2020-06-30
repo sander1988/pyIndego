@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Init for Indego class."""
 from pkg_resources import DistributionNotFound
 from pkg_resources import get_distribution
 
