@@ -12,6 +12,8 @@ For PYPI package: https://pypi.org/project/pyIndego/
 
 ## Basic information needed
 
+The library requires python 3.7 or above.
+
 Information   | Description
 --------------|------------
 your_username | Your username in the BoschSmartMove app
@@ -37,9 +39,11 @@ indego.update_config()             |           |       |
 indego.update_generic_data()       |    X      |       |
 indego.update_last_completed_mow() |    X      |       |
 indego.update_location()           |           |       |
-indego.update_network()            |           |  X    | 
+indego.update_network()            |           |  X    |
 indego.update_next_mow()           |           |       |
-indego.update_operating_data()     |           |  X    |   
+indego.update_operating_data()     |           |  X    |
+indego.update_security()           |    X      |       |
+indego.update_setup()              |    X      |       |
 indego.update_state()              |    X      |       |
 indego.update_state(force=True)    |           |  X    |
 indego.update_updates()            |           |  X    |
@@ -110,6 +114,20 @@ Update the indego.operating_data with data about battery, runtime, garden data a
 
 ```python
 OperatingData(hmiKeys=1768, battery=Battery(percent=357, voltage=35.7, cycles=0, discharge=0.0, ambient_temp=26, battery_temp=26, percent_adjusted=83), garden=Garden(id=8, name=1, signal_id=1, size=769, inner_bounds=3, cuts=15, runtime=166824, charge=37702, bumps=6646, stops=29, last_mow=1, map_cell_size=None), runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=9, charge=0, cut=0)))
+```
+
+### indego.update_security()
+Updates the indego.security with information about the Indego security state.
+
+```python
+Security(enabled=True, autolock=False)
+```
+
+### indego.update_setup()
+Updates the indego.setup with information if the Indego is set up.
+
+```python
+Setup(hasOwner=True, hasPin=True, hasMap=True, hasAutoCal=False, hasIntegrityCheckPassed=True)
 ```
 
 ### indego.update_state()
@@ -309,6 +327,7 @@ get
 /alms/<serial>/predictive/useradjustment
 /alms/<serial>/predictive/weather
 /alms/<serial>/security
+/alms/<serial>/setup
 /alms/<serial>/state
 /users/<userid>
 

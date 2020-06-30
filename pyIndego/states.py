@@ -129,6 +129,19 @@ class Config:
     alarm_mode: bool = None
 
 @dataclass
+class Setup:
+    hasOwner: bool = None
+    hasPin: bool = None
+    hasMap: bool = None
+    hasAutoCal: bool = None
+    hasIntegrityCheckPassed: bool = None
+
+@dataclass
+class Security:
+    enabled: bool = None
+    autolock: bool = None
+
+@dataclass
 class RuntimeDetail:
     operate: int = None
     charge: int = None
