@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.17
+- Added the update_security call
+- Added the update_setup call
+- Added support for longpoll to get state from API
+- Updates to doc
+
 ## 2.0.16
 - Added the update_config call
 - Added the update_network call
