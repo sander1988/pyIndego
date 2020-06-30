@@ -6,11 +6,11 @@ from dataclasses import dataclass, replace
 
 from .const import (
     Methods,
-    ALERT_ERROR_CODE,
     CONTENT_TYPE,
     CONTENT_TYPE_JSON,
     DEFAULT_BODY,
     DEFAULT_CALENDAR,
+    DEFAULT_LOOKUP_VALUE,
     DEFAULT_URL,
     MOWER_MODEL_DESCRIPTION,
     MOWER_MODEL_VOLTAGE,
@@ -83,10 +83,28 @@ class IndegoBaseClient(ABC):
         self.state = State()
         self.setup = Setup()
         self.runtime = Runtime()
-        self.state_description = None
-        self.state_description_detail = None
         self.update_available = False
         self.users = Users()
+
+    @property
+    def serial(self):
+        """Return the serial number of the mower."""
+        if self._serial:
+            return self._serial
+        _LOGGER.warning("Serial not yet set, please login first")
+        return None
+
+    @property
+    def state_description(self):
+        """Return the description of the state."""
+        return MOWER_STATE_DESCRIPTION.get(self.state.state, DEFAULT_LOOKUP_VALUE)
+
+    @property
+    def state_description_detail(self):
+        """Return the description detail of the state."""
+        return MOWER_STATE_DESCRIPTION_DETAIL.get(
+            self.state.state, DEFAULT_LOOKUP_VALUE
+        )
 
     @abstractmethod
     def delete_alert(self, alert_index: int):
@@ -200,9 +218,9 @@ class IndegoBaseClient(ABC):
     def _update_operating_data(self, new):
         """Update operating data."""
         if new:
-            self._online = True
             self.operating_data = replace(self.operating_data, **new)
             self._update_battery_percentage_adjusted()
+            self._online = True
         else:
             self._online = False
 
@@ -232,10 +250,6 @@ class IndegoBaseClient(ABC):
         """Update state."""
         if new:
             self.state = replace(self.state, **new)
-        self.state_description = MOWER_STATE_DESCRIPTION.get(str(self.state.state))
-        self.state_description_detail = MOWER_STATE_DESCRIPTION_DETAIL.get(
-            str(self.state.state)
-        )
 
     @abstractmethod
     def update_updates_available(self):

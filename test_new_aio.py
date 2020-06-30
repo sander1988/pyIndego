@@ -15,12 +15,12 @@ _LOGGER.setLevel(logging.DEBUG)
 async def main(config):
     async with IndegoAsyncClient(**config) as indego:
         await indego.update_calendar()
-        await indego.update_next_mow()
-        await indego.update_generic_data()
-        print(indego.generic_data)
-        print(indego.calendar)
-        print(indego.calendar.days[1])
-        print(indego.next_mow)
+        # await indego.update_next_mow()
+        # await indego.update_generic_data()
+        # print(indego.generic_data)
+        # print(indego.calendar)
+        # print(indego.calendar.days[1])
+        # print(indego.next_mow)
         # print(update_list)
         # await indego.update_all()
         # await indego.update_state()
@@ -48,5 +48,6 @@ if __name__ == "__main__":
     with open("config.json", "r") as config_file:
         config = json.load(config_file)
     # config.pop("serial")
+    # config["username"] = "sdjbfajhbsdf"
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main(config))

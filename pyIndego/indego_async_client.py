@@ -274,29 +274,31 @@ class IndegoAsyncClient(IndegoBaseClient):
 
     async def login(self):
         """Login to the api and store the context."""
-        self._login(
-            await self._request(
-                method=Methods.POST,
-                path="authenticate",
-                data=DEFAULT_BODY,
-                headers=DEFAULT_HEADER,
-                auth=BasicAuth(self._username, self._password),
-                timeout=30,
-            )
+        response = await self._request(
+            method=Methods.POST,
+            path="authenticate",
+            data=DEFAULT_BODY,
+            headers=DEFAULT_HEADER,
+            auth=BasicAuth(self._username, self._password),
+            timeout=30,
         )
-        _LOGGER.debug("Logged in")
-        if not self._serial:
-            list_of_mowers = await self.get("alms")
-            self._serial = list_of_mowers[0].get("alm_sn")
-            _LOGGER.debug("Serial added")
+        if response is not None:
+            self._login(response)
+            _LOGGER.debug("Logged in")
+            if not self._serial:
+                list_of_mowers = await self.get("alms")
+                self._serial = list_of_mowers[0].get("alm_sn")
+                _LOGGER.debug("Serial added")
+            return True
+        return False
 
     async def _request(  # noqa: C901
         self,
         method: Methods,
         path: str,
         data: dict = None,
-        headers=None,
-        auth=None,
+        headers: dict = None,
+        auth: BasicAuth = None,
         timeout: int = 30,
         attempts: int = 0,
     ):
@@ -349,15 +351,22 @@ class IndegoAsyncClient(IndegoBaseClient):
                     )
                     return None
                 if status == 401:
+                    if path == "authenticate":
+                        _LOGGER.info(
+                            "401: Unauthorized, credentials are wrong, won't retry"
+                        )
+                        return None
                     _LOGGER.info("401: Unauthorized: logging in again")
-                    await self.login()
-                    return await self._request(
-                        method=method,
-                        path=path,
-                        data=data,
-                        timeout=timeout,
-                        attempts=attempts + 1,
-                    )
+                    login_result = await self.login()
+                    if login_result:
+                        return await self._request(
+                            method=method,
+                            path=path,
+                            data=data,
+                            timeout=timeout,
+                            attempts=attempts + 1,
+                        )
+                    return None
                 if status == 403:
                     _LOGGER.error("403: Forbidden: won't retry")
                     return None

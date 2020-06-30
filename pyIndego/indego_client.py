@@ -239,21 +239,24 @@ class IndegoClient(IndegoBaseClient):
 
     def login(self, attempts=0):
         """Login to the api and store the context."""
-        _LOGGER.debug("Logging in, attempt: %s", attempts)
-        self._login(
-            self._request(
-                method=Methods.POST,
-                path="authenticate",
-                data=DEFAULT_BODY,
-                headers=DEFAULT_HEADER,
-                auth=HTTPBasicAuth(self._username, self._password),
-                timeout=30,
-                attempts=attempts,
-            )
+        response = self._request(
+            method=Methods.POST,
+            path="authenticate",
+            data=DEFAULT_BODY,
+            headers=DEFAULT_HEADER,
+            auth=HTTPBasicAuth(self._username, self._password),
+            timeout=30,
+            attempts=attempts,
         )
-        if not self._serial:
-            list_of_mowers = self.get("alms")
-            self._serial = list_of_mowers[0].get("alm_sn")
+        if response is not None:
+            self._login(response)
+            _LOGGER.debug("Logged in")
+            if not self._serial:
+                list_of_mowers = self.get("alms")
+                self._serial = list_of_mowers[0].get("alm_sn")
+                _LOGGER.debug("Serial added")
+            return True
+        return False
 
     def _request(  # noqa: C901
         self,
@@ -300,15 +303,22 @@ class IndegoClient(IndegoBaseClient):
                 _LOGGER.error("400: Bad Request: won't retry.")
                 return None
             if status == 401:
-                _LOGGER.info("401: Unauthorized: logging in again.")
-                self.login()
-                return self._request(
-                    method=method,
-                    path=path,
-                    data=data,
-                    timeout=timeout,
-                    attempts=attempts + 1,
-                )
+                if path == "authenticate":
+                    _LOGGER.info(
+                        "401: Unauthorized, credentials are wrong, won't retry"
+                    )
+                    return None
+                _LOGGER.info("401: Unauthorized: logging in again")
+                login_result = self.login()
+                if login_result:
+                    return self._request(
+                        method=method,
+                        path=path,
+                        data=data,
+                        timeout=timeout,
+                        attempts=attempts + 1,
+                    )
+                return None
             if status == 403:
                 _LOGGER.error("403: Forbidden: won't retry.")
                 return None
