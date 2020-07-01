@@ -8,6 +8,7 @@
 # Python cache
 __pycache__/
 pyIndego/__pycache__/
+.pypirc
 
 # Imported libraries
 certifi/
@@ -33,3 +34,6 @@ build/
 dist/
 pyIndego.egg-info/
 _build.cmd
+
+# vscode
+.vscode/

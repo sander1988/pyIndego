@@ -12,72 +12,103 @@ For PYPI package: https://pypi.org/project/pyIndego/
 
 ## Basic information needed
 
+The library requires python 3.7 or above.
+
 Information   | Description
 --------------|------------
 your_username | Your username in the BoschSmartMove app
 your_password | Your password for the app
-your_serial   | Your Bosch Indego serial (found on the mover, in the mover menu or in the app)
+your_serial   | Optional: Your Bosch Indego serial (found on the mover, in the mover menu or in the app)
 
-The python library is written for the login method with username (email address) and password. Login with Facebook account is not supported.
+This library is written for the login method with username (email address) and password. Login with Facebook account is not supported.
 
 ## Call the API and the mower
-Call the API:
+Call the API, synchronously:
 
+    from pyIndego import IndegoClient
     indego = IndegoClient(username='your_mail@gmail.com', password='your_password', serial='your_serial')
 
-## get-functions
+Call the API, asynchronously:
+
+    from pyIndego import IndegoAsyncClient
+    indego = IndegoAsyncClient(username='your_mail@gmail.com', password='your_password', serial='your_serial')
+
+    await indego.close()
+
+## Update functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 
-API Call                           | Bosch API | Mower | Mower needs to be online
+Call                               | Bosch API | Mower | Mower needs to be online
 -----------------------------------|-----------|-------|-------------------------
-indego.download_map()              |           |       |
-indego.update_all()                |           |       |
 indego.update_alerts()             |    X      |       |
+indego.update_all()                |           |       |
+indego.update_calendar()           |    X      |       |
+indego.update_config()             |           |       |
 indego.update_generic_data()       |    X      |       |
 indego.update_last_completed_mow() |    X      |       |
 indego.update_location()           |           |       |
-indego.update_network()            |           |       |
+indego.update_network()            |    ?      |  ?    |   ?
 indego.update_next_mow()           |           |       |
-indego.update_operating_data()     |           |  X    |   X
+indego.update_operating_data()     |           |  X    |
+indego.update_security()           |    X      |       |
+indego.update_setup()              |    X      |       |
 indego.update_state()              |    X      |       |
-indego.update_updates()            |           |  X    |   X
+indego.update_state(force=True)    |    X      |  X    |
+indego.update_state(longpoll=True, longpoll_timeout=120)|X|  X    |
+indego.update_updates()            |           |  X    |
 indego.update_users()              |    X      |       |
+indego.delete_alert(alert_index)   |    X      |       |
+indego.download_map(filename='')|||
 
+### Untested
+indego.patch_alert_read(alert_index, read_status=True)
 
-Not implemented yet
-indego.update_longpoll_state()
-indego.update_config()
-getPredictiveSetup
-login
+### To be implemented
+Predictive Setup
 
 ## List of update functions
 
-### indego.update_all
-Updates all sensors
+### indego.update_all()
+Updates all sensors.
 
 ### indego.update_alerts()
 Updates alerts from API to indego.alerts.
 
 ```python
+indego.alert_count = 1
 [Alerts(alert_id='5d48171263c5345a75dbc017', error_code='ntfy_blade_life', headline='Underhållstips.', date='2019-08-05T11:46:26.397Z', message='Kontrollera klippknivarna. Indego har klippt i 100 timmar. Ska den fungera optimalt, kontrollera klippknivarna så att de är i bra skick. Du kan beställa nya knivar via avsnittet Tillbehör.', read_status='unread', flag='warning', push=True, alert_description='Reminder blade life')]
 ```
 
+### indego.update_calendar()
+Updates the calendar with the next planned mows.
+
+```python
+Calendar(cal=3, days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0), CalendarSlot(En=False, StHr=None, StMin=None, EnHr=None, EnMin=None)]), CalendarDay(day=2, day_name='wednesday', slalendarSlot(En=False, StHr=None, StMin=None, EnHr=None, EnMin=None)])])
+```
+
+### indego.update_config()
+Updates config to indego.config. With some Indegos, this function gives an error (e.g., Indego 1000), with others it works (e.g., Indego S+ 400).
+
+```python
+Config(region=0, language=1, border_cut=0, is_pin_set=True, wire_id=4, bump_sensitivity=0, alarm_mode=True)
+```
+
 ### indego.update_generic_data()
-Collect serial, service counter, name, mowing mode, model number and firmware to indego.generic_data.
+Updates indego.generic_data with serial, service counter, name, mowing mode, model number and firmware version.
 
 ```python
 GenericData(alm_name='Indego', alm_sn='505703041', service_counter=132436, needs_service=False, alm_mode='calendar', bareToolnumber='3600HA2300', alm_firmware_version='00837.01043', model_description='Indego 1000', model_voltage=ModelVoltage(min=297, max=369), mowing_mode_description='Calendar')
 ```
 
 ### indego.update_last_completed_mow()
-Updates data on the last completed mow to indego.last_completed_mow
+Updates indego.last_completed_mow with date and time of the latest completed mow.
 
 ```python
-2020-06-21 21:38:50.115000+02:00
+indego.last_completed_mow = (DateTime) 2020-06-21 21:38:50.115000+02:00
 ```
 
 ### indego.update_location()
-Updates the location of the garden/mower to indego.location.
+Updates indego.location with the location of the garden/mower.
 
 ```python
 Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
@@ -87,14 +118,14 @@ Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
 Updates data on the mobile network the Indego is connected to.
 
 ```python
-TBD
+Network(mcc=262, mnc=2, rssi=-77, currMode='s', configMode='s', steeredRssi=-100, networkCount=3, networks=[26201, 26202, 26203])
 ```
 
 ### indego.update_next_mow()
 Updates the indego.next_mow with the next planned mow date and time.
 
 ```python
-2020-06-29 10:00:00+02:00
+indego.next_mow = (DateTime) 2020-06-29 10:00:00+02:00
 ```
 
 ### indego.update_operating_data()
@@ -104,19 +135,33 @@ Update the indego.operating_data with data about battery, runtime, garden data a
 OperatingData(hmiKeys=1768, battery=Battery(percent=357, voltage=35.7, cycles=0, discharge=0.0, ambient_temp=26, battery_temp=26, percent_adjusted=83), garden=Garden(id=8, name=1, signal_id=1, size=769, inner_bounds=3, cuts=15, runtime=166824, charge=37702, bumps=6646, stops=29, last_mow=1, map_cell_size=None), runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=9, charge=0, cut=0)))
 ```
 
-### indego.update_state()
+### indego.update_security()
+Updates the indego.security with information about the Indego security state.
+
+```python
+Security(enabled=True, autolock=False)
+```
+
+### indego.update_setup()
+Updates the indego.setup with information if the Indego is set up.
+
+```python
+Setup(hasOwner=True, hasPin=True, hasMap=True, hasAutoCal=False, hasIntegrityCheckPassed=True)
+```
+
+### indego.update_state(force=False, longpoll=False, longpoll_timeout=120)
 Updates the indego.state with state of mower, % lawn mowed, position, runtime, map coordinates.
+
+If longpoll is set to True, it sends the latest state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding and coming back only when there are events to deliver or the timeout (in seconds) is due.
+
+This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
 
 ```python
 State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPos=65, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=5, charge=0, cut=0)), mapsvgcache_ts=1593207884109, svg_xPos=192, svg_yPos=544, config_change=None, mow_trig=None)
 ```
 
 ### indego.update_updates()
-Check if there are any updates apllicable to the mower and updates the (bool) indego.update_available.
-
-```python
-self.indego.update_available
-```
+Check if there are any updates apllicable to the mower and updates the (bool) `indego.update_available`.
 
 ### indego.update_users()
 Updates the indego.users with information about the user.
@@ -146,40 +191,7 @@ putMowMode('false') |Smart Mow disabled
 
 ## Not implemented yet
 
-### getConfig()
-Collects the configuration of the mower.
-
-```python
-Response:
-{
-    'region': 0,
-    'language': 1,
-    'border_cut': 0,
-    'is_pin_set': True,
-    'wire_id': 4,
-    'bump_sensitivity': 0,
-    'alarm_mode': True
-}
-```
-
-### getNetwork()
-Collects data on the mobile network the Indego is connected to.
-
-```python
-Response:
-{
-    'mcc': 262,
-    'mnc': 2,
-    'rssi': -76,
-    'currMode': 's',
-    'configMode': 's',
-    'steeredRssi': -100,
-    'networkCount': 3,
-    'networks': [26201, 26202, 26203]
-}
-```
-
-### getPredictiveSetup()
+### update_predictive_setup()
 
 ```python
 Response:
@@ -234,77 +246,97 @@ Response:
 }
 ```
 
-## Functions for reading data from locally cached API data
-All functions that doesnt contain "get" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
 
-function                 | Description
+
+
+## Sending commands
+
+### put_command(command)
+Send commands.
+
+Command     |Description         
+------------|--------------------
+put_command('mow')          |Start mowing        
+put_command('pause')        |Pause mower         
+put_command('returnToDock') |Return mower to dock
+
+### put_mow_mode(command)
+Send command. Accepted commands:
+
+Command     |Description         
+------------|--------------------
+put_mow_mode('true')  |Smart Mow enabled        
+put_mow_mode('false') |Smart Mow disabled   
+
+### delete_alert(alert_index)
+Delete an alert from the list, index should exist. If this is called before update_alerts it will not work.
+
+## Attributes for reading data from locally cached API data
+All functions that doesnt contain "update" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
+
+attributes                 | Description
 -------------------------|-----------------------------
-AlertsCount() | Show counts of the current alerts.
-AlertsDescription() | Show detailed list of alerts.
-AlmFirmwareVersion() | Show firmware version.
-AlmMode() | Show mow mode.
-AlmName() | Show name.
-BareToolNumber() | Show the model number.
-Battery() | Show battery information.
-BatteryAmbientTemp() | Show the ambient temp of the battery.
-BatteryCycles() | Dont know what this value is?
-BatteryDischarge() | Show the current drawn in Ah.
-BatteryPercent() | Show the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 it seems to be the actual percentage left in the battery.
-BatteryPercentAdjusted() | Show the adjusted value for percentage left. Calculated for Gen 1, and the actual percentage value for Gen 2.
-BatteryTemp() | Show temp of the battery.
-BatteryVoltage() | Show voltage for the battery. For Gen 1 mowers this value seems to be correct. For Gen 2 it seems to be the same value as the percentage left in battery.
-ConvertBoschDateTime() | Convert Bosch abbreviation for time to std 24h time
-Country() | Show country for the account.
-Displayname() | Show name for the account.
-Email() | Show email adress for the account.
-FirmwareAvailable() | Show if there are any firmware updates available.
-FriendlyAlertErrorCode() | Show user friendly alert error code description to be shown in HA GUI.
-Garden() | Dont know what this is?
-HmiKeysn() | Dont know what this is?
-Language() | Show language for the account.
-MapSvgCacheTs() | Dont know what this is...
-MapUpdateAvailable() | Show if there is an update of the map image.
-ModelDescription() | Show user friendly model name.
-ModelVoltage() | Show the predefined voltage limits in order to calculate battery percentage.
-ModelVoltageMax() | Show the maximum predefined voltage limits in order to calculate battery percentage.
-ModelVoltageMin() | Show the minimum predefined voltage limits in order to calculate battery percentage.
-MowMode() | Show mow mode
-Mowed() | Show percentage of lawn mowed
-MowerState() | Show current state
-MowerStateDescription() | Show simple description of current state. States available are Docked, Mowing, Stuck, Diagnostics mode, End of life, Software update.
-MowerStateDescriptionDetailed() | Show description in detail of current state.
-MowingModeDescription() | Show the user friendly mow mode description.
-NeedsService() | Show needs service flag. Dont know when it is used.
-NextMow() | Show next planned mow session.
-OptIn() | Dont know what this are for?
-OptInApp() | Dont know what this are for?
-Runtime() | Show session and total rutime and charge time in minutes.
-RuntimeSession() | show session runtime and charge time in minutes
-RuntimeTotal() | Show total runtime and charge time in hours
-Serial() | Show serial number
-ServiceCounter() | Show service counter for knives
-SvgxPos() | Show svg x-position of mower.
-SvgyPos() | Show svg y-position of mower.
-XPos() | Show x-position of mower.
-YPos() | Show y-position of mower.
+alerts_count | Show counts of the current alerts.
+alerts | Show detailed list of alerts.
+calendar | Get the calendar of planned mows.
+AlmFirmwareVersion | Show firmware version.
+AlmMode | Show mow mode.
+AlmName | Show name.
+BareToolNumber | Show the model number.
+Battery | Show battery information.
+BatteryAmbientTemp | Show the ambient temp of the battery.
+BatteryCycles | Dont know what this value is?
+BatteryDischarge | Show the current drawn in Ah.
+BatteryPercent | Show the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 it seems to be the actual percentage left in the battery.
+BatteryPercentAdjusted | Show the adjusted value for percentage left. Calculated for Gen 1, and the actual percentage value for Gen 2.
+BatteryTemp | Show temp of the battery.
+BatteryVoltage | Show voltage for the battery. For Gen 1 mowers this value seems to be correct. For Gen 2 it seems to be the same value as the percentage left in battery.
+ConvertBoschDateTime | Convert Bosch abbreviation for time to std 24h time
+Country | Show country for the account.
+Displayname | Show name for the account.
+Email | Show email adress for the account.
+FirmwareAvailable | Show if there are any firmware updates available.
+FriendlyAlertErrorCode | Show user friendly alert error code description to be shown in HA GUI.
+Garden | Dont know what this is?
+HmiKeysn | Dont know what this is?
+Language | Show language for the account.
+MapSvgCacheTs | Dont know what this is...
+MapUpdateAvailable | Show if there is an update of the map image.
+ModelDescription | Show user friendly model name.
+ModelVoltage | Show the predefined voltage limits in order to calculate battery percentage.
+ModelVoltageMax | Show the maximum predefined voltage limits in order to calculate battery percentage.
+ModelVoltageMin | Show the minimum predefined voltage limits in order to calculate battery percentage.
+MowMode | Show mow mode
+Mowed | Show percentage of lawn mowed
+MowerState | Show current state
+MowerStateDescription | Show simple description of current state. States available are Docked, Mowing, Stuck, Diagnostics mode, End of life, Software update.
+MowerStateDescriptionDetailed | Show description in detail of current state.
+MowingModeDescription | Show the user friendly mow mode description.
+NeedsService | Show needs service flag. Dont know when it is used.
+NextMow | Show next planned mow session.
+OptIn | Dont know what this are for?
+OptInApp | Dont know what this are for?
+Runtime | Show session and total rutime and charge time in minutes.
+RuntimeSession | show session runtime and charge time in minutes
+RuntimeTotal | Show total runtime and charge time in hours
+Serial | Show serial number
+ServiceCounter | Show service counter for knives
+SvgxPos | Show svg x-position of mower.
+SvgyPos | Show svg y-position of mower.
+XPos | Show x-position of mower.
+YPos | Show y-position of mower.
 
 ## Not working
 
 ### Not properly implemented yet
 
-    getPredicitiveCalendar()
+    update_predicitive_calendar()
 Get the calender for predicted mow sessions
 
-    getUserAdjustment()
+    update_user_adjustment()
 Get the user adjustment of the mowing frequency
 
-    getCalendar()
-Get the calendar for allowed mowing times
-
-    getSecurity()
-Get the security settings
-
-    getAutomaticUpdate()
+    update_automatic_update()
 Get the automatic update settings
 
 
@@ -318,6 +350,7 @@ post
 
 get
 /alerts
+/alms
 /alms/<serial>
 /alms/<serial>/automaticUpdate
 /alms/<serial>/calendar
@@ -334,6 +367,7 @@ get
 /alms/<serial>/predictive/useradjustment
 /alms/<serial>/predictive/weather
 /alms/<serial>/security
+/alms/<serial>/setup
 /alms/<serial>/state
 /users/<userid>
 
