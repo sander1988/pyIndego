@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.0.20
+- Added Calendar class and update_calendar methods
+- Added delete_alert
+- Added patch_alert_read -> untested!
+- Moved state_description and state_description_detail to properties
+- Reorders everything alphabetically, in Base kept the _ and regular update methods together and moved other internal methods down
+- Redid some relogging logic, noticed a 401 after logging in also tried to relogin, even though that means login didn't work and the creds are wrong.
+- Made serial optional parameter, and changed login to get serial from the endpoint in that case.
+- Added serial property
+- Added check for max longpoll time
+- Cleaned and improved Readme
+
+## 2.0.19
+- Faulty tag/troubleshooting
+
+## 2.0.18
+- Faulty tag/troubleshooting
+
 ## 2.0.17
 - Added the update_security call
 - Added the update_setup call
