@@ -53,6 +53,9 @@ class IndegoAsyncClient(IndegoBaseClient):
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
 
         """
+        _LOGGER.error("JEns")
+        _LOGGER.error("Jens")
+        _LOGGER.error("Jens")        
         super().__init__(username, password, serial, map_filename, api_url)
         self._session = aiohttp.ClientSession(raise_for_status=False)
 
