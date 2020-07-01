@@ -1,4 +1,4 @@
-""" API for Bosch API server for Indego lawn mower """
+"""API for Bosch API server for Indego lawn mower."""
 import json
 import logging
 import typing
@@ -32,11 +32,11 @@ class IndegoClient(IndegoBaseClient):
         self,
         username: str,
         password: str,
-        serial: str,
+        serial: str = None,
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
     ):
-        """Initialize the Client
+        """Initialize the Client.
 
         Args:
             username (str): username for Indego Account
@@ -44,7 +44,7 @@ class IndegoClient(IndegoBaseClient):
             serial (str): serial number of the mower
             map_filename (str, optional): Filename to store maps in. Defaults to None.
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
-            
+
         """
         super().__init__(username, password, serial, map_filename, api_url)
 
@@ -62,26 +62,118 @@ class IndegoClient(IndegoBaseClient):
         if not self._logged_in:
             self.login()
 
-    def update_all(self, force=False):
-        """Update all states."""
-        self.update_generic_data()
-        self.update_state(force)
-        self.update_alerts()
-        self.update_last_completed_mow()
-        self.update_location()
-        self.update_next_mow()
-        self.update_operating_data()
-        self.update_updates_available()
-        self.update_users()
-        self.update_network()
+    def delete_alert(self, alert_index: int):
+        """Delete the alert with the specified index.
 
-    def update_generic_data(self):
-        """Update generic data."""
-        self._update_generic_data(self.get(f"alms/{self._serial}"))
+        Args:
+            alert_index (int): index of alert to be deleted, should be in range or length of alerts.
+            
+        """
+        alert_id = self._get_alert_by_index(alert_index)
+        if alert_id:
+            return self._request(Methods.DELETE, f"alerts/{alert_id}/")
+        return None
+
+    def download_map(self, filename: str = None):
+        """Download the map.
+
+        Args:
+            filename (str, optional): Filename for the map. Defaults to None, can also be filled by the filename set in init.
+
+        """
+        if filename:
+            self.map_filename = filename
+        if not self.map_filename:
+            _LOGGER.error("No map filename defined.")
+            return
+        map = self.get(f"alms/{self._serial}/map")
+        if map:
+            with open(self.map_filename, "wb") as afp:
+                afp.write(map)
+
+    def patch_alert_read(self, alert_index: int, read_status: bool = True):
+        """Set the alert to read.
+
+        Args:
+            alert_index (int): index of alert to be deleted, should be in range or length of alerts.
+            read_status (bool): new state
+            
+        """
+        alert_id = self._get_alert_by_index(alert_index)
+        if alert_id:
+            return self._request(
+                Methods.PATCH,
+                f"alerts/{alert_id}",
+                data={"read_status": "read" if read_status else "unread"},
+            )
+        return None
+
+    def put_command(self, command: str):
+        """Send a command to the mower.
+
+        Args:
+            command (str): command should be one of "mow", "pause", "returnToDock"
+
+        Returns:
+            str: either result of the call or 'Wrong Command'
+
+        """
+        if command in COMMANDS:
+            return self.put(f"alms/{self._serial}/state", {"state": command})
+        _LOGGER.warning("%s not valid", command)
+        return "Wrong Command!"
+
+    def put_mow_mode(self, command: typing.Any):
+        """Set the mower to mode manual (false-ish) or predictive (true-ish).
+
+        Args:
+            command (str/bool): should be str that is bool-ish (true, True, false, False) or a bool.
+
+        Returns:
+            str: either result of the call or 'Wrong Command'
+
+        """
+        if command in ("true", "false", "True", "False") or isinstance(command, bool):
+            return self.put(f"alms/{self._serial}/predictive", {"enabled": command})
+        _LOGGER.warning("%s not valid", command)
+        return "Wrong Command!"
+
+    def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
+        """Set the predictive calendar."""
+        return self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
     def update_alerts(self):
         """Update alerts."""
         self._update_alerts(self.get("alerts"))
+
+    def update_all(self):
+        """Update all states."""
+        self.update_alerts()
+        self.update_calendar()
+        self.update_config()
+        self.update_generic_data()
+        self.update_last_completed_mow()
+        self.update_location()
+        self.update_network()
+        self.update_next_mow()
+        self.update_operating_data()
+        self.update_security()
+        self.update_setup()
+        self.update_state()
+        self.update_updates_available()
+        self.update_users()
+
+    def update_calendar(self):
+        """Update calendar."""
+        self._update_calendar(self.get(f"alms/{self._serial}/calendar"))
+
+    def update_config(self):
+        """Update config."""
+        self._update_config(self.get(f"alms/{self._serial}/config"))
+
+    def update_generic_data(self):
+        """Update generic data."""
+        self._update_generic_data(self.get(f"alms/{self._serial}"))
 
     def update_last_completed_mow(self):
         """Update last completed mow."""
@@ -93,6 +185,10 @@ class IndegoClient(IndegoBaseClient):
         """Update location."""
         self._update_location(self.get(f"alms/{self._serial}/predictive/location"))
 
+    def update_network(self):
+        """Update network."""
+        self._update_network(self.get(f"alms/{self._serial}/network"))
+
     def update_next_mow(self):
         """Update next mow datetime."""
         self._update_next_mow(self.get(f"alms/{self._serial}/predictive/nextcutting"))
@@ -100,6 +196,14 @@ class IndegoClient(IndegoBaseClient):
     def update_operating_data(self):
         """Update operating data."""
         self._update_operating_data(self.get(f"alms/{self._serial}/operatingData"))
+
+    def update_security(self):
+        """Update security."""
+        self._update_security(self.get(f"alms/{self._serial}/security"))
+
+    def update_setup(self):
+        """Update setup."""
+        self._update_setup(self.get(f"alms/{self._serial}/setup"))
 
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state. Can be both forced and with longpoll.
@@ -133,89 +237,28 @@ class IndegoClient(IndegoBaseClient):
         """Update users."""
         self._update_users(self.get(f"users/{self._userid}"))
 
-    def update_network(self):
-        """Update network."""
-        self._update_network(self.get(f"alms/{self._serial}/network"))
-
-    def update_config(self):
-        """Update config."""
-        self._update_config(self.get(f"alms/{self._serial}/config"))
-
-    def update_setup(self):
-        """Update setup."""
-        self._update_setup(self.get(f"alms/{self._serial}/setup"))
-
-    def update_security(self):
-        """Update security."""
-        self._update_security(self.get(f"alms/{self._serial}/security"))
-
-    def download_map(self, filename: str = None):
-        """Download the map.
-
-        Args:
-            filename (str, optional): Filename for the map. Defaults to None, can also be filled by the filename set in init.
-
-        """
-        if filename:
-            self.map_filename = filename
-        if not self.map_filename:
-            _LOGGER.error("No map filename defined.")
-            return
-        map = self.get(f"alms/{self._serial}/map")
-        if map:
-            with open(self.map_filename, "wb") as afp:
-                afp.write(map)
-
-    def put_command(self, command: str):
-        """Send a command to the mower.
-
-        Args:
-            command (str): command should be one of "mow", "pause", "returnToDock"
-
-        Returns:
-            str: either result of the call or 'Wrong Command'
-
-        """
-        if command in COMMANDS:
-            return self.put(f"alms/{self._serial}/state", {"state": command})
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
-
-    def put_mow_mode(self, command: typing.Any):
-        """Set the mower to mode manual (false-ish) or predictive (true-ish).
-
-        Args:
-            command (str/bool): should be str that is bool-ish (true, True, false, False) or a bool.
-
-        Returns:
-            str: either result of the call or 'Wrong Command'
-            
-        """
-        if command in ("true", "false", "True", "False") or isinstance(command, bool):
-            return self.put(f"alms/{self._serial}/predictive", {"enabled": command})
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
-
-    def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
-        """Set the predictive calendar."""
-        return self.put(f"alms/{self._serial}/predictive/calendar", calendar)
-
     def login(self, attempts=0):
         """Login to the api and store the context."""
-        _LOGGER.debug("Logging in, attempt: %s", attempts)
-        self._login(
-            self._request(
-                method=Methods.POST,
-                path="authenticate",
-                data=DEFAULT_BODY,
-                headers=DEFAULT_HEADER,
-                auth=HTTPBasicAuth(self._username, self._password),
-                timeout=30,
-                attempts=attempts,
-            )
+        response = self._request(
+            method=Methods.POST,
+            path="authenticate",
+            data=DEFAULT_BODY,
+            headers=DEFAULT_HEADER,
+            auth=HTTPBasicAuth(self._username, self._password),
+            timeout=30,
+            attempts=attempts,
         )
+        self._login(response)
+        if response is not None:
+            _LOGGER.debug("Logged in")
+            if not self._serial:
+                list_of_mowers = self.get("alms")
+                self._serial = list_of_mowers[0].get("alm_sn")
+                _LOGGER.debug("Serial added")
+            return True
+        return False
 
-    def _request(
+    def _request(  # noqa: C901
         self,
         method: Methods,
         path: str,
@@ -247,7 +290,7 @@ class IndegoClient(IndegoBaseClient):
             )
             status = response.status_code
             if status == 200:
-                if method == Methods.PUT:
+                if method in (Methods.DELETE, Methods.PATCH, Methods.PUT):
                     return True
                 if CONTENT_TYPE_JSON in response.headers[CONTENT_TYPE].split(";"):
                     return response.json()
@@ -260,15 +303,22 @@ class IndegoClient(IndegoBaseClient):
                 _LOGGER.error("400: Bad Request: won't retry.")
                 return None
             if status == 401:
-                _LOGGER.info("401: Unauthorized: logging in again.")
-                self.login()
-                return self._request(
-                    method=method,
-                    path=path,
-                    data=data,
-                    timeout=timeout,
-                    attempts=attempts + 1,
-                )
+                if path == "authenticate":
+                    _LOGGER.info(
+                        "401: Unauthorized, credentials are wrong, won't retry"
+                    )
+                    return None
+                _LOGGER.info("401: Unauthorized: logging in again")
+                login_result = self.login()
+                if login_result:
+                    return self._request(
+                        method=method,
+                        path=path,
+                        data=data,
+                        timeout=timeout,
+                        attempts=attempts + 1,
+                    )
+                return None
             if status == 403:
                 _LOGGER.error("403: Forbidden: won't retry.")
                 return None
@@ -305,12 +355,14 @@ class IndegoClient(IndegoBaseClient):
             _LOGGER.error("Get gave a unhandled error: %s", e)
             return None
 
-    def get(self, path: str, timeout: int = 30, attempts: int = 0):
+    def get(self, path: str, timeout: int = 30):
         """Send a GET request and return the response as a dict."""
-        return self._request(
-            method=Methods.GET, path=path, timeout=timeout, attempts=attempts
-        )
+        return self._request(method=Methods.GET, path=path, timeout=timeout)
 
     def put(self, path: str, data: dict, timeout: int = 30):
         """Send a PUT request and return the response as a dict."""
         return self._request(method=Methods.PUT, path=path, data=data, timeout=timeout)
+
+    def post(self, path: str, data: dict, timeout: int = 30):
+        """Send a POST request and return the response as a dict."""
+        return self._request(method=Methods.POST, path=path, data=data, timeout=timeout)
