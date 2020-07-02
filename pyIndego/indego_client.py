@@ -197,6 +197,10 @@ class IndegoClient(IndegoBaseClient):
         """Update operating data."""
         self._update_operating_data(self.get(f"alms/{self._serial}/operatingData"))
 
+    def update_predictive_schedule(self):
+        """Update predictive_schedule."""
+        self._update_predictive_schedule(self.get(f"alms/{self._serial}/predictive/schedule"))
+
     def update_security(self):
         """Update security."""
         self._update_security(self.get(f"alms/{self._serial}/security"))

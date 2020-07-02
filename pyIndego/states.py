@@ -92,6 +92,7 @@ class CalendarSlot:
     StMin: int = None
     EnHr: int = None
     EnMin: int = None
+    Attr: str = None
 
 
 @nested_dataclass
@@ -114,6 +115,13 @@ class Calendar:
 
     cal: int = None
     days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
+
+@nested_dataclass
+class PredictiveSchedule:
+    """Class for PredictiveSchedule."""
+
+    schedule_days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
+    exclusion_days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
 
 
 @nested_dataclass
