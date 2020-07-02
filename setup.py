@@ -13,7 +13,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/jm-73/pyIndego",
-    packages=find_packages(""),
+    packages=find_packages("."),
     install_requires=["requests", "aiohttp"],
     tests_require=["pytest", "pytest-aiohttp", "pytest-cov"],
     classifiers=[
