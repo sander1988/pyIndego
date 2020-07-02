@@ -79,7 +79,7 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
-            
+
         """
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
@@ -109,7 +109,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
             read_status (bool): new state
-            
+
         """
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
@@ -347,7 +347,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                     # if method in (Methods.DELETE, Methods.PUT, Methods.PATCH):
                     #     return True
                     if response.content_type == CONTENT_TYPE_JSON:
-                        return await response.json()
+                        resp = await response.json()
+                        _LOGGER.debug("Call to %s with result: %s", path, resp)
+                        return resp
                     return await response.content.read()
                 if status == 204:
                     _LOGGER.debug("204: No content in response from server")

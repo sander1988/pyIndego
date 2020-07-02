@@ -1,3 +1,4 @@
+"""test aio client."""
 import aiohttp
 import asyncio
 import inspect
@@ -5,7 +6,7 @@ import logging
 import json
 
 from pyIndego import IndegoAsyncClient
-from pyIndego.const import DEFAULT_BODY, Methods
+from pyIndego.const import Methods
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
@@ -13,15 +14,26 @@ _LOGGER.setLevel(logging.DEBUG)
 
 
 async def main(config):
+    """Test class of test aio."""
     async with IndegoAsyncClient(**config) as indego:
+        # await indego.update_updates_available()
+        # print(indego.update_available)
+        # await indego.update_all()
+        # await indego.update_users()
+        # print(indego.users)
+        await indego.update_state()
+        print(indego.state)
         await indego.update_state(longpoll=True)
         print(indego.state)
+        # await indego.update_calendar()
         # await indego.update_next_mow()
+        # await indego.update_last_completed_mow()
         # await indego.update_generic_data()
         # print(indego.generic_data)
         # print(indego.calendar)
-        # print(indego.calendar.days[1])
+        # # print(indego.calendar.days[1])
         # print(indego.next_mow)
+        # print(indego.last_completed_mow)
         # print(update_list)
         # await indego.update_all()
         # await indego.update_state()

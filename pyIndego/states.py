@@ -293,6 +293,7 @@ class State:
     map_update_available: bool = None
     mowed: int = None
     mowmode: int = None
+    error: int = None
     xPos: int = None
     yPos: int = None
     charge: int = None
