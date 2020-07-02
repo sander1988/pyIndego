@@ -117,6 +117,13 @@ class Calendar:
     days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
 
 @nested_dataclass
+class PredictiveCalendar:
+    """Class for PredictiveCalendar."""
+
+    cal: int = None
+    days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
+
+@nested_dataclass
 class PredictiveSchedule:
     """Class for PredictiveSchedule."""
 
