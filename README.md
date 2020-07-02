@@ -35,7 +35,7 @@ Call the API, asynchronously:
 
     await indego.close()
 
-## Update functions
+## Update/download functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 
 Call                               | Bosch API | Mower | Mower needs to be online
@@ -57,13 +57,9 @@ indego.update_setup()              |    X      |       |
 indego.update_state()              |    X      |       |
 indego.update_state(force=True)    |    X      |  X    |
 indego.update_state(longpoll=True, longpoll_timeout=120)|X|  X    |
-indego.update_updates()            |           |  X    |
+indego.update_updates_available()            |           |  X    |
 indego.update_users()              |    X      |       |
-indego.delete_alert(alert_index)   |    X      |       |
 indego.download_map(filename='')|||
-
-### Untested
-indego.patch_alert_read(alert_index, read_status=True)
 
 ### To be implemented
 Predictive Setup
@@ -176,8 +172,8 @@ This function can be used instead of polling the status every couple of seconds:
 State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPos=65, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=5, charge=0, cut=0)), mapsvgcache_ts=1593207884109, svg_xPos=192, svg_yPos=544, config_change=None, mow_trig=None)
 ```
 
-### indego.update_updates()
-Check if there are any updates apllicable to the mower and updates the (bool) `indego.update_available`.
+### indego.update_updates_available()
+Check if there are any updates applicable to the mower and updates the (bool) `indego.update_available`.
 
 ### indego.update_users()
 Updates the indego.users with information about the user.
@@ -188,26 +184,36 @@ Users(email='youremail@mail.com', display_name='Indego', language='sv', country=
 
 ## Sending commands
 
+### indego.delete_alert(alert_index)
+Delete an alert from the list, index should exist. If this is called before update_alerts it will not work.
+
+### indego.put_alert_read(alert_index)
+Set the specified alert to read. This is a one way action, once read it is not possible to set back to unread. The function looks up the alert_id from indego.alerts, if it cannot find that ID or if update_alerts has not been run, this will stop and log a warning.
+
+### indego.put_all_alerts_read()
+Set all alerts to read, the function loops through the alert_id's from indego.alerts, if update_alerts has not been run, this will stop and log a warning.
+
 ### indego.put_command(command)
 Send commands.
 
 Command     |Description         
 ------------|--------------------
-putCommand('mow')          |Start mowing        
-putCommand('pause')        |Pause mower         
-putCommand('returnToDock') |Return mower to dock
+put_command('mow')          |Start mowing        
+put_command('pause')        |Pause mower         
+put_command('returnToDock') |Return mower to dock
 
 ### indego.put_mow_mode(command)
 Send command. Accepted commands:
 
 Command     |Description         
 ------------|--------------------
-putMowMode('true')  |Smart Mow enabled        
-putMowMode('false') |Smart Mow disabled   
+put_mow_mode('true')  |Smart Mow enabled        
+put_mow_mode('false') |Smart Mow disabled   
+
 
 ## Not implemented yet
 
-### update_predictive_setup()
+### update_ & put_predictive_setup()
 
 ```python
 Response:
@@ -262,30 +268,6 @@ Response:
 }
 ```
 
-
-
-
-## Sending commands
-
-### put_command(command)
-Send commands.
-
-Command     |Description         
-------------|--------------------
-put_command('mow')          |Start mowing        
-put_command('pause')        |Pause mower         
-put_command('returnToDock') |Return mower to dock
-
-### put_mow_mode(command)
-Send command. Accepted commands:
-
-Command     |Description         
-------------|--------------------
-put_mow_mode('true')  |Smart Mow enabled        
-put_mow_mode('false') |Smart Mow disabled   
-
-### delete_alert(alert_index)
-Delete an alert from the list, index should exist. If this is called before update_alerts it will not work.
 
 ## Attributes for reading data from locally cached API data
 All functions that doesnt contain "update" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.

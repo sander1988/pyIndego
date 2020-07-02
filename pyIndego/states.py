@@ -17,14 +17,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class Alerts:
-    """Alerts class."""
+class Alert:
+    """Alert class."""
 
     alm_sn: str = field(repr=False, default=None)
     alert_id: str = None
     error_code: str = None
     headline: str = None
-    date: datetime = field(default_factory=convert_bosch_datetime)
+    date: datetime = None
     message: str = None
     read_status: str = None
     flag: str = None
@@ -36,6 +36,7 @@ class Alerts:
         self.alert_description = ALERT_ERROR_CODE.get(
             self.error_code, DEFAULT_LOOKUP_VALUE
         )
+        self.date = convert_bosch_datetime(self.date)
 
 
 @dataclass

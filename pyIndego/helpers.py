@@ -2,6 +2,7 @@
 from dataclasses import dataclass, is_dataclass
 from datetime import datetime
 import logging
+from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,14 +35,13 @@ def nested_dataclass(*args, **kwargs):  # noqa: D202
     return wrapper(args[0]) if args else wrapper
 
 
-def convert_bosch_datetime(dt: str = None):
-    """Create a datetime object from the string from Bosch. Checks if a valid number of milliseconds is sent."""
+def convert_bosch_datetime(dt: Any = None) -> datetime:
+    """Create a datetime object from the string (or give back the datetime object) from Bosch. Checks if a valid number of milliseconds is sent."""
     if dt:
-        plus_index = dt.find("+")
-        dot_index = dt.find(".")
-        if dot_index > 0 and plus_index > 0:
-            diff = plus_index - dot_index
-            if 1 <= diff <= 3:
-                dt = dt.replace("+", f"{0*(4-diff)}+")
-        return datetime.fromisoformat(dt)
+        if isinstance(dt, str):
+            if dt.find(".") > 0:
+                return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S.%f%z")
+            return datetime.strptime(dt, "%Y-%m-%dT%H:%M:%S%z")
+        if isinstance(dt, datetime):
+            return dt
     return None

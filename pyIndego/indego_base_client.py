@@ -20,7 +20,7 @@ from .const import (
 )
 from .helpers import convert_bosch_datetime
 from .states import (
-    Alerts,
+    Alert,
     Calendar,
     Battery,
     GenericData,
@@ -70,7 +70,7 @@ class IndegoBaseClient(ABC):
         self._online = False
         self._contextid = ""
 
-        self.alerts = [Alerts()]
+        self.alerts = [Alert()]
         self.alerts_count = 0
         self.battery = Battery()
         self.calendar = Calendar()
@@ -121,8 +121,12 @@ class IndegoBaseClient(ABC):
         """Download the map."""
 
     @abstractmethod
-    def patch_alert_read(self, alert_index: int, read_status: bool):
-        """Patch the read_status of the alert with the specified index."""
+    def put_alert_read(self, alert_index: int):
+        """Set to read the read_status of the alert with the specified index."""
+
+    @abstractmethod
+    def put_all_alerts_read(self):
+        """Set to read the read_status of all alerts."""
 
     @abstractmethod
     def put_command(self, command: str):
@@ -143,10 +147,10 @@ class IndegoBaseClient(ABC):
     def _update_alerts(self, new):
         """Update alerts."""
         if new:
-            self.alerts = [Alerts(**a) for a in new]
+            self.alerts = [Alert(**a) for a in new]
             self.alerts_count = len(self.alerts)
         else:
-            self.alerts = [Alerts()]
+            self.alerts = [Alert()]
             self.alerts_count = 0
 
     @abstractmethod
@@ -336,11 +340,11 @@ class IndegoBaseClient(ABC):
     def _get_alert_by_index(self, alert_index: int) -> int:
         """Return the alert_id based on index."""
         if 0 <= alert_index < self.alerts_count:
-            _LOGGER.warning(
-                "No alerts to patch, or alerts not loaded yet, use update_alerts first"
-            )
-            return None
-        return self.alerts[alert_index].alert_id
+            return self.alerts[alert_index].alert_id
+        _LOGGER.warning(
+            "No alerts to get, or alerts are not loaded yet, use update_alerts first"
+        )
+        return None
 
     def _update_battery_percentage_adjusted(self):
         """Update the battery percentage adjusted field, relies on generic and operating data populated."""

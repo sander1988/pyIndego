@@ -10,7 +10,7 @@ from pyIndego import IndegoAsyncClient, IndegoClient
 from pyIndego.const import CONTENT_TYPE_JSON, CONTENT_TYPE
 from pyIndego.helpers import convert_bosch_datetime
 from pyIndego.states import (
-    Alerts,
+    Alert,
     Battery,
     CalendarSlot,
     CalendarDay,
@@ -31,7 +31,17 @@ from pyIndego.states import (
 
 _LOGGER = logging.getLogger(__name__)
 
-alert = {"alm_sn": "test_sn", "alert_id": "12345"}
+alert = {
+    "alm_sn": "test_sn",
+    "alert_id": "5efda84ffbf591182723be89",
+    "error_code": "104",
+    "headline": "Mower requires attention.",
+    "date": "2020-07-02T09:26:39.589Z",
+    "message": "Stop button activated. The Stop button has been activated. Please follow the instructions on the mower display.",
+    "read_status": "read",
+    "flag": "warning",
+    "push": True,
+}
 calendar = {
     "cal": 3,
     "days": [
@@ -174,7 +184,7 @@ class MockResponseSync:
 
     @property
     def headers(self):
-        return { CONTENT_TYPE: f"{CONTENT_TYPE_JSON};"}
+        return {CONTENT_TYPE: f"{CONTENT_TYPE_JSON};"}
 
 
 class TestIndego(object):
@@ -183,7 +193,7 @@ class TestIndego(object):
     @pytest.mark.parametrize(
         "state, json, checks",
         [
-            (Alerts, alert, ["alm_sn"]),
+            (Alert, alert, ["alm_sn"]),
             (OperatingData, operating, ["hmiKeys", ("garden.id", "['garden']['id']")]),
             (
                 Calendar,
@@ -235,7 +245,7 @@ class TestIndego(object):
                 {"sel_cal": 3, "cals": [calendar]},
                 Calendar(**calendar),
             ),
-            (IndegoAsyncClient.update_alerts, "alerts", [alert], [Alerts(**alert)]),
+            (IndegoAsyncClient.update_alerts, "alerts", [alert], [Alert(**alert)]),
             (IndegoAsyncClient.update_config, "config", config, Config(**config)),
             (
                 IndegoAsyncClient.update_generic_data,
@@ -334,7 +344,7 @@ class TestIndego(object):
                 {"sel_cal": 3, "cals": [calendar]},
                 Calendar(**calendar),
             ),
-            (IndegoClient.update_alerts, "alerts", [alert], [Alerts(**alert)]),
+            (IndegoClient.update_alerts, "alerts", [alert], [Alert(**alert)]),
             (IndegoClient.update_config, "config", config, Config(**config)),
             (
                 IndegoClient.update_generic_data,

@@ -103,21 +103,36 @@ class IndegoAsyncClient(IndegoBaseClient):
             with open(self.map_filename, "wb") as file:
                 file.write(map)
 
-    async def patch_alert_read(self, alert_index: int, read_status: bool = True):
+    async def put_alert_read(self, alert_index: int):
         """Set the alert to read.
 
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
-            read_status (bool): new state
 
         """
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return await self._request(
-                Methods.PATCH,
-                f"alerts/{alert_id}",
-                data={"read_status": "read" if read_status else "unread"},
+                Methods.PUT, f"alerts/{alert_id}", data={"read_status": "read"}
             )
+        return None
+
+    async def put_all_alerts_read(self):
+        """Set to read the read_status of all alerts."""
+        if self.alerts_count > 0:
+            return await asyncio.gather(
+                *[
+                    self._request(
+                        Methods.PUT,
+                        f"alerts/{alert.alert_id}",
+                        data={"read_status": "read"},
+                    )
+                    for alert in self.alerts
+                ]
+            )
+        _LOGGER.warning(
+            "No alerts to set to read, or alerts are not loaded yet, use update_alerts first"
+        )
         return None
 
     async def put_command(self, command: str):
@@ -347,9 +362,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                     # if method in (Methods.DELETE, Methods.PUT, Methods.PATCH):
                     #     return True
                     if response.content_type == CONTENT_TYPE_JSON:
-                        resp = await response.json()
-                        _LOGGER.debug("Call to %s with result: %s", path, resp)
-                        return resp
+                        # resp = await response.json()
+                        # _LOGGER.debug("Call to %s with result: %s", path, resp)
+                        return await response.json()
                     return await response.content.read()
                 if status == 204:
                     _LOGGER.debug("204: No content in response from server")
