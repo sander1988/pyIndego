@@ -1,21 +1,58 @@
-#############################################################
-# .gitignore                                                #
-#############################################################
-
+# GIT files
 .git
 .gitignore
 
-# Python cache
-__pycache__/
-pyIndego/__pycache__/
-.pypirc
+# Temporary and binary files
+*~
+*.py[cod]
+*.so
+*.cfg
+!.isort.cfg
+!setup.cfg
+*.orig
+*.log
+*.pot
+__pycache__/*
+.cache/*
+.*.swp
+*/.ipynb_checkpoints/*
+.DS_Store
 
-# Imported libraries
-certifi/
-chardet/
-idna/
-requests/
-urllib3/
+# Project files
+.ropeproject
+.project
+.pydevproject
+.settings
+.idea
+tags
+
+# Package files
+*.egg
+*.eggs/
+.installed.cfg
+*.egg-info
+
+# Unittest and coverage
+htmlcov/*
+.coverage
+.tox
+junit.xml
+coverage.xml
+.pytest_cache/
+
+# Build and docs folder/files
+build/*
+dist/*
+sdist/*
+docs/api/*
+docs/_rst/*
+docs/_build/*
+cover/*
+MANIFEST
+_build.cmd
+
+# Per-project virtualenvs
+.venv*/
 
 # Test script
 config.py
@@ -28,12 +65,6 @@ map.svg
 
 # Log files
 *.log
-
-# Python wheel build package
-build/
-dist/
-pyIndego.egg-info/
-_build.cmd
 
 # vscode
 .vscode/

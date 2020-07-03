@@ -1,22 +1,23 @@
-import setuptools
+# -*- coding: utf-8 -*-
+"""
+    Setup file for pyindego.
+    Use setup.cfg to configure your project.
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+    This file was generated with PyScaffold 3.2.3.
+    PyScaffold helps you to put up the scaffold of your new Python project.
+    Learn more under: https://pyscaffold.org/
+"""
+import sys
 
-setuptools.setup(
-    name="pyIndego",
-    version="2.0.20",
-    author="jm-73",
-    author_email="jens@myretyr.se",
-    description="API for Bosch Indego mower",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/jm-73/pyIndego",
-    packages=setuptools.find_packages(),
-    install_requires=["requests", "aiohttp"],
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent"
-    ]
-)
+from pkg_resources import VersionConflict, require
+from setuptools import setup
+
+try:
+    require('setuptools>=38.3')
+except VersionConflict:
+    print("Error: version of setuptools is too old (<38.3)!")
+    sys.exit(1)
+
+
+if __name__ == "__main__":
+    setup(use_pyscaffold=True)
