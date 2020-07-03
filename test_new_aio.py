@@ -17,50 +17,49 @@ async def main(config):
     """Test class of test aio."""
     async with IndegoAsyncClient(**config) as indego:
         await indego.update_alerts()
-        print(indego.alerts)
-        # await indego.put_alert_read(0, False)
-        # await indego.update_alerts()
-        # print(indego.alerts)
-        print(type(indego.alerts[0].date))
-        # await indego.update_updates_available()
-        # print(indego.update_available)
-        # await indego.update_all()
-        # await indego.update_users()
-        # print(indego.users)
-        # await indego.update_state()
-        # print(indego.state)
-        # await indego.update_state(longpoll=True)
-        # print(indego.state)
-        # await indego.update_calendar()
-        await indego.update_next_mow()
-        await indego.update_last_completed_mow()
-        # await indego.update_generic_data()
-        # print(indego.generic_data)
-        # print(indego.calendar)
-        # # print(indego.calendar.days[1])
-        print(indego.next_mow)
-        print(indego.last_completed_mow)
-        # print(update_list)
-        # await indego.update_all()
-        # await indego.update_state()
-        # print(indego.state)
-        # await indego.update_alerts()
-        # print("Alerts ", indego.alerts)
-        # print("State ", indego.state)
-        # strings = [
-        #     "alms/903600532/predictive/lastcutting",
-        #     "alms/903600532/predictive/useradjustment",
-        #     "alms/903600532/predictive/weather",
-        #     "alms/903600532/calendar",
-        #     "alms/903600532/predictive/calendar",
-        # ]
-        # for s in strings:
-        #     print(await indego._request(Methods.GET, s))
-        # await indego.put_alert_read(0, True)
-        # await indego.delete_alert(0)
+        print("alerts: ", indego.alerts)
+        print("alert count: ", indego.alerts_count)
 
-        # await indego.update_alerts()
-        # print("After ", indego.alerts)
+        await indego.update_calendar()
+        print("calendar: ", indego.calendar)
+        print("next mow: ", indego.next_mows)
+
+        await indego.update_config()
+        print("config: ", indego.config)
+
+        await indego.update_generic_data()
+        print("generic data: ", indego.generic_data)
+
+        await indego.update_last_completed_mow()
+        print("last completed mow: ", indego.last_completed_mow)
+
+        await indego.update_location()
+        print("location: ", indego.location)
+        print("next mows with tz: ", indego.next_mows_with_tz)
+
+        await indego.update_network()
+        print("network: ", indego.network)
+
+        await indego.update_next_mow()
+        print("next mow: ", indego.next_mow)
+
+        await indego.update_operating_data()
+        print("operating data: ", indego.operating_data)
+
+        await indego.update_security()
+        print("security: ", indego.security)
+
+        await indego.update_setup()
+        print("setup: ", indego.setup)
+
+        await indego.update_state()
+        print("state: ", indego.state)
+
+        await indego.update_updates_available()
+        print("update available: ", indego.update_available)
+
+        await indego.update_users()
+        print("users: ", indego.users)
 
 
 if __name__ == "__main__":

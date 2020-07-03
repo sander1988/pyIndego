@@ -35,6 +35,19 @@ Call the API, asynchronously:
 
     await indego.close()
 
+## Properties
+### indego.serial
+Returns the serial number of the indego mower, is usefull mostly when serial was not initialized.
+
+### indego.state_description
+Returns a description of the state, instead of a number.
+
+### indego.state_description_detail
+Returns a detailed description of the state, instead of a number.
+
+### indego.next_mows
+
+
 ## Update/download functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 

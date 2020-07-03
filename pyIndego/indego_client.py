@@ -69,9 +69,23 @@ class IndegoClient(IndegoBaseClient):
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
             
         """
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return self._request(Methods.DELETE, f"alerts/{alert_id}/")
+        return None
+
+    def delete_all_alerts(self):
+        """Delete all the alerts."""
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
+        if self.alerts_count > 0:
+            return [
+                self._request(Methods.DELETE, f"alerts/{alert.alert_id}")
+                for alert in self.alerts
+            ]
+        _LOGGER.info("No alerts to delete")
         return None
 
     def download_map(self, filename: str = None):
@@ -98,6 +112,8 @@ class IndegoClient(IndegoBaseClient):
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
             
         """
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return self._request(
@@ -107,6 +123,8 @@ class IndegoClient(IndegoBaseClient):
 
     def put_all_alerts_read(self):
         """Set to read the read_status of all alerts."""
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         if self.alerts_count > 0:
             return [
                 self._request(
@@ -116,9 +134,7 @@ class IndegoClient(IndegoBaseClient):
                 )
                 for alert in self.alerts
             ]
-        _LOGGER.warning(
-            "No alerts to set to read, or alerts are not loaded yet, use update_alerts first"
-        )
+        _LOGGER.warning("No alerts to set to read")
         return None
 
     def put_command(self, command: str):
@@ -174,7 +190,7 @@ class IndegoClient(IndegoBaseClient):
         self.update_setup()
         self.update_state()
         self.update_updates_available()
-        self.update_users()
+        self.update_user()
 
     def update_calendar(self):
         """Update calendar."""
@@ -254,9 +270,9 @@ class IndegoClient(IndegoBaseClient):
         if self._online:
             self._update_updates_available(self.get(f"alms/{self._serial}/updates"))
 
-    def update_users(self):
+    def update_user(self):
         """Update users."""
-        self._update_users(self.get(f"users/{self._userid}"))
+        self._update_user(self.get(f"users/{self._userid}"))
 
     def login(self, attempts=0):
         """Login to the api and store the context."""

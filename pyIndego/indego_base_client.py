@@ -3,6 +3,9 @@ import logging
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace
+from datetime import timezone
+from typing import ClassVar
+import pytz
 
 from .const import (
     Methods,
@@ -34,7 +37,7 @@ from .states import (
     PredictiveSchedule,
     Runtime,
     State,
-    Users,
+    User,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,25 +73,25 @@ class IndegoBaseClient(ABC):
         self._online = False
         self._contextid = ""
 
-        self.alerts = [Alert()]
-        self.alerts_count = 0
-        self.battery = Battery()
-        self.calendar = Calendar()
-        self.config = Config()
-        self.generic_data = GenericData()
+        self.alerts = []
+        self._alerts_loaded = False
+        self.battery = None
+        self.calendar = None
+        self.config = None
+        self.generic_data = None
         self.last_completed_mow = None
         self.location = Location()
         self.network = Network()
         self.next_mow = None
-        self.operating_data = OperatingData()
-        self.predictive_calendar = PredictiveCalendar()
-        self.predictive_schedule = PredictiveSchedule()
-        self.security = Security()
-        self.state = State()
-        self.setup = Setup()
-        self.runtime = Runtime()
+        self.operating_data = None
+        self.predictive_calendar = None
+        self.predictive_schedule = None
+        self.security = None
+        self.state = None
+        self.setup = None
+        self.runtime = None
         self.update_available = False
-        self.users = Users()
+        self.user = None
 
     # Properties
     @property
@@ -100,21 +103,64 @@ class IndegoBaseClient(ABC):
         return None
 
     @property
+    def alerts_count(self):
+        """Return the count of alerts."""
+        if self.alerts:
+            return len(self.alerts)
+        return 0
+
+    @property
     def state_description(self):
         """Return the description of the state."""
-        return MOWER_STATE_DESCRIPTION.get(self.state.state, DEFAULT_LOOKUP_VALUE)
+        if self.state:
+            return MOWER_STATE_DESCRIPTION.get(self.state.state, DEFAULT_LOOKUP_VALUE)
+        _LOGGER.warning("Please call update_state before calling this property")
+        return None
 
     @property
     def state_description_detail(self):
         """Return the description detail of the state."""
-        return MOWER_STATE_DESCRIPTION_DETAIL.get(
-            self.state.state, DEFAULT_LOOKUP_VALUE
-        )
+        if self.state:
+            return MOWER_STATE_DESCRIPTION_DETAIL.get(
+                self.state.state, DEFAULT_LOOKUP_VALUE
+            )
+        _LOGGER.warning("Please call update_state before calling this property")
+        return None
+
+    @property
+    def next_mows(self):
+        """Return the next mows from the calendar without a timezone."""
+        if self.calendar:
+            return [
+                slot.dt for day in self.calendar.days for slot in day.slots if slot.dt
+            ]
+        _LOGGER.warning("Please call update_calendar before calling this property")
+        return None
+
+    @property
+    def next_mows_with_tz(self):
+        """Return the next mows from the calendar with timezone from location."""
+        if self.location and self.calendar:
+            return [
+                slot.dt.astimezone(pytz.timezone(self.location.timezone))
+                for day in self.calendar.days
+                for slot in day.slots
+                if slot.dt
+            ]
+        if not self.location:
+            _LOGGER.warning("Please call update_location before calling this property")
+        if not self.calendar:
+            _LOGGER.warning("Please call update_calendar before calling this property")
+        return None
 
     # Methods
     @abstractmethod
     def delete_alert(self, alert_index: int):
         """Delete the alert with the specified index."""
+
+    @abstractmethod
+    def delete_all_alerts(self):
+        """Delete all the alerts."""
 
     @abstractmethod
     def download_map(self, filename=None):
@@ -146,12 +192,11 @@ class IndegoBaseClient(ABC):
 
     def _update_alerts(self, new):
         """Update alerts."""
+        self._alerts_loaded = True
         if new:
             self.alerts = [Alert(**a) for a in new]
-            self.alerts_count = len(self.alerts)
         else:
-            self.alerts = [Alert()]
-            self.alerts_count = 0
+            self.alerts = []
 
     @abstractmethod
     def update_all(self):
@@ -164,7 +209,9 @@ class IndegoBaseClient(ABC):
     def _update_calendar(self, new):
         """Update calendar."""
         if new:
-            self.calendar = replace(self.calendar, **new["cals"][0])
+            self.calendar = self._generic_updater(
+                self.calendar, new["cals"][0], Calendar
+            )
 
     @abstractmethod
     def update_config(self):
@@ -173,7 +220,7 @@ class IndegoBaseClient(ABC):
     def _update_config(self, new):
         """Update config."""
         if new:
-            self.config = replace(self.config, **new)
+            self.config = self._generic_updater(self.config, new, Config)
 
     @abstractmethod
     def update_generic_data(self):
@@ -182,7 +229,9 @@ class IndegoBaseClient(ABC):
     def _update_generic_data(self, new):
         """Update generic data."""
         if new:
-            self.generic_data = replace(self.generic_data, **new)
+            self.generic_data = self._generic_updater(
+                self.generic_data, new, GenericData
+            )
             self._update_battery_percentage_adjusted()
 
     @abstractmethod
@@ -201,7 +250,7 @@ class IndegoBaseClient(ABC):
     def _update_location(self, new):
         """Update location."""
         if new:
-            self.location = replace(self.location, **new)
+            self.location = self._generic_updater(self.location, new, Location)
 
     @abstractmethod
     def update_network(self):
@@ -210,7 +259,7 @@ class IndegoBaseClient(ABC):
     def _update_network(self, new):
         """Update network."""
         if new:
-            self.network = replace(self.network, **new)
+            self.network = self._generic_updater(self.network, new, Network)
 
     @abstractmethod
     def update_next_mow(self):
@@ -228,7 +277,9 @@ class IndegoBaseClient(ABC):
     def _update_operating_data(self, new):
         """Update operating data."""
         if new:
-            self.operating_data = replace(self.operating_data, **new)
+            self.operating_data = self._generic_updater(
+                self.operating_data, new, OperatingData
+            )
             self._update_battery_percentage_adjusted()
             self._online = True
         else:
@@ -259,7 +310,7 @@ class IndegoBaseClient(ABC):
     def _update_security(self, new):
         """Update security."""
         if new:
-            self.security = replace(self.security, **new)
+            self.security = self._generic_updater(self.security, new, Security)
 
     @abstractmethod
     def update_setup(self):
@@ -268,7 +319,7 @@ class IndegoBaseClient(ABC):
     def _update_setup(self, new):
         """Update setup."""
         if new:
-            self.setup = replace(self.setup, **new)
+            self.setup = self._generic_updater(self.setup, new, Setup)
 
     @abstractmethod
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
@@ -277,7 +328,7 @@ class IndegoBaseClient(ABC):
     def _update_state(self, new):
         """Update state."""
         if new:
-            self.state = replace(self.state, **new)
+            self.state = self._generic_updater(self.state, new, State)
 
     @abstractmethod
     def update_updates_available(self):
@@ -285,18 +336,17 @@ class IndegoBaseClient(ABC):
 
     def _update_updates_available(self, new):
         """Update updates available."""
-        _LOGGER.debug("Updates response: %s", new)
         if new:
             self.update_available = bool(new["available"])
 
     @abstractmethod
-    def update_users(self):
+    def update_user(self):
         """Update users."""
 
-    def _update_users(self, new):
+    def _update_user(self, new):
         """Update users."""
         if new:
-            self.users = replace(self.users, **new)
+            self.user = self._generic_updater(self.user, new, User)
 
     @abstractmethod
     def login(self, attempts: int = 0):
@@ -339,22 +389,39 @@ class IndegoBaseClient(ABC):
     # internal methods
     def _get_alert_by_index(self, alert_index: int) -> int:
         """Return the alert_id based on index."""
-        if 0 <= alert_index < self.alerts_count:
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
+        if self.alerts_count == 0:
+            _LOGGER.info("No alerts to get")
+            return None
+        try:
             return self.alerts[alert_index].alert_id
-        _LOGGER.warning(
-            "No alerts to get, or alerts are not loaded yet, use update_alerts first"
-        )
-        return None
+        except IndexError:
+            raise IndexError(
+                f"Wrong index for the alert, there are {self.alerts_count} alerts, so the highest index is: {self.alerts_count - 1}, supplied was {alert_index}"
+            )
 
     def _update_battery_percentage_adjusted(self):
         """Update the battery percentage adjusted field, relies on generic and operating data populated."""
-        if (
-            self.generic_data.model_voltage.min is not None
-            and self.operating_data.battery.percent is not None
-        ):
+        if self.generic_data is not None and self.operating_data is not None:
             self.operating_data.battery.update_percent_adjusted(
                 self.generic_data.model_voltage
             )
+
+    def _generic_updater(self, field: typing.Any, new: dict, new_class: typing.Any):
+        """Update a field to the new value, or instantiated the class and return the updated or new.
+
+        Args:
+            field (None|State Class): current value of the to be updated field.
+            new (dict): new values coming back from the api.
+            new_class (State Class): Class to instantiate the value with if necessary.
+
+        Returns:
+            (new_class): new value of the type that was passed as the new_class.
+        """
+        if field:
+            return replace(field, **new)
+        return new_class(**new)
 
     def __repr__(self):
         """Create a string representing the mower."""

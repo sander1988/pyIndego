@@ -26,7 +26,7 @@ from pyIndego.states import (
     Garden,
     OperatingData,
     State,
-    Users,
+    User,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -292,32 +292,32 @@ class TestIndego(object):
                 {"available": False},
                 False,
             ),
-            (IndegoAsyncClient.update_users, "users", user, Users(**user)),
+            (IndegoAsyncClient.update_user, "user", user, User(**user)),
         ],
     )
     async def test_client_update_functions(self, func, attr, ret_value, assert_value):
         """Test the base client functions with 200."""
         resp = MockResponseAsync(ret_value, 200)
-        with patch("aiohttp.ClientSession.request", return_value=resp):
-            try:
-                indegoA = IndegoAsyncClient(**test_config)
+        with patch("aiohttp.ClientSession.request", return_value=resp), patch(
+            "pyIndego.IndegoAsyncClient.start", return_value=True
+        ):
+            async with IndegoAsyncClient(**test_config) as indegoA:
+                indegoA._contextid = "askdjfbaks"
                 indegoA._online = True
                 indegoA._userid = "test_user_id"
                 await func(indegoA)
                 assert getattr(indegoA, attr) == assert_value
-            finally:
-                await indegoA.close()
 
     @pytest.mark.parametrize(
         "response, func, attr, ret_value, assert_value",
         [
-            (204, IndegoAsyncClient.update_users, "users", user, Users()),
-            (400, IndegoAsyncClient.update_users, "users", user, Users()),
-            (401, IndegoAsyncClient.update_users, "users", user, Users()),
-            (403, IndegoAsyncClient.update_users, "users", user, Users()),
-            (405, IndegoAsyncClient.update_users, "users", user, Users()),
-            (501, IndegoAsyncClient.update_users, "users", user, Users()),
-            (504, IndegoAsyncClient.update_users, "users", user, Users()),
+            (204, IndegoAsyncClient.update_user, "user", user, None),
+            (400, IndegoAsyncClient.update_user, "user", user, None),
+            (401, IndegoAsyncClient.update_user, "user", user, None),
+            (403, IndegoAsyncClient.update_user, "user", user, None),
+            (405, IndegoAsyncClient.update_user, "user", user, None),
+            (501, IndegoAsyncClient.update_user, "user", user, None),
+            (504, IndegoAsyncClient.update_user, "user", user, None),
         ],
     )
     async def test_client_responses(
@@ -326,14 +326,11 @@ class TestIndego(object):
         """Test the base client functions with different responses."""
         resp = MockResponseAsync(ret_value, response)
         with patch("aiohttp.ClientSession.request", return_value=resp):
-            try:
-                indegoA = IndegoAsyncClient(**test_config)
+            async with IndegoAsyncClient(**test_config) as indegoA:
                 indegoA._online = True
                 indegoA._userid = "test_user_id"
                 await func(indegoA)
                 assert getattr(indegoA, attr) == assert_value
-            finally:
-                await indegoA.close()
 
     @pytest.mark.parametrize(
         "func, attr, ret_value, assert_value",
@@ -381,7 +378,7 @@ class TestIndego(object):
                 {"available": False},
                 False,
             ),
-            (IndegoClient.update_users, "users", user, Users(**user)),
+            (IndegoClient.update_user, "user", user, User(**user)),
         ],
     )
     def test_client_update_functions_sync(self, func, attr, ret_value, assert_value):
@@ -397,13 +394,13 @@ class TestIndego(object):
     @pytest.mark.parametrize(
         "response, func, attr, ret_value, assert_value",
         [
-            (204, IndegoClient.update_users, "users", user, Users()),
-            (400, IndegoClient.update_users, "users", user, Users()),
-            (401, IndegoClient.update_users, "users", user, Users()),
-            (403, IndegoClient.update_users, "users", user, Users()),
-            (405, IndegoClient.update_users, "users", user, Users()),
-            (501, IndegoClient.update_users, "users", user, Users()),
-            (504, IndegoClient.update_users, "users", user, Users()),
+            (204, IndegoClient.update_user, "user", user, None),
+            (400, IndegoClient.update_user, "user", user, None),
+            (401, IndegoClient.update_user, "user", user, None),
+            (403, IndegoClient.update_user, "user", user, None),
+            (405, IndegoClient.update_user, "user", user, None),
+            (501, IndegoClient.update_user, "user", user, None),
+            (504, IndegoClient.update_user, "user", user, None),
         ],
     )
     def test_client_responses_sync(self, response, func, attr, ret_value, assert_value):

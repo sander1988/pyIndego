@@ -81,9 +81,25 @@ class IndegoAsyncClient(IndegoBaseClient):
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
 
         """
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return await self._request(Methods.DELETE, f"alerts/{alert_id}/")
+        return None
+
+    async def delete_all_alerts(self):
+        """Delete all the alert."""
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
+        if self.alerts_count > 0:
+            return await asyncio.gather(
+                *[
+                    self._request(Methods.DELETE, f"alerts/{alert.alert_id}")
+                    for alert in self.alerts
+                ]
+            )
+        _LOGGER.info("No alerts to delete")
         return None
 
     async def download_map(self, filename: str = None):
@@ -110,6 +126,8 @@ class IndegoAsyncClient(IndegoBaseClient):
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
 
         """
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return await self._request(
@@ -119,6 +137,8 @@ class IndegoAsyncClient(IndegoBaseClient):
 
     async def put_all_alerts_read(self):
         """Set to read the read_status of all alerts."""
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         if self.alerts_count > 0:
             return await asyncio.gather(
                 *[
@@ -130,9 +150,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                     for alert in self.alerts
                 ]
             )
-        _LOGGER.warning(
-            "No alerts to set to read, or alerts are not loaded yet, use update_alerts first"
-        )
+        _LOGGER.info("No alerts to set to read")
         return None
 
     async def put_command(self, command: str):
@@ -191,7 +209,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             self.update_setup(),
             self.update_state(),
             self.update_updates_available(),
-            self.update_users(),
+            self.update_user(),
         ]
         results = await asyncio.gather(*update_list, return_exceptions=True)
         for res in results:
@@ -291,9 +309,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                 await self.get(f"alms/{self._serial}/updates")
             )
 
-    async def update_users(self):
+    async def update_user(self):
         """Update users."""
-        self._update_users(await self.get(f"users/{self._userid}"))
+        self._update_user(await self.get(f"users/{self._userid}"))
 
     async def login(self):
         """Login to the api and store the context."""
