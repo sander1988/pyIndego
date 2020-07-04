@@ -223,6 +223,14 @@ class IndegoAsyncClient(IndegoBaseClient):
             await self.get(f"alms/{self._serial}/operatingData")
         )
 
+    async def update_predictive_calendar(self):
+        """Update predictive_calendar."""
+        self._update_predictive_calendar(await self.get(f"alms/{self._serial}/predictive/calendar"))
+
+    async def update_predictive_schedule(self):
+        """Update predictive_schedule."""
+        self._update_predictive_schedule(await self.get(f"alms/{self._serial}/predictive/schedule"))
+
     async def update_security(self):
         """Update security."""
         self._update_security(await self.get(f"alms/{self._serial}/security"))
