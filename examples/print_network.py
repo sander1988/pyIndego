@@ -61,7 +61,7 @@ def main(config):
             if (country is not None) and (operator is not None):
                 print("\t", country, ":", operator)
             else:
-                print("\t", str(indego.network.networks[i])[:3], ":", str(indego.network.networks[i])[3:5])
+                print("\tmcc =", str(indego.network.networks[i])[:3], ": mnc =", str(indego.network.networks[i])[3:5])
         
 if __name__ == "__main__":
     with open("config.json", "r") as config_file:
