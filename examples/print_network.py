@@ -16,12 +16,21 @@ def country_operator(mcc, mnc):
         else:
             operator = None
     elif mcc == 232:
+        country =  "Austria"
         if mnc == 1:
             operator = "A1 Telekom Austria"
         elif mnc == 2:
             operator = "Magenta Telekom"
         elif mnc == 5:
             operator = "Hutchison Drei Austria"
+    elif mcc == 228:
+        country =  "Switzerland"
+        if mnc == 1:
+            operator = "Swisscom"
+        elif mnc == 2:
+            operator = "Sunrise Communications"
+        elif mnc == 3:
+            operator = "Salt Mobile SA"
         else:
             operator = None
     else:
