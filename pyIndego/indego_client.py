@@ -259,8 +259,9 @@ class IndegoClient(IndegoBaseClient):
         path = f"alms/{self._serial}/state"
         if longpoll:
             last_state = 0
-            if self.state and self.state.state:
-                last_state = self.state.state
+            if self.state:
+                if self.state.state:
+                    last_state = self.state.state
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
             if longpoll:

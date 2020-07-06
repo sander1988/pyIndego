@@ -297,8 +297,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                     "Longpoll timeout must be less than or equal 300 seconds."
                 )
             last_state = 0
-            if self.state and self.state.state:
-                last_state = self.state.state
+            if self.state:
+                if self.state.state:
+                    last_state = self.state.state
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
             if longpoll:
