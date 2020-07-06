@@ -14,12 +14,8 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/jm-73/pyIndego",
     packages=find_packages("."),
-    install_requires=["requests", "aiohttp"],
-    extras_require={
-        'testing': [
-            "pytest", "pytest-aiohttp", "pytest-cov", "mock"
-        ]
-    },
+    install_requires=["requests", "aiohttp", "pytz"],
+    extras_require={"testing": ["pytest", "pytest-aiohttp", "pytest-cov", "mock"]},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

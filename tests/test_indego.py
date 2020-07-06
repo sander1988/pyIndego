@@ -1,24 +1,21 @@
 """Test the states of pyIndego."""
+import asyncio
 import logging
 from datetime import datetime
-import asyncio
-import pytest
 from socket import error as SocketError
+
+import pytest
 from aiohttp import (
-    web,
     ClientOSError,
     ClientResponseError,
     ServerTimeoutError,
     TooManyRedirects,
+    web,
 )
 from aiohttp.web_exceptions import HTTPGatewayTimeout
-from requests.exceptions import (
-    HTTPError,
-    RequestException,
-    Timeout,
-    TooManyRedirects as reqTooManyRedirects,
-)
-from mock import patch, MagicMock
+from mock import MagicMock, patch
+from requests.exceptions import HTTPError, RequestException, Timeout
+from requests.exceptions import TooManyRedirects as reqTooManyRedirects
 
 from pyIndego import IndegoAsyncClient, IndegoClient
 from pyIndego.const import CONTENT_TYPE, CONTENT_TYPE_JSON, Methods

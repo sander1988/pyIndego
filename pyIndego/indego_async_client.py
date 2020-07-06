@@ -27,8 +27,8 @@ from .const import (
     DEFAULT_URL,
     Methods,
 )
-from .states import Calendar
 from .indego_base_client import IndegoBaseClient
+from .states import Calendar
 
 _LOGGER = logging.getLogger(__name__)
 
