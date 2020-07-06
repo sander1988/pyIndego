@@ -1,15 +1,15 @@
 """Classes for states of pyIndego."""
 import logging
-from typing import List
 from dataclasses import dataclass, field, is_dataclass
-from datetime import datetime, time
+from datetime import date, datetime, time, timedelta
+from typing import List
 
 from .const import (
     ALERT_ERROR_CODE,
+    DAY_MAPPING,
     DEFAULT_LOOKUP_VALUE,
     MOWER_MODEL_DESCRIPTION,
     MOWING_MODE_DESCRIPTION,
-    DAY_MAPPING,
 )
 from .helpers import convert_bosch_datetime, nested_dataclass
 
@@ -17,14 +17,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
-class Alerts:
-    """Alerts class."""
+class Alert:
+    """Alert class."""
 
     alm_sn: str = field(repr=False, default=None)
     alert_id: str = None
     error_code: str = None
     headline: str = None
-    date: datetime = field(default_factory=convert_bosch_datetime)
+    date: datetime = None
     message: str = None
     read_status: str = None
     flag: str = None
@@ -36,6 +36,7 @@ class Alerts:
         self.alert_description = ALERT_ERROR_CODE.get(
             self.error_code, DEFAULT_LOOKUP_VALUE
         )
+        self.date = convert_bosch_datetime(self.date)
 
 
 @dataclass
@@ -90,17 +91,18 @@ class CalendarSlot:
     En: bool = None
     StHr: int = None
     StMin: int = None
-    start: time = None
     EnHr: int = None
     EnMin: int = None
-    end: time = None
     Attr: str = None
+    start: time = None
+    end: time = None
+    dt: datetime = None
 
     def __post_init__(self):
         """Convert start and end in time format."""
-        if (self.StHr is not None and self.StMin is not None):
+        if self.StHr is not None and self.StMin is not None:
             self.start = time(self.StHr, self.StMin)
-        if (self.EnHr is not None and self.EnMin is not None):
+        if self.EnHr is not None and self.EnMin is not None:
             self.end = time(self.EnHr, self.EnMin)
 
 
@@ -116,6 +118,22 @@ class CalendarDay:
         """Update the dayname."""
         if self.day is not None:
             self.day_name = DAY_MAPPING[self.day]
+        if self.slots:
+            for slot in self.slots:
+                if slot.En:
+                    today = date.today().weekday()
+                    date_offset = timedelta(
+                        days=self.day - today, hours=slot.StHr, minutes=slot.StMin
+                    )
+                    new_dt = (
+                        datetime.now().replace(
+                            hour=0, minute=0, second=0, microsecond=0
+                        )
+                        + date_offset
+                    )
+                    if new_dt.date() < date.today():
+                        new_dt = new_dt + timedelta(days=7)
+                    slot.dt = new_dt
 
 
 @nested_dataclass
@@ -125,12 +143,6 @@ class Calendar:
     cal: int = None
     days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
 
-@nested_dataclass
-class PredictiveCalendar:
-    """Class for PredictiveCalendar."""
-
-    cal: int = None
-    days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
 
 @nested_dataclass
 class PredictiveSchedule:
@@ -293,6 +305,7 @@ class State:
     map_update_available: bool = None
     mowed: int = None
     mowmode: int = None
+    error: int = None
     xPos: int = None
     yPos: int = None
     charge: int = None
@@ -306,8 +319,8 @@ class State:
 
 
 @dataclass
-class Users:
-    """Users Class."""
+class User:
+    """User Class."""
 
     email: str = None
     display_name: str = None

@@ -4,30 +4,31 @@ import inspect
 import json
 import logging
 import typing
-import requests
+from socket import error as SocketError
 
 import aiohttp
+import requests
 from aiohttp import (
-    ClientResponseError,
     ClientOSError,
+    ClientResponseError,
     ServerTimeoutError,
     TooManyRedirects,
 )
-from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGatewayTimeout
 from aiohttp.helpers import BasicAuth
-from socket import error as SocketError
+from aiohttp.web_exceptions import HTTPGatewayTimeout, HTTPUnauthorized
 
 from . import __version__
 from .const import (
-    Methods,
     COMMANDS,
     CONTENT_TYPE_JSON,
     DEFAULT_BODY,
     DEFAULT_CALENDAR,
     DEFAULT_HEADER,
     DEFAULT_URL,
+    Methods,
 )
 from .indego_base_client import IndegoBaseClient
+from .states import Calendar
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -79,11 +80,26 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
-            
+
         """
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return await self._request(Methods.DELETE, f"alerts/{alert_id}/")
+
+    async def delete_all_alerts(self):
+        """Delete all the alert."""
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
+        if self.alerts_count > 0:
+            return await asyncio.gather(
+                *[
+                    self._request(Methods.DELETE, f"alerts/{alert.alert_id}")
+                    for alert in self.alerts
+                ]
+            )
+        _LOGGER.info("No alerts to delete")
         return None
 
     async def download_map(self, filename: str = None):
@@ -96,28 +112,43 @@ class IndegoAsyncClient(IndegoBaseClient):
         if filename:
             self.map_filename = filename
         if not self.map_filename:
-            _LOGGER.error("No map filename defined.")
-            return
+            raise ValueError("No map filename defined.")
         map = await self.get(f"alms/{self._serial}/map")
         if map:
             with open(self.map_filename, "wb") as file:
                 file.write(map)
 
-    async def patch_alert_read(self, alert_index: int, read_status: bool = True):
+    async def put_alert_read(self, alert_index: int):
         """Set the alert to read.
 
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
-            read_status (bool): new state
-            
+
         """
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return await self._request(
-                Methods.PATCH,
-                f"alerts/{alert_id}",
-                data={"read_status": "read" if read_status else "unread"},
+                Methods.PUT, f"alerts/{alert_id}", data={"read_status": "read"}
             )
+
+    async def put_all_alerts_read(self):
+        """Set to read the read_status of all alerts."""
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
+        if self.alerts_count > 0:
+            return await asyncio.gather(
+                *[
+                    self._request(
+                        Methods.PUT,
+                        f"alerts/{alert.alert_id}",
+                        data={"read_status": "read"},
+                    )
+                    for alert in self.alerts
+                ]
+            )
+        _LOGGER.info("No alerts to set to read")
         return None
 
     async def put_command(self, command: str):
@@ -132,8 +163,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         """
         if command in COMMANDS:
             return await self.put(f"alms/{self._serial}/state", {"state": command})
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
+        raise ValueError("Wrong Command, use one of 'mow', 'pause', 'returnToDock'")
 
     async def put_mow_mode(self, command: typing.Any):
         """Set the mower to mode manual (false-ish) or predictive (true-ish).
@@ -149,11 +179,14 @@ class IndegoAsyncClient(IndegoBaseClient):
             return await self.put(
                 f"alms/{self._serial}/predictive", {"enabled": command}
             )
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
+        raise ValueError("Wrong Command, use one True or False")
 
     async def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
         """Set the predictive calendar."""
+        try:
+            Calendar(**calendar["cals"][0])
+        except TypeError as e:
+            raise ValueError("Value for calendar is not valid: %s", e)
         return await self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
     async def update_alerts(self):
@@ -172,11 +205,13 @@ class IndegoAsyncClient(IndegoBaseClient):
             self.update_network(),
             self.update_next_mow(),
             self.update_operating_data(),
+            self.update_predictive_calendar(),
+            self.update_predictive_schedule(),
             self.update_security(),
             self.update_setup(),
             self.update_state(),
             self.update_updates_available(),
-            self.update_users(),
+            self.update_user(),
         ]
         results = await asyncio.gather(*update_list, return_exceptions=True)
         for res in results:
@@ -225,11 +260,15 @@ class IndegoAsyncClient(IndegoBaseClient):
 
     async def update_predictive_calendar(self):
         """Update predictive_calendar."""
-        self._update_predictive_calendar(await self.get(f"alms/{self._serial}/predictive/calendar"))
+        self._update_predictive_calendar(
+            await self.get(f"alms/{self._serial}/predictive/calendar")
+        )
 
     async def update_predictive_schedule(self):
         """Update predictive_schedule."""
-        self._update_predictive_schedule(await self.get(f"alms/{self._serial}/predictive/schedule"))
+        self._update_predictive_schedule(
+            await self.get(f"alms/{self._serial}/predictive/schedule")
+        )
 
     async def update_security(self):
         """Update security."""
@@ -258,8 +297,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                     "Longpoll timeout must be less than or equal 300 seconds."
                 )
             last_state = 0
-            if self.state.state:
-                last_state = self.state.state
+            if self.state:
+                if self.state.state:
+                    last_state = self.state.state
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
             if longpoll:
@@ -276,9 +316,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                 await self.get(f"alms/{self._serial}/updates")
             )
 
-    async def update_users(self):
+    async def update_user(self):
         """Update users."""
-        self._update_users(await self.get(f"users/{self._userid}"))
+        self._update_user(await self.get(f"users/{self._userid}"))
 
     async def login(self):
         """Login to the api and store the context."""
@@ -332,8 +372,8 @@ class IndegoAsyncClient(IndegoBaseClient):
         if not headers:
             headers = DEFAULT_HEADER.copy()
             headers["x-im-context-id"] = self._contextid
+        _LOGGER.debug("Sending %s to %s", method.value, url)
         try:
-            _LOGGER.debug("Sending %s to %s", method.value, url)
             async with self._session.request(
                 method=method.value,
                 url=url,
@@ -343,11 +383,12 @@ class IndegoAsyncClient(IndegoBaseClient):
                 timeout=timeout,
             ) as response:
                 status = response.status
+                _LOGGER.debug("status: %s", status)
                 if status == 200:
-                    # if method in (Methods.DELETE, Methods.PUT, Methods.PATCH):
-                    #     return True
                     if response.content_type == CONTENT_TYPE_JSON:
-                        return await response.json()
+                        resp = await response.json()
+                        _LOGGER.debug("Response: %s", resp)
+                        return resp  # await response.json()
                     return await response.content.read()
                 if status == 204:
                     _LOGGER.debug("204: No content in response from server")
@@ -441,15 +482,3 @@ class IndegoAsyncClient(IndegoBaseClient):
             method=Methods.PUT, path=path, data=data, timeout=timeout
         )
 
-    async def post(self, path: str, data: dict, timeout: int = 30):
-        """Post implemented by the subclasses either synchronously or asynchronously.
-
-        Args:
-            path (str): url to call on top of base_url
-            data (dict): data to put
-            timeout (int, optional): Timeout for the api call. Defaults to 30.
-
-        """
-        return await self._request(
-            method=Methods.POST, path=path, data=data, timeout=timeout
-        )
