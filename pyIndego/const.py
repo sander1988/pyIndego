@@ -1,7 +1,10 @@
+"""Constants for pyIndego."""
 from enum import Enum
 
 
 class Methods(Enum):
+    """Enum with HTTP methods."""
+
     GET = "GET"
     POST = "POST"
     PUT = "PUT"
@@ -222,7 +225,7 @@ ALERT_ERROR_CODE = {
 
 DAY_MAPPING = {
     0: "monday",
-    1: "teusday",
+    1: "tuesday",
     2: "wednesday",
     3: "thursday",
     4: "friday",

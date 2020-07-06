@@ -35,7 +35,20 @@ Call the API, asynchronously:
 
     await indego.close()
 
-## Update functions
+## Properties
+### indego.serial
+Returns the serial number of the indego mower, is usefull mostly when serial was not initialized.
+
+### indego.state_description
+Returns a description of the state, instead of a number.
+
+### indego.state_description_detail
+Returns a detailed description of the state, instead of a number.
+
+### indego.next_mows
+
+
+## Update/download functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 
 Call                               | Bosch API | Mower | Mower needs to be online
@@ -50,18 +63,16 @@ indego.update_location()           |           |       |
 indego.update_network()            |    ?      |  ?    |   ?
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |
+indego.update_predictive_calendar()|    X      |       |
+indego.update_predictive_schedule()|    X      |       |
 indego.update_security()           |    X      |       |
 indego.update_setup()              |    X      |       |
 indego.update_state()              |    X      |       |
 indego.update_state(force=True)    |    X      |  X    |
 indego.update_state(longpoll=True, longpoll_timeout=120)|X|  X    |
-indego.update_updates()            |           |  X    |
+indego.update_updates_available()            |           |  X    |
 indego.update_users()              |    X      |       |
-indego.delete_alert(alert_index)   |    X      |       |
 indego.download_map(filename='')|||
-
-### Untested
-indego.patch_alert_read(alert_index, read_status=True)
 
 ### To be implemented
 Predictive Setup
@@ -135,6 +146,20 @@ Update the indego.operating_data with data about battery, runtime, garden data a
 OperatingData(hmiKeys=1768, battery=Battery(percent=357, voltage=35.7, cycles=0, discharge=0.0, ambient_temp=26, battery_temp=26, percent_adjusted=83), garden=Garden(id=8, name=1, signal_id=1, size=769, inner_bounds=3, cuts=15, runtime=166824, charge=37702, bumps=6646, stops=29, last_mow=1, map_cell_size=None), runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=9, charge=0, cut=0)))
 ```
 
+### indego.update_predictive_calendar()
+Updates the predictive_calendar with the timeslots (days and hours) where the user wants smart mowing not to mow the lawn.
+
+```python
+PredictiveCalendar(cal=1, days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=1, day_name='tuesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=3, day_name='thursday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=5, day_name='saturday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=6, day_name='sunday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=23, EnMin=59, Attr=None)])])
+```
+
+### indego.update_predictive_schedule()
+Updates the predictive_schedule with the next planned mows (schedule_days) and the days where the smart mowing will not mow the lawn. The latter is combined by the time slots where the user does not want the Indego to mow (Attr='C') and the slots where the weather conditions prevent the mowing (e.g., Attr='pP').
+
+```python
+PredictiveSchedule(schedule_days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)])], exclusion_days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=1, day_name='tuesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=3, day_name='thursday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=8, StMin=0, EnHr=12, EnMin=0, Attr='pP'), CalendarSlot(En=True, StHr=13, StMin=0, EnHr=15, EnMin=0, Attr='Pp'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=5, day_name='saturday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=6, day_name='sunday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=23, EnMin=59, Attr='C')])])
+```
+
 ### indego.update_security()
 Updates the indego.security with information about the Indego security state.
 
@@ -160,8 +185,8 @@ This function can be used instead of polling the status every couple of seconds:
 State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPos=65, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=5, charge=0, cut=0)), mapsvgcache_ts=1593207884109, svg_xPos=192, svg_yPos=544, config_change=None, mow_trig=None)
 ```
 
-### indego.update_updates()
-Check if there are any updates apllicable to the mower and updates the (bool) `indego.update_available`.
+### indego.update_updates_available()
+Check if there are any updates applicable to the mower and updates the (bool) `indego.update_available`.
 
 ### indego.update_users()
 Updates the indego.users with information about the user.
@@ -172,26 +197,36 @@ Users(email='youremail@mail.com', display_name='Indego', language='sv', country=
 
 ## Sending commands
 
+### indego.delete_alert(alert_index)
+Delete an alert from the list, index should exist. If this is called before update_alerts it will not work.
+
+### indego.put_alert_read(alert_index)
+Set the specified alert to read. This is a one way action, once read it is not possible to set back to unread. The function looks up the alert_id from indego.alerts, if it cannot find that ID or if update_alerts has not been run, this will stop and log a warning.
+
+### indego.put_all_alerts_read()
+Set all alerts to read, the function loops through the alert_id's from indego.alerts, if update_alerts has not been run, this will stop and log a warning.
+
 ### indego.put_command(command)
 Send commands.
 
 Command     |Description         
 ------------|--------------------
-putCommand('mow')          |Start mowing        
-putCommand('pause')        |Pause mower         
-putCommand('returnToDock') |Return mower to dock
+put_command('mow')          |Start mowing        
+put_command('pause')        |Pause mower         
+put_command('returnToDock') |Return mower to dock
 
 ### indego.put_mow_mode(command)
 Send command. Accepted commands:
 
 Command     |Description         
 ------------|--------------------
-putMowMode('true')  |Smart Mow enabled        
-putMowMode('false') |Smart Mow disabled   
+put_mow_mode('true')  |Smart Mow enabled        
+put_mow_mode('false') |Smart Mow disabled   
+
 
 ## Not implemented yet
 
-### update_predictive_setup()
+### update_ & put_predictive_setup()
 
 ```python
 Response:
@@ -246,30 +281,6 @@ Response:
 }
 ```
 
-
-
-
-## Sending commands
-
-### put_command(command)
-Send commands.
-
-Command     |Description         
-------------|--------------------
-put_command('mow')          |Start mowing        
-put_command('pause')        |Pause mower         
-put_command('returnToDock') |Return mower to dock
-
-### put_mow_mode(command)
-Send command. Accepted commands:
-
-Command     |Description         
-------------|--------------------
-put_mow_mode('true')  |Smart Mow enabled        
-put_mow_mode('false') |Smart Mow disabled   
-
-### delete_alert(alert_index)
-Delete an alert from the list, index should exist. If this is called before update_alerts it will not work.
 
 ## Attributes for reading data from locally cached API data
 All functions that doesnt contain "update" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
@@ -364,6 +375,7 @@ get
 /alms/<serial>/predictive/lastcutting
 /alms/<serial>/predictive/location
 /alms/<serial>/predictive/nextcutting
+/alms/<serial>/predictive/schedule
 /alms/<serial>/predictive/useradjustment
 /alms/<serial>/predictive/weather
 /alms/<serial>/security
