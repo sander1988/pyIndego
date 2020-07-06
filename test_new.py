@@ -1,5 +1,5 @@
-import logging
 import json
+import logging
 
 from pyIndego import IndegoClient
 
@@ -19,7 +19,7 @@ def main(config):
         # print("=[indego.update_all]====")
         # indego.update_all(force=True)
         # print(indego)
-        
+
         # print(" ")
         print("=[indego.update_alerts]====")
         indego.update_alerts()
@@ -49,20 +49,79 @@ def main(config):
         # indego.update_location()
         # print(indego.location)
 
-        # print(" ")
-        # print("=[update_network]====")
+        # print("=[longpoll_state]====")
+        # indego.update_longpoll_state(40)
+        # print(indego.longpoll_state)
+
+        # indego.update_network()
+        # print(indego.network)
+        # indego.update_all(force=True)
+        # print(indego)
+        # print("=[state]====")
+        # indego.update_state()
+        # print(indego.state)
+
+        print(" ")
+        print("=[alerts]====")
+        indego.update_alerts()
+        print(indego.alerts)
+        print("=[alerts_count]====")
+        print(indego.alerts_count)
+
+        print(" ")
+        print("=[generic_data]====")
+        indego.update_generic_data()
+        print(indego.generic_data)
+
+        print(" ")
+        print("=[last_completed_mow]====")
+        indego.update_last_completed_mow()
+        print(indego.last_completed_mow)
+
+        print(" ")
+        print("=[location]====")
+        indego.update_location()
+        print(indego.location)
+
+        # print("=[longpoll_state]====")
+        # indego.update_longpoll_state(40)
+        # print(indego.longpoll_state)
+
+        print(" ")
+        print("=[operating data]====")
+        indego.update_operating_data()
+        print(indego.operating_data)
+
         # indego.update_network()
         # print(indego.network)
 
         # print(" ")
         # print("=[indego.update_next_mow]===)
         # indego.update_next_mow()
-        # print("Next mow: ", indego.next_mow)
-
-        # print(" ")
-        # print("=[indego.update_operating data]====")
         # indego.update_operating_data()
-        # print(indego.operating_data)
+        # # indego.update_updates()
+        # # indego.update_user
+        # # indego.update_network()
+
+        print("=[updates]====")
+        indego.update_updates_available()
+        print(indego.update_available)
+        print(" ")
+        print("=[user]====")
+        indego.update_user()
+        print(indego.user)
+        # indego.update_network()
+
+        # indego.download_map()
+
+        # print("map: ", indego.map_filename)
+        # print("network ", indego.network)
+        # print("state: ", indego.state)
+        # print("user: ", indego.user)
+        # print("Generic data: ", indego.generic_data)
+        # print("Generic data min voltage: ", indego.generic_data.model_voltage.min)
+        # print("Alerts: ", indego.alerts)
+        # print("Operating_data: ", indego.operating_data)
         # print("Battery: ", indego.operating_data.battery)
         # print("Battery percent: ", indego.operating_data.battery.percent_adjusted)
         # print("Battery voltage: ", indego.operating_data.battery.voltage)
@@ -82,19 +141,18 @@ def main(config):
         # indego.update_state()
         # print(indego.state)
         # print("=[update_state longloll]===")
-        #indego.update_state(longpoll=True, longpoll_timeout=20)
-        #print(indego.state)
-        
+        # indego.update_state(longpoll=True, longpoll_timeout=20)
+        # print(indego.state)
+
         # print(" ")
         # print("=[indego.update_updates_available]====")
         # indego.update_updates_available()
         # print(indego.update_available)
-                 
+
         # print(" ")
         # print("=[indego.update_users]====")
         # indego.update_users()
         # print(indego.users)
-
 
         # print(indego.service_counter)
         # print(indego.needs_service)

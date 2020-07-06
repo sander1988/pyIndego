@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 """Init for Indego class."""
-from pkg_resources import DistributionNotFound
-from pkg_resources import get_distribution
+from pkg_resources import DistributionNotFound, get_distribution
 
 try:
     dist_name = __name__
@@ -11,5 +9,5 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-from .indego_client import IndegoClient
 from .indego_async_client import IndegoAsyncClient
+from .indego_client import IndegoClient
