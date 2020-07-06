@@ -32,7 +32,6 @@ from .states import (
     Location,
     Network,
     OperatingData,
-    PredictiveCalendar,
     PredictiveSchedule,
     Runtime,
     Security,
@@ -76,13 +75,12 @@ class IndegoBaseClient(ABC):
 
         self.alerts = []
         self._alerts_loaded = False
-        self.battery = None
         self.calendar = None
         self.config = None
         self.generic_data = None
         self.last_completed_mow = None
-        self.location = Location()
-        self.network = Network()
+        self.location = None
+        self.network = None
         self.next_mow = None
         self.operating_data = None
         self.predictive_calendar = None
@@ -210,9 +208,7 @@ class IndegoBaseClient(ABC):
     def _update_calendar(self, new):
         """Update calendar."""
         if new:
-            self.calendar = self._generic_updater(
-                self.calendar, new["cals"][0], Calendar
-            )
+            self.calendar = self._gen_upd(self.calendar, new["cals"][0], Calendar)
 
     @abstractmethod
     def update_config(self):
@@ -221,7 +217,7 @@ class IndegoBaseClient(ABC):
     def _update_config(self, new):
         """Update config."""
         if new:
-            self.config = self._generic_updater(self.config, new, Config)
+            self.config = self._gen_upd(self.config, new, Config)
 
     @abstractmethod
     def update_generic_data(self):
@@ -230,9 +226,7 @@ class IndegoBaseClient(ABC):
     def _update_generic_data(self, new):
         """Update generic data."""
         if new:
-            self.generic_data = self._generic_updater(
-                self.generic_data, new, GenericData
-            )
+            self.generic_data = self._gen_upd(self.generic_data, new, GenericData)
             self._update_battery_percentage_adjusted()
 
     @abstractmethod
@@ -251,7 +245,7 @@ class IndegoBaseClient(ABC):
     def _update_location(self, new):
         """Update location."""
         if new:
-            self.location = self._generic_updater(self.location, new, Location)
+            self.location = self._gen_upd(self.location, new, Location)
 
     @abstractmethod
     def update_network(self):
@@ -260,7 +254,7 @@ class IndegoBaseClient(ABC):
     def _update_network(self, new):
         """Update network."""
         if new:
-            self.network = self._generic_updater(self.network, new, Network)
+            self.network = self._gen_upd(self.network, new, Network)
 
     @abstractmethod
     def update_next_mow(self):
@@ -278,9 +272,7 @@ class IndegoBaseClient(ABC):
     def _update_operating_data(self, new):
         """Update operating data."""
         if new:
-            self.operating_data = self._generic_updater(
-                self.operating_data, new, OperatingData
-            )
+            self.operating_data = self._gen_upd(self.operating_data, new, OperatingData)
             self._update_battery_percentage_adjusted()
             self._online = True
         else:
@@ -293,7 +285,9 @@ class IndegoBaseClient(ABC):
     def _update_predictive_calendar(self, new):
         """Update predictive_calendar."""
         if new:
-            self.predictive_calendar = replace(self.predictive_calendar, **new["cals"][0])
+            self.predictive_calendar = self._gen_upd(
+                self.predictive_calendar, new["cals"][0], Calendar
+            )
 
     @abstractmethod
     def update_predictive_schedule(self):
@@ -302,7 +296,9 @@ class IndegoBaseClient(ABC):
     def _update_predictive_schedule(self, new):
         """Update predictive schedule."""
         if new:
-            self.predictive_schedule = replace(self.predictive_schedule, **new)
+            self.predictive_schedule = self._gen_upd(
+                self.predictive_schedule, new, PredictiveSchedule
+            )
 
     @abstractmethod
     def update_security(self):
@@ -311,7 +307,7 @@ class IndegoBaseClient(ABC):
     def _update_security(self, new):
         """Update security."""
         if new:
-            self.security = self._generic_updater(self.security, new, Security)
+            self.security = self._gen_upd(self.security, new, Security)
 
     @abstractmethod
     def update_setup(self):
@@ -320,7 +316,7 @@ class IndegoBaseClient(ABC):
     def _update_setup(self, new):
         """Update setup."""
         if new:
-            self.setup = self._generic_updater(self.setup, new, Setup)
+            self.setup = self._gen_upd(self.setup, new, Setup)
 
     @abstractmethod
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
@@ -329,7 +325,7 @@ class IndegoBaseClient(ABC):
     def _update_state(self, new):
         """Update state."""
         if new:
-            self.state = self._generic_updater(self.state, new, State)
+            self.state = self._gen_upd(self.state, new, State)
 
     @abstractmethod
     def update_updates_available(self):
@@ -347,7 +343,7 @@ class IndegoBaseClient(ABC):
     def _update_user(self, new):
         """Update users."""
         if new:
-            self.user = self._generic_updater(self.user, new, User)
+            self.user = self._gen_upd(self.user, new, User)
 
     @abstractmethod
     def login(self, attempts: int = 0):
@@ -380,10 +376,6 @@ class IndegoBaseClient(ABC):
         """Get implemented by the subclasses either synchronously or asynchronously."""
 
     @abstractmethod
-    def post(self, path: str, timeout: int):
-        """Post implemented by the subclasses either synchronously or asynchronously."""
-
-    @abstractmethod
     def put(self, path: str, data: dict, timeout: int):
         """Put implemented by the subclasses either synchronously or asynchronously."""
 
@@ -404,12 +396,12 @@ class IndegoBaseClient(ABC):
 
     def _update_battery_percentage_adjusted(self):
         """Update the battery percentage adjusted field, relies on generic and operating data populated."""
-        if self.generic_data is not None and self.operating_data is not None:
+        if self.generic_data and self.operating_data:
             self.operating_data.battery.update_percent_adjusted(
                 self.generic_data.model_voltage
             )
 
-    def _generic_updater(self, field: typing.Any, new: dict, new_class: typing.Any):
+    def _gen_upd(self, field: typing.Any, new: dict, new_class: typing.Any):
         """Update a field to the new value, or instantiated the class and return the updated or new.
 
         Args:
@@ -427,4 +419,16 @@ class IndegoBaseClient(ABC):
 
     def __repr__(self):
         """Create a string representing the mower."""
-        return f"{self.generic_data.model_description} ({self.generic_data.alm_sn}) owned by {self.user.display_name}. {self.generic_data}, {self.state}, {self.operating_data}, last mowed: {self.last_completed_mow}, next mow: {self.next_mow}, {self.location}, {self.network}, {self.alerts}, map filename: {self.map_filename}, {self.runtime}, {self.battery}, update available: {self.update_available}, State Descr: {self.state_description}."
+        str1 = (
+            f"{self.generic_data.model_description} ({self.generic_data.alm_sn})"
+            if self.generic_data
+            else f"Indego mower"
+        )
+        str2 = f" owned by {self.user.display_name}." if self.user else f"."
+        str3 = f" {self.generic_data}, " if self.generic_data else ""
+        str4 = f" {self.state}, " if self.state else ""
+        str5 = f" {self.operating_data}, " if self.operating_data else ""
+        str6 = f", last mowed: {self.last_completed_mow}, next mow: {self.next_mow}, {self.location}, {self.network}, {self.alerts}, map filename: {self.map_filename}, {self.runtime}"
+        str7 = f"{self.operating_data.battery} " if self.operating_data else ""
+        str8 = f"update available: {self.update_available}, State Descr: {self.state_description}."
+        return f"{str1}{str2}{str3}{str4}{str5}{str6}{str7}{str8}"

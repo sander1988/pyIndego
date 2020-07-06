@@ -27,6 +27,7 @@ from .const import (
     DEFAULT_URL,
     Methods,
 )
+from .states import Calendar
 from .indego_base_client import IndegoBaseClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -86,7 +87,6 @@ class IndegoAsyncClient(IndegoBaseClient):
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return await self._request(Methods.DELETE, f"alerts/{alert_id}/")
-        return None
 
     async def delete_all_alerts(self):
         """Delete all the alert."""
@@ -112,8 +112,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         if filename:
             self.map_filename = filename
         if not self.map_filename:
-            _LOGGER.error("No map filename defined.")
-            return
+            raise ValueError("No map filename defined.")
         map = await self.get(f"alms/{self._serial}/map")
         if map:
             with open(self.map_filename, "wb") as file:
@@ -133,7 +132,6 @@ class IndegoAsyncClient(IndegoBaseClient):
             return await self._request(
                 Methods.PUT, f"alerts/{alert_id}", data={"read_status": "read"}
             )
-        return None
 
     async def put_all_alerts_read(self):
         """Set to read the read_status of all alerts."""
@@ -165,8 +163,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         """
         if command in COMMANDS:
             return await self.put(f"alms/{self._serial}/state", {"state": command})
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
+        raise ValueError("Wrong Command, use one of 'mow', 'pause', 'returnToDock'")
 
     async def put_mow_mode(self, command: typing.Any):
         """Set the mower to mode manual (false-ish) or predictive (true-ish).
@@ -182,11 +179,14 @@ class IndegoAsyncClient(IndegoBaseClient):
             return await self.put(
                 f"alms/{self._serial}/predictive", {"enabled": command}
             )
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
+        raise ValueError("Wrong Command, use one True or False")
 
     async def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
         """Set the predictive calendar."""
+        try:
+            Calendar(**calendar["cals"][0])
+        except TypeError as e:
+            raise ValueError("Value for calendar is not valid: %s", e)
         return await self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
     async def update_alerts(self):
@@ -205,6 +205,8 @@ class IndegoAsyncClient(IndegoBaseClient):
             self.update_network(),
             self.update_next_mow(),
             self.update_operating_data(),
+            self.update_predictive_calendar(),
+            self.update_predictive_schedule(),
             self.update_security(),
             self.update_setup(),
             self.update_state(),
@@ -258,11 +260,15 @@ class IndegoAsyncClient(IndegoBaseClient):
 
     async def update_predictive_calendar(self):
         """Update predictive_calendar."""
-        self._update_predictive_calendar(await self.get(f"alms/{self._serial}/predictive/calendar"))
+        self._update_predictive_calendar(
+            await self.get(f"alms/{self._serial}/predictive/calendar")
+        )
 
     async def update_predictive_schedule(self):
         """Update predictive_schedule."""
-        self._update_predictive_schedule(await self.get(f"alms/{self._serial}/predictive/schedule"))
+        self._update_predictive_schedule(
+            await self.get(f"alms/{self._serial}/predictive/schedule")
+        )
 
     async def update_security(self):
         """Update security."""
@@ -291,7 +297,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                     "Longpoll timeout must be less than or equal 300 seconds."
                 )
             last_state = 0
-            if self.state.state:
+            if self.state and self.state.state:
                 last_state = self.state.state
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
@@ -379,7 +385,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                 _LOGGER.debug("status: %s", status)
                 if status == 200:
                     if response.content_type == CONTENT_TYPE_JSON:
-                        return await response.json()
+                        resp = await response.json()
+                        _LOGGER.debug("Response: %s", resp)
+                        return resp  # await response.json()
                     return await response.content.read()
                 if status == 204:
                     _LOGGER.debug("204: No content in response from server")
@@ -473,15 +481,3 @@ class IndegoAsyncClient(IndegoBaseClient):
             method=Methods.PUT, path=path, data=data, timeout=timeout
         )
 
-    async def post(self, path: str, data: dict, timeout: int = 30):
-        """Post implemented by the subclasses either synchronously or asynchronously.
-
-        Args:
-            path (str): url to call on top of base_url
-            data (dict): data to put
-            timeout (int, optional): Timeout for the api call. Defaults to 30.
-
-        """
-        return await self._request(
-            method=Methods.POST, path=path, data=data, timeout=timeout
-        )

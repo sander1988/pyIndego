@@ -19,6 +19,7 @@ from .const import (
     DEFAULT_URL,
     Methods,
 )
+from .states import Calendar
 from .indego_base_client import IndegoBaseClient
 
 _LOGGER = logging.getLogger(__name__)
@@ -66,14 +67,13 @@ class IndegoClient(IndegoBaseClient):
 
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
-            
+
         """
         if not self._alerts_loaded:
             raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return self._request(Methods.DELETE, f"alerts/{alert_id}/")
-        return None
 
     def delete_all_alerts(self):
         """Delete all the alerts."""
@@ -97,8 +97,7 @@ class IndegoClient(IndegoBaseClient):
         if filename:
             self.map_filename = filename
         if not self.map_filename:
-            _LOGGER.error("No map filename defined.")
-            return
+            raise ValueError("No map filename defined.")
         map = self.get(f"alms/{self._serial}/map")
         if map:
             with open(self.map_filename, "wb") as afp:
@@ -109,7 +108,7 @@ class IndegoClient(IndegoBaseClient):
 
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
-            
+
         """
         if not self._alerts_loaded:
             raise ValueError("Alerts not loaded, please run update_alerts first.")
@@ -118,7 +117,6 @@ class IndegoClient(IndegoBaseClient):
             return self._request(
                 Methods.PUT, f"alerts/{alert_id}", data={"read_status": "read"}
             )
-        return None
 
     def put_all_alerts_read(self):
         """Set to read the read_status of all alerts."""
@@ -148,8 +146,7 @@ class IndegoClient(IndegoBaseClient):
         """
         if command in COMMANDS:
             return self.put(f"alms/{self._serial}/state", {"state": command})
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
+        raise ValueError("Wrong Command, use one of 'mow', 'pause', 'returnToDock'")
 
     def put_mow_mode(self, command: typing.Any):
         """Set the mower to mode manual (false-ish) or predictive (true-ish).
@@ -163,11 +160,14 @@ class IndegoClient(IndegoBaseClient):
         """
         if command in ("true", "false", "True", "False") or isinstance(command, bool):
             return self.put(f"alms/{self._serial}/predictive", {"enabled": command})
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
+        raise ValueError("Wrong Command, use True or False")
 
     def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
         """Set the predictive calendar."""
+        try:
+            Calendar(**calendar["cals"][0])
+        except TypeError as e:
+            raise ValueError("Value for calendar is not valid: %s", e)
         return self.put(f"alms/{self._serial}/predictive/calendar", calendar)
 
     def update_alerts(self):
@@ -185,6 +185,8 @@ class IndegoClient(IndegoBaseClient):
         self.update_network()
         self.update_next_mow()
         self.update_operating_data()
+        self.update_predictive_calendar()
+        self.update_predictive_schedule()
         self.update_security()
         self.update_setup()
         self.update_state()
@@ -227,11 +229,15 @@ class IndegoClient(IndegoBaseClient):
 
     def update_predictive_calendar(self):
         """Update predictive_calendar."""
-        self._update_predictive_calendar(self.get(f"alms/{self._serial}/predictive/calendar"))
+        self._update_predictive_calendar(
+            self.get(f"alms/{self._serial}/predictive/calendar")
+        )
 
     def update_predictive_schedule(self):
         """Update predictive_schedule."""
-        self._update_predictive_schedule(self.get(f"alms/{self._serial}/predictive/schedule"))
+        self._update_predictive_schedule(
+            self.get(f"alms/{self._serial}/predictive/schedule")
+        )
 
     def update_security(self):
         """Update security."""
@@ -253,7 +259,7 @@ class IndegoClient(IndegoBaseClient):
         path = f"alms/{self._serial}/state"
         if longpoll:
             last_state = 0
-            if self.state.state:
+            if self.state and self.state.state:
                 last_state = self.state.state
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
@@ -398,7 +404,3 @@ class IndegoClient(IndegoBaseClient):
     def put(self, path: str, data: dict, timeout: int = 30):
         """Send a PUT request and return the response as a dict."""
         return self._request(method=Methods.PUT, path=path, data=data, timeout=timeout)
-
-    def post(self, path: str, data: dict, timeout: int = 30):
-        """Send a POST request and return the response as a dict."""
-        return self._request(method=Methods.POST, path=path, data=data, timeout=timeout)

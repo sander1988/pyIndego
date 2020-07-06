@@ -91,12 +91,12 @@ class CalendarSlot:
     En: bool = None
     StHr: int = None
     StMin: int = None
-    start: time = None
     EnHr: int = None
     EnMin: int = None
+    Attr: str = None
+    start: time = None
     end: time = None
     dt: datetime = None
-    Attr: str = None
 
     def __post_init__(self):
         """Convert start and end in time format."""
@@ -139,14 +139,6 @@ class CalendarDay:
 @nested_dataclass
 class Calendar:
     """Class for Calendar."""
-
-    cal: int = None
-    days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
-
-
-@nested_dataclass
-class PredictiveCalendar:
-    """Class for PredictiveCalendar."""
 
     cal: int = None
     days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])

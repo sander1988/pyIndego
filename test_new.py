@@ -19,7 +19,7 @@ def main(config):
         # print("=[indego.update_all]====")
         # indego.update_all(force=True)
         # print(indego)
-        
+
         # print(" ")
         print("=[indego.update_alerts]====")
         indego.update_alerts()
@@ -49,10 +49,6 @@ def main(config):
         # indego.update_location()
         # print(indego.location)
 
-<<<<<<< HEAD
-        # print(" ")
-        # print("=[update_network]====")
-=======
         # print("=[longpoll_state]====")
         # indego.update_longpoll_state(40)
         # print(indego.longpoll_state)
@@ -96,7 +92,6 @@ def main(config):
         indego.update_operating_data()
         print(indego.operating_data)
 
->>>>>>> many changes
         # indego.update_network()
         # print(indego.network)
 
@@ -146,19 +141,18 @@ def main(config):
         # indego.update_state()
         # print(indego.state)
         # print("=[update_state longloll]===")
-        #indego.update_state(longpoll=True, longpoll_timeout=20)
-        #print(indego.state)
-        
+        # indego.update_state(longpoll=True, longpoll_timeout=20)
+        # print(indego.state)
+
         # print(" ")
         # print("=[indego.update_updates_available]====")
         # indego.update_updates_available()
         # print(indego.update_available)
-                 
+
         # print(" ")
         # print("=[indego.update_users]====")
         # indego.update_users()
         # print(indego.users)
-
 
         # print(indego.service_counter)
         # print(indego.needs_service)

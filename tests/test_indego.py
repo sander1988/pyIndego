@@ -1,13 +1,27 @@
 """Test the states of pyIndego."""
 import logging
 from datetime import datetime
-
+import asyncio
 import pytest
-from aiohttp import web
-from mock import patch
+from socket import error as SocketError
+from aiohttp import (
+    web,
+    ClientOSError,
+    ClientResponseError,
+    ServerTimeoutError,
+    TooManyRedirects,
+)
+from aiohttp.web_exceptions import HTTPGatewayTimeout
+from requests.exceptions import (
+    HTTPError,
+    RequestException,
+    Timeout,
+    TooManyRedirects as reqTooManyRedirects,
+)
+from mock import patch, MagicMock
 
 from pyIndego import IndegoAsyncClient, IndegoClient
-from pyIndego.const import CONTENT_TYPE, CONTENT_TYPE_JSON
+from pyIndego.const import CONTENT_TYPE, CONTENT_TYPE_JSON, Methods
 from pyIndego.helpers import convert_bosch_datetime
 from pyIndego.states import (
     Alert,
@@ -21,6 +35,7 @@ from pyIndego.states import (
     Location,
     Network,
     OperatingData,
+    PredictiveSchedule,
     Runtime,
     RuntimeDetail,
     Security,
@@ -134,6 +149,208 @@ operating = {
     },
     "hmiKeys": 213,
 }
+predictive_calendar = {
+    "sel_cal": 1,
+    "cals": [
+        {
+            "cal": 1,
+            "days": [
+                {
+                    "day": 0,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 1,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 2,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 3,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 4,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 5,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+                {
+                    "day": 6,
+                    "slots": [
+                        {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0},
+                        {"En": True, "StHr": 20, "StMin": 0, "EnHr": 23, "EnMin": 59},
+                    ],
+                },
+            ],
+        }
+    ],
+}
+
+predictive_schedule = {
+    "schedule_days": [
+        {
+            "day": 1,
+            "slots": [{"En": True, "StHr": 10, "StMin": 0, "EnHr": 13, "EnMin": 0}],
+        },
+        {
+            "day": 3,
+            "slots": [{"En": True, "StHr": 11, "StMin": 0, "EnHr": 14, "EnMin": 0}],
+        },
+        {
+            "day": 5,
+            "slots": [{"En": True, "StHr": 10, "StMin": 0, "EnHr": 13, "EnMin": 0}],
+        },
+    ],
+    "exclusion_days": [
+        {
+            "day": 0,
+            "slots": [
+                {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0, "Attr": "C"},
+                {
+                    "En": True,
+                    "StHr": 20,
+                    "StMin": 0,
+                    "EnHr": 23,
+                    "EnMin": 59,
+                    "Attr": "C",
+                },
+            ],
+        },
+        {
+            "day": 1,
+            "slots": [
+                {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0, "Attr": "C"},
+                {
+                    "En": True,
+                    "StHr": 20,
+                    "StMin": 0,
+                    "EnHr": 23,
+                    "EnMin": 59,
+                    "Attr": "C",
+                },
+            ],
+        },
+        {
+            "day": 2,
+            "slots": [
+                {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0, "Attr": "C"},
+                {
+                    "En": True,
+                    "StHr": 8,
+                    "StMin": 0,
+                    "EnHr": 20,
+                    "EnMin": 0,
+                    "Attr": "P",
+                },
+                {
+                    "En": True,
+                    "StHr": 20,
+                    "StMin": 0,
+                    "EnHr": 23,
+                    "EnMin": 59,
+                    "Attr": "C",
+                },
+            ],
+        },
+        {
+            "day": 3,
+            "slots": [
+                {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0, "Attr": "C"},
+                {
+                    "En": True,
+                    "StHr": 8,
+                    "StMin": 0,
+                    "EnHr": 11,
+                    "EnMin": 0,
+                    "Attr": "p",
+                },
+                {
+                    "En": True,
+                    "StHr": 20,
+                    "StMin": 0,
+                    "EnHr": 23,
+                    "EnMin": 59,
+                    "Attr": "C",
+                },
+            ],
+        },
+        {
+            "day": 4,
+            "slots": [
+                {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0, "Attr": "C"},
+                {
+                    "En": True,
+                    "StHr": 8,
+                    "StMin": 0,
+                    "EnHr": 11,
+                    "EnMin": 0,
+                    "Attr": "Pp",
+                },
+                {
+                    "En": True,
+                    "StHr": 20,
+                    "StMin": 0,
+                    "EnHr": 23,
+                    "EnMin": 59,
+                    "Attr": "C",
+                },
+            ],
+        },
+        {
+            "day": 5,
+            "slots": [
+                {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0, "Attr": "C"},
+                {
+                    "En": True,
+                    "StHr": 20,
+                    "StMin": 0,
+                    "EnHr": 23,
+                    "EnMin": 59,
+                    "Attr": "C",
+                },
+            ],
+        },
+        {
+            "day": 6,
+            "slots": [
+                {"En": True, "StHr": 0, "StMin": 0, "EnHr": 8, "EnMin": 0, "Attr": "C"},
+                {"En": True, "StHr": 8, "StMin": 0, "EnHr": 9, "EnMin": 0, "Attr": "D"},
+                {
+                    "En": True,
+                    "StHr": 20,
+                    "StMin": 0,
+                    "EnHr": 23,
+                    "EnMin": 59,
+                    "Attr": "C",
+                },
+            ],
+        },
+    ],
+}
+
 state = {
     "state": 64513,
     "map_update_available": True,
@@ -153,6 +370,16 @@ state = {
 }
 
 test_config = {"username": "testname", "password": "testpassword", "api_url": ""}
+
+
+class AsyncMock(MagicMock):
+    async def __call__(self, *args, **kwargs):
+        return super(AsyncMock, self).__call__(*args, **kwargs)
+
+
+class SyncMock(MagicMock):
+    def __call__(self, *args, **kwargs):
+        return super(SyncMock, self).__call__(*args, **kwargs)
 
 
 class MockResponseAsync:
@@ -202,6 +429,11 @@ class MockResponseSync:
 class TestIndego(object):
     """States class."""
 
+    def test_repr(self):
+        """Test the representation string."""
+        indego = IndegoClient(**test_config)
+        str(indego)
+
     @pytest.mark.parametrize(
         "state, json, checks",
         [
@@ -216,6 +448,7 @@ class TestIndego(object):
                     ("days[0].slots[0].En", "['days'][0]['slots'][0]['En']"),
                 ],
             ),
+            (State, state, ["state"]),
         ],
     )
     def test_states(self, state, json, checks):
@@ -241,6 +474,11 @@ class TestIndego(object):
                 "2020-07-03T10:00:00+02:00",
                 datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
             ),
+            (
+                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+            ),
+            (None, None),
         ],
     )
     def test_date_parsing(self, date_str, date_dt):
@@ -249,178 +487,664 @@ class TestIndego(object):
         assert test_dt == date_dt
 
     @pytest.mark.parametrize(
-        "func, attr, ret_value, assert_value",
+        "sync, func, attr, ret_value, assert_value",
         [
             (
-                IndegoAsyncClient.update_calendar,
-                "calendar",
-                {"sel_cal": 3, "cals": [calendar]},
-                Calendar(**calendar),
-            ),
-            (IndegoAsyncClient.update_alerts, "alerts", [alert], [Alert(**alert)]),
-            (IndegoAsyncClient.update_config, "config", config, Config(**config)),
-            (
-                IndegoAsyncClient.update_generic_data,
-                "generic_data",
-                generic,
-                GenericData(**generic),
-            ),
-            (
-                IndegoAsyncClient.update_last_completed_mow,
-                "last_completed_mow",
-                {"last_mowed": "2020-07-01T13:22:43.15+02:00"},
-                datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
-            ),
-            (
-                IndegoAsyncClient.update_location,
-                "location",
-                location,
-                Location(**location),
-            ),
-            (IndegoAsyncClient.update_network, "network", network, Network(**network)),
-            (
-                IndegoAsyncClient.update_next_mow,
-                "next_mow",
-                {"mow_next": "2020-07-03T10:00:00+02:00"},
-                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
-            ),
-            (
-                IndegoAsyncClient.update_operating_data,
-                "operating_data",
-                operating,
-                OperatingData(**operating),
-            ),
-            (
-                IndegoAsyncClient.update_security,
-                "security",
-                security,
-                Security(**security),
-            ),
-            (IndegoAsyncClient.update_setup, "setup", setup_json, Setup(**setup_json)),
-            (IndegoAsyncClient.update_state, "state", state, State(**state)),
-            (
-                IndegoAsyncClient.update_updates_available,
-                "update_available",
-                {"available": False},
-                False,
-            ),
-            (IndegoAsyncClient.update_user, "user", user, User(**user)),
-        ],
-    )
-    async def test_client_update_functions(self, func, attr, ret_value, assert_value):
-        """Test the base client functions with 200."""
-        resp = MockResponseAsync(ret_value, 200)
-        with patch("aiohttp.ClientSession.request", return_value=resp), patch(
-            "pyIndego.IndegoAsyncClient.start", return_value=True
-        ):
-            async with IndegoAsyncClient(**test_config) as indegoA:
-                indegoA._contextid = "askdjfbaks"
-                indegoA._online = True
-                indegoA._userid = "test_user_id"
-                await func(indegoA)
-                assert getattr(indegoA, attr) == assert_value
-
-    @pytest.mark.parametrize(
-        "response, func, attr, ret_value, assert_value",
-        [
-            (204, IndegoAsyncClient.update_user, "user", user, None),
-            (400, IndegoAsyncClient.update_user, "user", user, None),
-            (401, IndegoAsyncClient.update_user, "user", user, None),
-            (403, IndegoAsyncClient.update_user, "user", user, None),
-            (405, IndegoAsyncClient.update_user, "user", user, None),
-            (501, IndegoAsyncClient.update_user, "user", user, None),
-            (504, IndegoAsyncClient.update_user, "user", user, None),
-        ],
-    )
-    async def test_client_responses(
-        self, response, func, attr, ret_value, assert_value
-    ):
-        """Test the base client functions with different responses."""
-        resp = MockResponseAsync(ret_value, response)
-        with patch("aiohttp.ClientSession.request", return_value=resp):
-            async with IndegoAsyncClient(**test_config) as indegoA:
-                indegoA._online = True
-                indegoA._userid = "test_user_id"
-                await func(indegoA)
-                assert getattr(indegoA, attr) == assert_value
-
-    @pytest.mark.parametrize(
-        "func, attr, ret_value, assert_value",
-        [
-            (
+                True,
                 IndegoClient.update_calendar,
                 "calendar",
                 {"sel_cal": 3, "cals": [calendar]},
                 Calendar(**calendar),
             ),
-            (IndegoClient.update_alerts, "alerts", [alert], [Alert(**alert)]),
-            (IndegoClient.update_config, "config", config, Config(**config)),
+            (True, IndegoClient.update_alerts, "alerts", [alert], [Alert(**alert)]),
+            (True, IndegoClient.update_config, "config", config, Config(**config)),
             (
+                True,
                 IndegoClient.update_generic_data,
                 "generic_data",
                 generic,
                 GenericData(**generic),
             ),
             (
+                True,
                 IndegoClient.update_last_completed_mow,
                 "last_completed_mow",
                 {"last_mowed": "2020-07-01T13:22:43.15+02:00"},
                 datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
             ),
-            (IndegoClient.update_location, "location", location, Location(**location)),
-            (IndegoClient.update_network, "network", network, Network(**network)),
             (
+                True,
+                IndegoClient.update_location,
+                "location",
+                location,
+                Location(**location),
+            ),
+            (True, IndegoClient.update_network, "network", network, Network(**network)),
+            (
+                True,
                 IndegoClient.update_next_mow,
                 "next_mow",
                 {"mow_next": "2020-07-03T10:00:00+02:00"},
                 datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
             ),
             (
+                True,
                 IndegoClient.update_operating_data,
                 "operating_data",
                 operating,
                 OperatingData(**operating),
             ),
-            (IndegoClient.update_security, "security", security, Security(**security)),
-            (IndegoClient.update_setup, "setup", setup_json, Setup(**setup_json)),
-            (IndegoClient.update_state, "state", state, State(**state)),
             (
+                True,
+                IndegoClient.update_predictive_calendar,
+                "predictive_calendar",
+                predictive_calendar,
+                Calendar(**predictive_calendar["cals"][0]),
+            ),
+            (
+                True,
+                IndegoClient.update_predictive_schedule,
+                "predictive_schedule",
+                predictive_schedule,
+                PredictiveSchedule(**predictive_schedule),
+            ),
+            (
+                True,
+                IndegoClient.update_security,
+                "security",
+                security,
+                Security(**security),
+            ),
+            (True, IndegoClient.update_setup, "setup", setup_json, Setup(**setup_json)),
+            (True, IndegoClient.update_state, "state", state, State(**state)),
+            (
+                True,
                 IndegoClient.update_updates_available,
                 "update_available",
                 {"available": False},
                 False,
             ),
-            (IndegoClient.update_user, "user", user, User(**user)),
+            (True, IndegoClient.update_user, "user", user, User(**user)),
+            (True, IndegoClient.update_all, "user", None, None),
+            (
+                False,
+                IndegoAsyncClient.update_calendar,
+                "calendar",
+                {"sel_cal": 3, "cals": [calendar]},
+                Calendar(**calendar),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_alerts,
+                "alerts",
+                [alert],
+                [Alert(**alert)],
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_config,
+                "config",
+                config,
+                Config(**config),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_generic_data,
+                "generic_data",
+                generic,
+                GenericData(**generic),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_last_completed_mow,
+                "last_completed_mow",
+                {"last_mowed": "2020-07-01T13:22:43.15+02:00"},
+                datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_location,
+                "location",
+                location,
+                Location(**location),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_network,
+                "network",
+                network,
+                Network(**network),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_next_mow,
+                "next_mow",
+                {"mow_next": "2020-07-03T10:00:00+02:00"},
+                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_operating_data,
+                "operating_data",
+                operating,
+                OperatingData(**operating),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_predictive_calendar,
+                "predictive_calendar",
+                predictive_calendar,
+                Calendar(**predictive_calendar["cals"][0]),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_predictive_schedule,
+                "predictive_schedule",
+                predictive_schedule,
+                PredictiveSchedule(**predictive_schedule),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_security,
+                "security",
+                security,
+                Security(**security),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_setup,
+                "setup",
+                setup_json,
+                Setup(**setup_json),
+            ),
+            (False, IndegoAsyncClient.update_state, "state", state, State(**state)),
+            (
+                False,
+                IndegoAsyncClient.update_updates_available,
+                "update_available",
+                {"available": False},
+                False,
+            ),
+            (False, IndegoAsyncClient.update_user, "user", user, User(**user)),
+            (False, IndegoAsyncClient.update_all, "user", None, None),
         ],
     )
-    def test_client_update_functions_sync(self, func, attr, ret_value, assert_value):
+    async def test_client_update_functions(
+        self, sync, func, attr, ret_value, assert_value
+    ):
         """Test the base client functions with 200."""
-        resp = MockResponseSync(ret_value, 200)
-        with patch("requests.request", return_value=resp):
-            indegoA = IndegoClient(**test_config)
-            indegoA._online = True
-            indegoA._userid = "test_user_id"
-            func(indegoA)
-            assert getattr(indegoA, attr) == assert_value
+        if sync:
+            resp = MockResponseSync(ret_value, 200)
+            with patch("requests.request", return_value=resp):
+                indego = IndegoClient(**test_config)
+                indego._online = True
+                indego._userid = "test_user_id"
+                func(indego)
+                assert getattr(indego, attr) == assert_value
+                if attr == "state":
+                    assert indego.state_description == "Docked"
+                    assert indego.state_description_detail == "Sleeping"
+        else:
+            resp = MockResponseAsync(ret_value, 200)
+            with patch("aiohttp.ClientSession.request", return_value=resp), patch(
+                "pyIndego.IndegoAsyncClient.start", return_value=True
+            ):
+                async with IndegoAsyncClient(**test_config) as indego:
+                    indego._contextid = "askdjfbaks"
+                    indego._online = True
+                    indego._userid = "test_user_id"
+                    await func(indego)
+                    assert getattr(indego, attr) == assert_value
+                    if attr == "state":
+                        assert indego.state_description == "Docked"
+                        assert indego.state_description_detail == "Sleeping"
 
     @pytest.mark.parametrize(
-        "response, func, attr, ret_value, assert_value",
+        "sync, func, param, attr, ret_value, assert_value",
         [
-            (204, IndegoClient.update_user, "user", user, None),
-            (400, IndegoClient.update_user, "user", user, None),
-            (401, IndegoClient.update_user, "user", user, None),
-            (403, IndegoClient.update_user, "user", user, None),
-            (405, IndegoClient.update_user, "user", user, None),
-            (501, IndegoClient.update_user, "user", user, None),
-            (504, IndegoClient.update_user, "user", user, None),
+            (
+                True,
+                IndegoClient.update_state,
+                {"force": True},
+                "state",
+                state,
+                State(**state),
+            ),
+            (
+                True,
+                IndegoClient.update_state,
+                {"longpoll": True},
+                "state",
+                state,
+                State(**state),
+            ),
+            (
+                True,
+                IndegoClient.update_state,
+                {"force": True, "longpoll": True},
+                "state",
+                state,
+                State(**state),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_state,
+                {"force": True},
+                "state",
+                state,
+                State(**state),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_state,
+                {"longpoll": True},
+                "state",
+                state,
+                State(**state),
+            ),
+            (
+                False,
+                IndegoAsyncClient.update_state,
+                {"force": True, "longpoll": True},
+                "state",
+                state,
+                State(**state),
+            ),
         ],
     )
-    def test_client_responses_sync(self, response, func, attr, ret_value, assert_value):
-        """Test the base client functions with different responses."""
-        resp = MockResponseSync(ret_value, response)
+    async def test_client_update_state_params(
+        self, sync, func, param, attr, ret_value, assert_value
+    ):
+        """Test the base client functions with 200."""
+        if sync:
+            resp = MockResponseSync(ret_value, 200)
+            with patch("requests.request", return_value=resp):
+                indego = IndegoClient(**test_config)
+                indego._online = True
+                indego._userid = "test_user_id"
+                func(indego, **param)
+                assert getattr(indego, attr) == assert_value
+        else:
+            resp = MockResponseAsync(ret_value, 200)
+            with patch("aiohttp.ClientSession.request", return_value=resp), patch(
+                "pyIndego.IndegoAsyncClient.start", return_value=True
+            ):
+                async with IndegoAsyncClient(**test_config) as indego:
+                    indego._contextid = "askdjfbaks"
+                    indego._online = True
+                    indego._userid = "test_user_id"
+                    await func(indego, **param)
+                    assert getattr(indego, attr) == assert_value
+
+    @pytest.mark.parametrize(
+        "sync, func, attr, ret_value, assert_value",
+        [
+            (True, IndegoClient.update_user, "user", user, User(**user)),
+            (False, IndegoAsyncClient.update_user, "user", user, User(**user)),
+        ],
+    )
+    async def test_client_replace(self, sync, func, attr, ret_value, assert_value):
+        """Test the base client functions with 200."""
+        if sync:
+            resp = MockResponseSync(ret_value, 200)
+            with patch("requests.request", return_value=resp):
+                indego = IndegoClient(**test_config)
+                indego._online = True
+                indego._userid = "test_user_id"
+                func(indego)
+                assert getattr(indego, attr) == assert_value
+                func(indego)
+                assert getattr(indego, attr) == assert_value
+        else:
+            resp = MockResponseAsync(ret_value, 200)
+            with patch("aiohttp.ClientSession.request", return_value=resp), patch(
+                "pyIndego.IndegoAsyncClient.start", return_value=True
+            ):
+                async with IndegoAsyncClient(**test_config) as indego:
+                    indego._contextid = "askdjfbaks"
+                    indego._online = True
+                    indego._userid = "test_user_id"
+                    await func(indego)
+                    assert getattr(indego, attr) == assert_value
+                    await func(indego)
+                    assert getattr(indego, attr) == assert_value
+
+    @pytest.mark.parametrize(
+        "sync, response, func, attr, ret_value",
+        [
+            (True, 204, IndegoClient.update_user, "user", user),
+            (True, 400, IndegoClient.update_user, "user", user),
+            (True, 401, IndegoClient.update_user, "user", user),
+            (True, 403, IndegoClient.update_user, "user", user),
+            (True, 405, IndegoClient.update_user, "user", user),
+            (True, 501, IndegoClient.update_user, "user", user),
+            (True, 504, IndegoClient.update_user, "user", user),
+            (False, 204, IndegoAsyncClient.update_user, "user", user),
+            (False, 400, IndegoAsyncClient.update_user, "user", user),
+            (False, 401, IndegoAsyncClient.update_user, "user", user),
+            (False, 403, IndegoAsyncClient.update_user, "user", user),
+            (False, 405, IndegoAsyncClient.update_user, "user", user),
+            (False, 501, IndegoAsyncClient.update_user, "user", user),
+            (False, 504, IndegoAsyncClient.update_user, "user", user),
+        ],
+    )
+    async def test_client_responses(self, sync, response, func, attr, ret_value):
+        """Test the request functions with different responses."""
+        if sync:
+            resp = MockResponseSync(ret_value, response)
+            with patch("requests.request", return_value=resp):
+                indego = IndegoClient(**test_config)
+                indego._online = True
+                indego._userid = "test_user_id"
+                func(indego)
+                assert getattr(indego, attr) == None
+        else:
+            resp = MockResponseAsync(ret_value, response)
+            with patch("aiohttp.ClientSession.request", return_value=resp):
+                async with IndegoAsyncClient(**test_config) as indego:
+                    indego._online = True
+                    indego._userid = "test_user_id"
+                    await func(indego)
+                    assert getattr(indego, attr) == None
+
+    @pytest.mark.parametrize(
+        "error",
+        [
+            (asyncio.CancelledError),
+            (Exception),
+            (asyncio.TimeoutError),
+            (ServerTimeoutError),
+            (HTTPGatewayTimeout),
+            (ClientOSError),
+            (TooManyRedirects),
+            (ClientResponseError),
+            (SocketError),
+        ],
+    )
+    async def test_a_client_response_errors(self, error):
+        """Test the request functions with different responses."""
+        with patch("aiohttp.ClientSession.request", side_effect=error), patch(
+            "asyncio.sleep", new_callable=AsyncMock
+        ):
+            async with IndegoAsyncClient(**test_config) as indego:
+                indego._online = True
+                indego._userid = "test_user_id"
+                resp = await indego._request(
+                    method=Methods.GET, path="alerts", timeout=1
+                )
+                assert resp is None
+
+    @pytest.mark.parametrize(
+        "error", [(Exception), (Timeout), (reqTooManyRedirects), (RequestException)]
+    )
+    def test_client_response_errors(self, error):
+        """Test the request functions with different responses."""
+        with patch("requests.request", side_effect=error), patch(
+            "time.sleep", new_callable=SyncMock
+        ):
+            indego = IndegoClient(**test_config)
+            indego._online = True
+            indego._userid = "test_user_id"
+            resp = indego._request(method=Methods.GET, path="alerts", timeout=1)
+            assert resp is None
+
+    @pytest.mark.parametrize(  # noqa: ignore:C901
+        "alerts, loaded, index, error",
+        [
+            ([Alert(**alert)], True, 0, None),
+            ([Alert(**alert)], True, 1, IndexError),
+            (None, True, 0, ValueError),
+            (None, False, 0, ValueError),
+        ],
+    )
+    async def test_alert_functions(self, alerts, loaded, index, error):
+        """Test the function for handling alerts."""
+        resp = MockResponseSync(True, 200)
         with patch("requests.request", return_value=resp):
-            indegoA = IndegoClient(**test_config)
-            indegoA._online = True
-            indegoA._userid = "test_user_id"
-            func(indegoA)
-            assert getattr(indegoA, attr) == assert_value
+            indego = IndegoClient(**test_config)
+            indego._online = True
+            indego._userid = "test_user_id"
+            indego.alerts = alerts
+            indego._alerts_loaded = loaded
+            try:
+                res = indego.delete_alert(index)
+                if error and not loaded:
+                    assert False
+                elif not alerts and loaded:
+                    assert res is None
+                else:
+                    assert res
+            except error:
+                assert True
+            try:
+                res = indego.put_alert_read(index)
+                if error and not loaded:
+                    assert False
+                elif not alerts and loaded:
+                    assert res is None
+                else:
+                    assert res
+            except error:
+                assert True
+            try:
+                res = indego.delete_all_alerts()
+                if alerts is None and loaded:
+                    assert res is None
+                else:
+                    assert res
+            except error:
+                assert True
+            try:
+                res = indego.put_all_alerts_read()
+                if alerts is None and loaded:
+                    assert res is None
+                else:
+                    assert res
+            except error:
+                assert True
+        resp = MockResponseAsync(True, 200)
+        with patch("aiohttp.ClientSession.request", return_value=resp), patch(
+            "pyIndego.IndegoAsyncClient.start", return_value=True
+        ):
+            async with IndegoAsyncClient(**test_config) as indego:
+                indego._online = True
+                indego._userid = "test_user_id"
+                indego.alerts = alerts
+                indego._alerts_loaded = loaded
+                try:
+                    res = await indego.delete_alert(index)
+                    if error and not loaded:
+                        assert False
+                    elif not alerts and loaded:
+                        assert res is None
+                    else:
+                        assert res
+                except error:
+                    assert True
+                try:
+                    res = await indego.put_alert_read(index)
+                    if error and not loaded:
+                        assert False
+                    elif not alerts and loaded:
+                        assert res is None
+                    else:
+                        assert res
+                except error:
+                    assert True
+                try:
+                    res = await indego.delete_all_alerts()
+                    if alerts is None and loaded:
+                        assert res is None
+                    else:
+                        assert res
+                except error:
+                    assert True
+                try:
+                    res = await indego.put_all_alerts_read()
+                    if alerts is None and loaded:
+                        assert res is None
+                    else:
+                        assert res
+                except error:
+                    assert True
+
+    @pytest.mark.parametrize(  # noqa: ignore:C901
+        "command, param, error",
+        [
+            ("command", "mow", None),
+            ("command", "pause", None),
+            ("command", "returnToDock", None),
+            ("command", "mows", ValueError),
+            ("mow_mode", "true", None),
+            ("mow_mode", "false", None),
+            ("mow_mode", "True", None),
+            ("mow_mode", "False", None),
+            ("mow_mode", True, None),
+            ("mow_mode", False, None),
+            ("mow_mode", "mows", ValueError),
+            ("pred_cal", None, None),
+            ("pred_cal", {"cals": 1}, ValueError),
+        ],
+    )
+    async def test_commands(self, command, param, error):
+        """Test the function for handling alerts."""
+        resp = MockResponseSync(True, 200)
+        with patch("requests.request", return_value=resp):
+            indego = IndegoClient(**test_config)
+            indego._online = True
+            indego._userid = "test_user_id"
+            if command == "command":
+                try:
+                    indego.put_command(param)
+                    if error:
+                        assert False
+                    assert True
+                except error:
+                    assert True
+            elif command == "mow_mode":
+                try:
+                    indego.put_mow_mode(param)
+                    if error:
+                        assert False
+                    assert True
+                except error:
+                    assert True
+            elif command == "pred_cal":
+                try:
+                    if param:
+                        indego.put_predictive_cal(param)
+                    else:
+                        indego.put_predictive_cal()
+                    if error:
+                        assert False
+                    assert True
+                except error:
+                    assert True
+
+        resp = MockResponseAsync(True, 200)
+        with patch("aiohttp.ClientSession.request", return_value=resp), patch(
+            "pyIndego.IndegoAsyncClient.start", return_value=True
+        ):
+            async with IndegoAsyncClient(**test_config) as indego:
+                indego._online = True
+                indego._userid = "test_user_id"
+                if command == "command":
+                    try:
+                        await indego.put_command(param)
+                        if error:
+                            assert False
+                        assert True
+                    except error:
+                        assert True
+                elif command == "mow_mode":
+                    try:
+                        await indego.put_mow_mode(param)
+                        if error:
+                            assert False
+                        assert True
+                    except error:
+                        assert True
+                elif command == "pred_cal":
+                    try:
+                        if param:
+                            await indego.put_predictive_cal(param)
+                        else:
+                            await indego.put_predictive_cal()
+                        if error:
+                            assert False
+                        assert True
+                    except error:
+                        assert True
+
+    @pytest.mark.parametrize(
+        "config",
+        [
+            ({"username": "testname", "password": "testpassword", "api_url": ""}),
+            (
+                {
+                    "username": "testname",
+                    "password": "testpassword",
+                    "serial": "123456789",
+                    "api_url": "",
+                }
+            ),
+        ],
+    )
+    async def test_login(self, config):
+        """Test the function for handling alerts."""
+        resp_json = {"contextId": "98765", "userId": "12345"}
+        resp_get = [{"alm_sn": "123456789"}]
+        resp_login_s = MockResponseSync(resp_json, 200)
+        with patch("requests.request", return_value=resp_login_s), patch(
+            "pyIndego.IndegoClient.get", return_value=resp_get
+        ):
+            indego = IndegoClient(**config)
+            indego.login()
+            assert indego._userid == "12345"
+            assert indego.serial == "123456789"
+
+        resp_login_a = MockResponseAsync(resp_json, 200)
+        with patch("aiohttp.ClientSession.request", return_value=resp_login_a), patch(
+            "pyIndego.IndegoAsyncClient.start", return_value=True
+        ), patch("pyIndego.IndegoAsyncClient.get", return_value=resp_get):
+            async with IndegoAsyncClient(**config) as indego:
+                await indego.login()
+                assert indego._userid == "12345"
+                assert indego.serial == "123456789"
+
+    @pytest.mark.parametrize(
+        "config, param, error",
+        [(None, None, ValueError), (None, "test.svg", None), ("test.svg", None, None)],
+    )
+    async def test_download(self, config, param, error):
+        """Test the function for download map."""
+        conf = test_config.copy()
+        if config:
+            conf.update({"map_filename": config})
+        with patch("pyIndego.IndegoClient.get", return_value=None):
+            indego = IndegoClient(**conf)
+            try:
+                indego.download_map(param)
+                assert indego.map_filename == "test.svg"
+                if error:
+                    assert False
+            except error:
+                assert True
+
+        with patch("pyIndego.IndegoAsyncClient.start", return_value=True), patch(
+            "pyIndego.IndegoAsyncClient.get", return_value=None
+        ):
+            async with IndegoAsyncClient(**conf) as indego:
+                try:
+                    await indego.download_map(param)
+                    assert indego.map_filename == "test.svg"
+                    if error:
+                        assert False
+                except error:
+                    assert True
+
+    def test_update_battery(self):
+        """Test the battery update function."""
+        indego = IndegoClient(**test_config)
+        indego._update_generic_data(generic)
+        indego._update_operating_data(operating)
