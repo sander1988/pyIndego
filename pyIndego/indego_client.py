@@ -1,25 +1,24 @@
 """API for Bosch API server for Indego lawn mower."""
 import json
 import logging
-import typing
 import time
+import typing
 
 import requests
 from requests.auth import HTTPBasicAuth
-from requests.exceptions import HTTPError
-from requests.exceptions import RequestException
-from requests.exceptions import Timeout
-from requests.exceptions import TooManyRedirects
+from requests.exceptions import HTTPError, RequestException, Timeout, TooManyRedirects
 
 from . import __version__
-from .const import Methods
-from .const import COMMANDS
-from .const import CONTENT_TYPE
-from .const import CONTENT_TYPE_JSON
-from .const import DEFAULT_BODY
-from .const import DEFAULT_CALENDAR
-from .const import DEFAULT_HEADER
-from .const import DEFAULT_URL
+from .const import (
+    COMMANDS,
+    CONTENT_TYPE,
+    CONTENT_TYPE_JSON,
+    DEFAULT_BODY,
+    DEFAULT_CALENDAR,
+    DEFAULT_HEADER,
+    DEFAULT_URL,
+    Methods,
+)
 from .indego_base_client import IndegoBaseClient
 
 _LOGGER = logging.getLogger(__name__)

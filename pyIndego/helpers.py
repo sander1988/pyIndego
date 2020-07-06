@@ -1,7 +1,7 @@
 """Helper class for Indego."""
+import logging
 from dataclasses import dataclass, is_dataclass
 from datetime import datetime
-import logging
 from typing import Any
 
 _LOGGER = logging.getLogger(__name__)

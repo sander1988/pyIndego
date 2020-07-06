@@ -1,30 +1,30 @@
 """Test the states of pyIndego."""
-from datetime import datetime
-import pytest
-from mock import patch
 import logging
+from datetime import datetime
+
+import pytest
 from aiohttp import web
-import json
+from mock import patch
 
 from pyIndego import IndegoAsyncClient, IndegoClient
-from pyIndego.const import CONTENT_TYPE_JSON, CONTENT_TYPE
+from pyIndego.const import CONTENT_TYPE, CONTENT_TYPE_JSON
 from pyIndego.helpers import convert_bosch_datetime
 from pyIndego.states import (
     Alert,
     Battery,
-    CalendarSlot,
-    CalendarDay,
     Calendar,
+    CalendarDay,
+    CalendarSlot,
+    Config,
+    Garden,
     GenericData,
     Location,
     Network,
-    Config,
-    Setup,
-    Security,
-    RuntimeDetail,
-    Runtime,
-    Garden,
     OperatingData,
+    Runtime,
+    RuntimeDetail,
+    Security,
+    Setup,
     State,
     User,
 )
@@ -156,34 +156,46 @@ test_config = {"username": "testname", "password": "testpassword", "api_url": ""
 
 
 class MockResponseAsync:
+    """Class for mock responses in async."""
+
     def __init__(self, json, status):
+        """Init the async mock response."""
         self._json = json
         self.status = status
 
     async def json(self):
+        """Return json."""
         return self._json
 
     @property
     def content_type(self):
+        """Return content type."""
         return CONTENT_TYPE_JSON
 
     async def __aexit__(self, exc_type, exc, tb):
+        """Do async exit."""
         pass
 
     async def __aenter__(self):
+        """Do async enter."""
         return self
 
 
 class MockResponseSync:
+    """Class for mock responses in sync."""
+
     def __init__(self, json, status):
+        """Init the sync mock response."""
         self._json = json
         self.status_code = status
 
     def json(self):
+        """Return json."""
         return self._json
 
     @property
     def headers(self):
+        """Return header."""
         return {CONTENT_TYPE: f"{CONTENT_TYPE_JSON};"}
 
 

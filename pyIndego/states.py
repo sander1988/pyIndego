@@ -1,15 +1,15 @@
 """Classes for states of pyIndego."""
 import logging
-from typing import List
 from dataclasses import dataclass, field, is_dataclass
 from datetime import datetime, timedelta, date, time
+from typing import List
 
 from .const import (
     ALERT_ERROR_CODE,
+    DAY_MAPPING,
     DEFAULT_LOOKUP_VALUE,
     MOWER_MODEL_DESCRIPTION,
     MOWING_MODE_DESCRIPTION,
-    DAY_MAPPING,
 )
 from .helpers import convert_bosch_datetime, nested_dataclass
 

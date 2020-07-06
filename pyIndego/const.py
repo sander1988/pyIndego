@@ -1,7 +1,10 @@
+"""Constants for pyIndego."""
 from enum import Enum
 
 
 class Methods(Enum):
+    """Enum with HTTP methods."""
+
     GET = "GET"
     POST = "POST"
     PUT = "PUT"

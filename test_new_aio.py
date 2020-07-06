@@ -1,9 +1,10 @@
 """test aio client."""
-import aiohttp
 import asyncio
 import inspect
-import logging
 import json
+import logging
+
+import aiohttp
 
 from pyIndego import IndegoAsyncClient
 from pyIndego.const import Methods
@@ -54,12 +55,20 @@ async def main(config):
 
         await indego.update_state()
         print("state: ", indego.state)
+        print("state description: ", indego.state_description)
+        print("state description detail: ", indego.state_description_detail)
 
         await indego.update_updates_available()
         print("update available: ", indego.update_available)
 
-        await indego.update_users()
-        print("users: ", indego.users)
+        await indego.update_user()
+        print("user: ", indego.user)
+
+        while True:
+            await indego.update_state(longpoll=True, longpoll_timeout=300)
+            print("state: ", indego.state)
+            print("state description: ", indego.state_description)
+            print("state description detail: ", indego.state_description_detail)
 
 
 if __name__ == "__main__":

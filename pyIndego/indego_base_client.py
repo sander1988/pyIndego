@@ -5,10 +5,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace
 from datetime import timezone
 from typing import ClassVar
+
 import pytz
 
 from .const import (
-    Methods,
     CONTENT_TYPE,
     CONTENT_TYPE_JSON,
     DEFAULT_BODY,
@@ -20,22 +20,23 @@ from .const import (
     MOWER_STATE_DESCRIPTION,
     MOWER_STATE_DESCRIPTION_DETAIL,
     MOWING_MODE_DESCRIPTION,
+    Methods,
 )
 from .helpers import convert_bosch_datetime
 from .states import (
     Alert,
-    Calendar,
     Battery,
+    Calendar,
+    Config,
     GenericData,
     Location,
     Network,
-    Config,
-    Setup,
-    Security,
     OperatingData,
     PredictiveCalendar,
     PredictiveSchedule,
     Runtime,
+    Security,
+    Setup,
     State,
     User,
 )
@@ -418,6 +419,7 @@ class IndegoBaseClient(ABC):
 
         Returns:
             (new_class): new value of the type that was passed as the new_class.
+
         """
         if field:
             return replace(field, **new)
@@ -425,4 +427,4 @@ class IndegoBaseClient(ABC):
 
     def __repr__(self):
         """Create a string representing the mower."""
-        return f"{self.generic_data.model_description} ({self.generic_data.alm_sn}) owned by {self.users.display_name}. {self.generic_data}, {self.state}, {self.operating_data}, last mowed: {self.last_completed_mow}, next mow: {self.next_mow}, {self.location}, {self.network}, {self.alerts}, map filename: {self.map_filename}, {self.runtime}, {self.battery}, update available: {self.update_available}, State Descr: {self.state_description}."
+        return f"{self.generic_data.model_description} ({self.generic_data.alm_sn}) owned by {self.user.display_name}. {self.generic_data}, {self.state}, {self.operating_data}, last mowed: {self.last_completed_mow}, next mow: {self.next_mow}, {self.location}, {self.network}, {self.alerts}, map filename: {self.map_filename}, {self.runtime}, {self.battery}, update available: {self.update_available}, State Descr: {self.state_description}."

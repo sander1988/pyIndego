@@ -4,28 +4,28 @@ import inspect
 import json
 import logging
 import typing
-import requests
+from socket import error as SocketError
 
 import aiohttp
+import requests
 from aiohttp import (
-    ClientResponseError,
     ClientOSError,
+    ClientResponseError,
     ServerTimeoutError,
     TooManyRedirects,
 )
-from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGatewayTimeout
 from aiohttp.helpers import BasicAuth
-from socket import error as SocketError
+from aiohttp.web_exceptions import HTTPGatewayTimeout, HTTPUnauthorized
 
 from . import __version__
 from .const import (
-    Methods,
     COMMANDS,
     CONTENT_TYPE_JSON,
     DEFAULT_BODY,
     DEFAULT_CALENDAR,
     DEFAULT_HEADER,
     DEFAULT_URL,
+    Methods,
 )
 from .indego_base_client import IndegoBaseClient
 
@@ -365,8 +365,8 @@ class IndegoAsyncClient(IndegoBaseClient):
         if not headers:
             headers = DEFAULT_HEADER.copy()
             headers["x-im-context-id"] = self._contextid
+        _LOGGER.debug("Sending %s to %s", method.value, url)
         try:
-            _LOGGER.debug("Sending %s to %s", method.value, url)
             async with self._session.request(
                 method=method.value,
                 url=url,
@@ -376,12 +376,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                 timeout=timeout,
             ) as response:
                 status = response.status
+                _LOGGER.debug("status: %s", status)
                 if status == 200:
-                    # if method in (Methods.DELETE, Methods.PUT, Methods.PATCH):
-                    #     return True
                     if response.content_type == CONTENT_TYPE_JSON:
-                        # resp = await response.json()
-                        # _LOGGER.debug("Call to %s with result: %s", path, resp)
                         return await response.json()
                     return await response.content.read()
                 if status == 204:
