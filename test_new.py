@@ -30,6 +30,10 @@ def main(config):
         print(indego.alerts[0])
         print("=[indego.alerts[1]]====")
         print(indego.alerts[1])
+        print("=[indego.alerts[2]]====")
+        print(indego.alerts[2])
+        print("=[indego.alerts[3]]====")
+        print(indego.alerts[3])
 
         # print(" ")
         # print("=[indego.update_generic_data]====")
