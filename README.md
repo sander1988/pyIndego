@@ -50,6 +50,8 @@ indego.update_location()           |           |       |
 indego.update_network()            |    ?      |  ?    |   ?
 indego.update_next_mow()           |           |       |
 indego.update_operating_data()     |           |  X    |
+indego.update_predictive_calendar()|    X      |       |
+indego.update_predictive_schedule()|    X      |       |
 indego.update_security()           |    X      |       |
 indego.update_setup()              |    X      |       |
 indego.update_state()              |    X      |       |
@@ -133,6 +135,20 @@ Update the indego.operating_data with data about battery, runtime, garden data a
 
 ```python
 OperatingData(hmiKeys=1768, battery=Battery(percent=357, voltage=35.7, cycles=0, discharge=0.0, ambient_temp=26, battery_temp=26, percent_adjusted=83), garden=Garden(id=8, name=1, signal_id=1, size=769, inner_bounds=3, cuts=15, runtime=166824, charge=37702, bumps=6646, stops=29, last_mow=1, map_cell_size=None), runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=9, charge=0, cut=0)))
+```
+
+### indego.predictive_calendar()
+Updates the predictive_calendar with the timeslots (days and hours) where the user wants smart mowing not to mow the lawn.
+
+```python
+PredictiveCalendar(cal=1, days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=1, day_name='tuesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=3, day_name='thursday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=5, day_name='saturday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=6, day_name='sunday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=23, EnMin=59, Attr=None)])])
+```
+
+### indego.predictive_schedule()
+Updates the predictive_schedule with the next planned mows (schedule_days) and the days where the smart mowing will not mow the lawn. The latter is combined by the time slots where the user does not want the Indego to mow (Attr='C') and the slots where the weather conditions prevent the mowing (e.g., Attr='pP').
+
+```python
+PredictiveSchedule(schedule_days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)])], exclusion_days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=1, day_name='tuesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=3, day_name='thursday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=8, StMin=0, EnHr=12, EnMin=0, Attr='pP'), CalendarSlot(En=True, StHr=13, StMin=0, EnHr=15, EnMin=0, Attr='Pp'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=5, day_name='saturday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=6, day_name='sunday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=23, EnMin=59, Attr='C')])])
 ```
 
 ### indego.update_security()
@@ -364,6 +380,7 @@ get
 /alms/<serial>/predictive/lastcutting
 /alms/<serial>/predictive/location
 /alms/<serial>/predictive/nextcutting
+/alms/<serial>/predictive/schedule
 /alms/<serial>/predictive/useradjustment
 /alms/<serial>/predictive/weather
 /alms/<serial>/security

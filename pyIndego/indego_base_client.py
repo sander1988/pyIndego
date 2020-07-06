@@ -30,6 +30,8 @@ from .states import (
     Setup,
     Security,
     OperatingData,
+    PredictiveCalendar,
+    PredictiveSchedule,
     Runtime,
     State,
     Users,
@@ -79,6 +81,8 @@ class IndegoBaseClient(ABC):
         self.network = Network()
         self.next_mow = None
         self.operating_data = OperatingData()
+        self.predictive_calendar = PredictiveCalendar()
+        self.predictive_schedule = PredictiveSchedule()
         self.security = Security()
         self.state = State()
         self.setup = Setup()
@@ -225,6 +229,24 @@ class IndegoBaseClient(ABC):
             self._online = True
         else:
             self._online = False
+
+    @abstractmethod
+    def update_predictive_calendar(self):
+        """Update predictive_calendar."""
+
+    def _update_predictive_calendar(self, new):
+        """Update predictive_calendar."""
+        if new:
+            self.predictive_calendar = replace(self.predictive_calendar, **new["cals"][0])
+
+    @abstractmethod
+    def update_predictive_schedule(self):
+        """Update predictive schedule."""
+
+    def _update_predictive_schedule(self, new):
+        """Update predictive schedule."""
+        if new:
+            self.predictive_schedule = replace(self.predictive_schedule, **new)
 
     @abstractmethod
     def update_security(self):

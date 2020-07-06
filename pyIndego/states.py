@@ -2,7 +2,7 @@
 import logging
 from typing import List
 from dataclasses import dataclass, field, is_dataclass
-from datetime import datetime
+from datetime import datetime, time
 
 from .const import (
     ALERT_ERROR_CODE,
@@ -90,8 +90,18 @@ class CalendarSlot:
     En: bool = None
     StHr: int = None
     StMin: int = None
+    start: time = None
     EnHr: int = None
     EnMin: int = None
+    end: time = None
+    Attr: str = None
+
+    def __post_init__(self):
+        """Convert start and end in time format."""
+        if (self.StHr is not None and self.StMin is not None):
+            self.start = time(self.StHr, self.StMin)
+        if (self.EnHr is not None and self.EnMin is not None):
+            self.end = time(self.EnHr, self.EnMin)
 
 
 @nested_dataclass
@@ -114,6 +124,20 @@ class Calendar:
 
     cal: int = None
     days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
+
+@nested_dataclass
+class PredictiveCalendar:
+    """Class for PredictiveCalendar."""
+
+    cal: int = None
+    days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
+
+@nested_dataclass
+class PredictiveSchedule:
+    """Class for PredictiveSchedule."""
+
+    schedule_days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
+    exclusion_days: List[CalendarDay] = field(default_factory=lambda: [CalendarDay])
 
 
 @nested_dataclass
