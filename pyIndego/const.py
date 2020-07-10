@@ -1,7 +1,10 @@
+"""Constants for pyIndego."""
 from enum import Enum
 
 
 class Methods(Enum):
+    """Enum with HTTP methods."""
+
     GET = "GET"
     POST = "POST"
     PUT = "PUT"
@@ -213,6 +216,7 @@ MOWING_MODE_DESCRIPTION = {
 
 ALERT_ERROR_CODE = {
     "104": "Stop button pushed",
+    "101": "Mower lifted",
     "115": "Mower is stuck",
     "149": "Mower outside perimeter cable",
     "151": "Perimeter cable signal missing",

@@ -1,26 +1,26 @@
 """API for Bosch API server for Indego lawn mower."""
 import json
 import logging
-import typing
 import time
+import typing
 
 import requests
 from requests.auth import HTTPBasicAuth
-from requests.exceptions import HTTPError
-from requests.exceptions import RequestException
-from requests.exceptions import Timeout
-from requests.exceptions import TooManyRedirects
+from requests.exceptions import HTTPError, RequestException, Timeout, TooManyRedirects
 
 from . import __version__
-from .const import Methods
-from .const import COMMANDS
-from .const import CONTENT_TYPE
-from .const import CONTENT_TYPE_JSON
-from .const import DEFAULT_BODY
-from .const import DEFAULT_CALENDAR
-from .const import DEFAULT_HEADER
-from .const import DEFAULT_URL
+from .const import (
+    COMMANDS,
+    CONTENT_TYPE,
+    CONTENT_TYPE_JSON,
+    DEFAULT_BODY,
+    DEFAULT_CALENDAR,
+    DEFAULT_HEADER,
+    DEFAULT_URL,
+    Methods,
+)
 from .indego_base_client import IndegoBaseClient
+from .states import Calendar
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,11 +67,24 @@ class IndegoClient(IndegoBaseClient):
 
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
-            
+
         """
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return self._request(Methods.DELETE, f"alerts/{alert_id}/")
+
+    def delete_all_alerts(self):
+        """Delete all the alerts."""
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
+        if self.alerts_count > 0:
+            return [
+                self._request(Methods.DELETE, f"alerts/{alert.alert_id}")
+                for alert in self.alerts
+            ]
+        _LOGGER.info("No alerts to delete")
         return None
 
     def download_map(self, filename: str = None):
@@ -81,31 +94,46 @@ class IndegoClient(IndegoBaseClient):
             filename (str, optional): Filename for the map. Defaults to None, can also be filled by the filename set in init.
 
         """
+        if not self.serial:
+            return
         if filename:
             self.map_filename = filename
         if not self.map_filename:
-            _LOGGER.error("No map filename defined.")
-            return
-        map = self.get(f"alms/{self._serial}/map")
+            raise ValueError("No map filename defined.")
+        map = self.get(f"alms/{self.serial}/map")
         if map:
             with open(self.map_filename, "wb") as afp:
                 afp.write(map)
 
-    def patch_alert_read(self, alert_index: int, read_status: bool = True):
+    def put_alert_read(self, alert_index: int):
         """Set the alert to read.
 
         Args:
             alert_index (int): index of alert to be deleted, should be in range or length of alerts.
-            read_status (bool): new state
-            
+
         """
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
         alert_id = self._get_alert_by_index(alert_index)
         if alert_id:
             return self._request(
-                Methods.PATCH,
-                f"alerts/{alert_id}",
-                data={"read_status": "read" if read_status else "unread"},
+                Methods.PUT, f"alerts/{alert_id}", data={"read_status": "read"}
             )
+
+    def put_all_alerts_read(self):
+        """Set to read the read_status of all alerts."""
+        if not self._alerts_loaded:
+            raise ValueError("Alerts not loaded, please run update_alerts first.")
+        if self.alerts_count > 0:
+            return [
+                self._request(
+                    Methods.PUT,
+                    f"alerts/{alert.alert_id}",
+                    data={"read_status": "read"},
+                )
+                for alert in self.alerts
+            ]
+        _LOGGER.warning("No alerts to set to read")
         return None
 
     def put_command(self, command: str):
@@ -119,9 +147,10 @@ class IndegoClient(IndegoBaseClient):
 
         """
         if command in COMMANDS:
-            return self.put(f"alms/{self._serial}/state", {"state": command})
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
+            if not self.serial:
+                return
+            return self.put(f"alms/{self.serial}/state", {"state": command})
+        raise ValueError("Wrong Command, use one of 'mow', 'pause', 'returnToDock'")
 
     def put_mow_mode(self, command: typing.Any):
         """Set the mower to mode manual (false-ish) or predictive (true-ish).
@@ -134,13 +163,20 @@ class IndegoClient(IndegoBaseClient):
 
         """
         if command in ("true", "false", "True", "False") or isinstance(command, bool):
-            return self.put(f"alms/{self._serial}/predictive", {"enabled": command})
-        _LOGGER.warning("%s not valid", command)
-        return "Wrong Command!"
+            if not self.serial:
+                return
+            return self.put(f"alms/{self.serial}/predictive", {"enabled": command})
+        raise ValueError("Wrong Command, use True or False")
 
     def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
         """Set the predictive calendar."""
-        return self.put(f"alms/{self._serial}/predictive/calendar", calendar)
+        try:
+            Calendar(**calendar["cals"][0])
+        except TypeError as e:
+            raise ValueError("Value for calendar is not valid: %s", e)
+        if not self.serial:
+            return
+        return self.put(f"alms/{self.serial}/predictive/calendar", calendar)
 
     def update_alerts(self):
         """Update alerts."""
@@ -157,61 +193,91 @@ class IndegoClient(IndegoBaseClient):
         self.update_network()
         self.update_next_mow()
         self.update_operating_data()
+        self.update_predictive_calendar()
+        self.update_predictive_schedule()
         self.update_security()
         self.update_setup()
         self.update_state()
         self.update_updates_available()
-        self.update_users()
+        self.update_user()
 
     def update_calendar(self):
         """Update calendar."""
-        self._update_calendar(self.get(f"alms/{self._serial}/calendar"))
+        if not self.serial:
+            return
+        self._update_calendar(self.get(f"alms/{self.serial}/calendar"))
 
     def update_config(self):
         """Update config."""
-        self._update_config(self.get(f"alms/{self._serial}/config"))
+        if not self.serial:
+            return
+        self._update_config(self.get(f"alms/{self.serial}/config"))
 
     def update_generic_data(self):
         """Update generic data."""
-        self._update_generic_data(self.get(f"alms/{self._serial}"))
+        if not self.serial:
+            return
+        self._update_generic_data(self.get(f"alms/{self.serial}"))
 
     def update_last_completed_mow(self):
         """Update last completed mow."""
+        if not self.serial:
+            return
         self._update_last_completed_mow(
-            self.get(f"alms/{self._serial}/predictive/lastcutting")
+            self.get(f"alms/{self.serial}/predictive/lastcutting")
         )
 
     def update_location(self):
         """Update location."""
-        self._update_location(self.get(f"alms/{self._serial}/predictive/location"))
+        if not self.serial:
+            return
+        self._update_location(self.get(f"alms/{self.serial}/predictive/location"))
 
     def update_network(self):
         """Update network."""
-        self._update_network(self.get(f"alms/{self._serial}/network"))
+        if not self.serial:
+            return
+        self._update_network(self.get(f"alms/{self.serial}/network"))
 
     def update_next_mow(self):
         """Update next mow datetime."""
-        self._update_next_mow(self.get(f"alms/{self._serial}/predictive/nextcutting"))
+        if not self.serial:
+            return
+        self._update_next_mow(self.get(f"alms/{self.serial}/predictive/nextcutting"))
 
     def update_operating_data(self):
         """Update operating data."""
-        self._update_operating_data(self.get(f"alms/{self._serial}/operatingData"))
+        if not self.serial:
+            return
+        self._update_operating_data(self.get(f"alms/{self.serial}/operatingData"))
 
     def update_predictive_calendar(self):
         """Update predictive_calendar."""
-        self._update_predictive_calendar(self.get(f"alms/{self._serial}/predictive/calendar"))
+        if not self.serial:
+            return
+        self._update_predictive_calendar(
+            self.get(f"alms/{self.serial}/predictive/calendar")
+        )
 
     def update_predictive_schedule(self):
         """Update predictive_schedule."""
-        self._update_predictive_schedule(self.get(f"alms/{self._serial}/predictive/schedule"))
+        if not self.serial:
+            return
+        self._update_predictive_schedule(
+            self.get(f"alms/{self.serial}/predictive/schedule")
+        )
 
     def update_security(self):
         """Update security."""
-        self._update_security(self.get(f"alms/{self._serial}/security"))
+        if not self.serial:
+            return
+        self._update_security(self.get(f"alms/{self.serial}/security"))
 
     def update_setup(self):
         """Update setup."""
-        self._update_setup(self.get(f"alms/{self._serial}/setup"))
+        if not self.serial:
+            return
+        self._update_setup(self.get(f"alms/{self.serial}/setup"))
 
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state. Can be both forced and with longpoll.
@@ -222,11 +288,14 @@ class IndegoClient(IndegoBaseClient):
             longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120.
 
         """
-        path = f"alms/{self._serial}/state"
+        if not self.serial:
+            return
+        path = f"alms/{self.serial}/state"
         if longpoll:
             last_state = 0
-            if self.state.state:
-                last_state = self.state.state
+            if self.state:
+                if self.state.state:
+                    last_state = self.state.state
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
             if longpoll:
@@ -238,12 +307,14 @@ class IndegoClient(IndegoBaseClient):
 
     def update_updates_available(self):
         """Update updates available."""
+        if not self.serial:
+            return
         if self._online:
-            self._update_updates_available(self.get(f"alms/{self._serial}/updates"))
+            self._update_updates_available(self.get(f"alms/{self.serial}/updates"))
 
-    def update_users(self):
+    def update_user(self):
         """Update users."""
-        self._update_users(self.get(f"users/{self._userid}"))
+        self._update_user(self.get(f"users/{self._userid}"))
 
     def login(self, attempts=0):
         """Login to the api and store the context."""
@@ -370,7 +441,3 @@ class IndegoClient(IndegoBaseClient):
     def put(self, path: str, data: dict, timeout: int = 30):
         """Send a PUT request and return the response as a dict."""
         return self._request(method=Methods.PUT, path=path, data=data, timeout=timeout)
-
-    def post(self, path: str, data: dict, timeout: int = 30):
-        """Send a POST request and return the response as a dict."""
-        return self._request(method=Methods.POST, path=path, data=data, timeout=timeout)

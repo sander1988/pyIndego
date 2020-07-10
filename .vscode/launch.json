@@ -9,14 +9,16 @@
             "type": "python",
             "request": "launch",
             "program": "test_new.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
         },
         {
             "name": "Python: Test Async",
             "type": "python",
             "request": "launch",
             "program": "test_new_aio.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
