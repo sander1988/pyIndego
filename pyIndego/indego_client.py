@@ -94,11 +94,13 @@ class IndegoClient(IndegoBaseClient):
             filename (str, optional): Filename for the map. Defaults to None, can also be filled by the filename set in init.
 
         """
+        if not self.serial:
+            return
         if filename:
             self.map_filename = filename
         if not self.map_filename:
             raise ValueError("No map filename defined.")
-        map = self.get(f"alms/{self._serial}/map")
+        map = self.get(f"alms/{self.serial}/map")
         if map:
             with open(self.map_filename, "wb") as afp:
                 afp.write(map)
@@ -145,7 +147,9 @@ class IndegoClient(IndegoBaseClient):
 
         """
         if command in COMMANDS:
-            return self.put(f"alms/{self._serial}/state", {"state": command})
+            if not self.serial:
+                return
+            return self.put(f"alms/{self.serial}/state", {"state": command})
         raise ValueError("Wrong Command, use one of 'mow', 'pause', 'returnToDock'")
 
     def put_mow_mode(self, command: typing.Any):
@@ -159,7 +163,9 @@ class IndegoClient(IndegoBaseClient):
 
         """
         if command in ("true", "false", "True", "False") or isinstance(command, bool):
-            return self.put(f"alms/{self._serial}/predictive", {"enabled": command})
+            if not self.serial:
+                return
+            return self.put(f"alms/{self.serial}/predictive", {"enabled": command})
         raise ValueError("Wrong Command, use True or False")
 
     def put_predictive_cal(self, calendar: dict = DEFAULT_CALENDAR):
@@ -168,7 +174,9 @@ class IndegoClient(IndegoBaseClient):
             Calendar(**calendar["cals"][0])
         except TypeError as e:
             raise ValueError("Value for calendar is not valid: %s", e)
-        return self.put(f"alms/{self._serial}/predictive/calendar", calendar)
+        if not self.serial:
+            return
+        return self.put(f"alms/{self.serial}/predictive/calendar", calendar)
 
     def update_alerts(self):
         """Update alerts."""
@@ -195,57 +203,81 @@ class IndegoClient(IndegoBaseClient):
 
     def update_calendar(self):
         """Update calendar."""
-        self._update_calendar(self.get(f"alms/{self._serial}/calendar"))
+        if not self.serial:
+            return
+        self._update_calendar(self.get(f"alms/{self.serial}/calendar"))
 
     def update_config(self):
         """Update config."""
-        self._update_config(self.get(f"alms/{self._serial}/config"))
+        if not self.serial:
+            return
+        self._update_config(self.get(f"alms/{self.serial}/config"))
 
     def update_generic_data(self):
         """Update generic data."""
-        self._update_generic_data(self.get(f"alms/{self._serial}"))
+        if not self.serial:
+            return
+        self._update_generic_data(self.get(f"alms/{self.serial}"))
 
     def update_last_completed_mow(self):
         """Update last completed mow."""
+        if not self.serial:
+            return
         self._update_last_completed_mow(
-            self.get(f"alms/{self._serial}/predictive/lastcutting")
+            self.get(f"alms/{self.serial}/predictive/lastcutting")
         )
 
     def update_location(self):
         """Update location."""
-        self._update_location(self.get(f"alms/{self._serial}/predictive/location"))
+        if not self.serial:
+            return
+        self._update_location(self.get(f"alms/{self.serial}/predictive/location"))
 
     def update_network(self):
         """Update network."""
-        self._update_network(self.get(f"alms/{self._serial}/network"))
+        if not self.serial:
+            return
+        self._update_network(self.get(f"alms/{self.serial}/network"))
 
     def update_next_mow(self):
         """Update next mow datetime."""
-        self._update_next_mow(self.get(f"alms/{self._serial}/predictive/nextcutting"))
+        if not self.serial:
+            return
+        self._update_next_mow(self.get(f"alms/{self.serial}/predictive/nextcutting"))
 
     def update_operating_data(self):
         """Update operating data."""
-        self._update_operating_data(self.get(f"alms/{self._serial}/operatingData"))
+        if not self.serial:
+            return
+        self._update_operating_data(self.get(f"alms/{self.serial}/operatingData"))
 
     def update_predictive_calendar(self):
         """Update predictive_calendar."""
+        if not self.serial:
+            return
         self._update_predictive_calendar(
-            self.get(f"alms/{self._serial}/predictive/calendar")
+            self.get(f"alms/{self.serial}/predictive/calendar")
         )
 
     def update_predictive_schedule(self):
         """Update predictive_schedule."""
+        if not self.serial:
+            return
         self._update_predictive_schedule(
-            self.get(f"alms/{self._serial}/predictive/schedule")
+            self.get(f"alms/{self.serial}/predictive/schedule")
         )
 
     def update_security(self):
         """Update security."""
-        self._update_security(self.get(f"alms/{self._serial}/security"))
+        if not self.serial:
+            return
+        self._update_security(self.get(f"alms/{self.serial}/security"))
 
     def update_setup(self):
         """Update setup."""
-        self._update_setup(self.get(f"alms/{self._serial}/setup"))
+        if not self.serial:
+            return
+        self._update_setup(self.get(f"alms/{self.serial}/setup"))
 
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state. Can be both forced and with longpoll.
@@ -256,7 +288,9 @@ class IndegoClient(IndegoBaseClient):
             longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120.
 
         """
-        path = f"alms/{self._serial}/state"
+        if not self.serial:
+            return
+        path = f"alms/{self.serial}/state"
         if longpoll:
             last_state = 0
             if self.state:
@@ -273,8 +307,10 @@ class IndegoClient(IndegoBaseClient):
 
     def update_updates_available(self):
         """Update updates available."""
+        if not self.serial:
+            return
         if self._online:
-            self._update_updates_available(self.get(f"alms/{self._serial}/updates"))
+            self._update_updates_available(self.get(f"alms/{self.serial}/updates"))
 
     def update_user(self):
         """Update users."""
