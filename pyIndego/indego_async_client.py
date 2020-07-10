@@ -109,11 +109,13 @@ class IndegoAsyncClient(IndegoBaseClient):
             filename (str, optional): Filename for the map. Defaults to None, can also be filled by the filename set in init.
 
         """
+        if not self.serial:
+            return
         if filename:
             self.map_filename = filename
         if not self.map_filename:
             raise ValueError("No map filename defined.")
-        map = await self.get(f"alms/{self._serial}/map")
+        map = await self.get(f"alms/{self.serial}/map")
         if map:
             with open(self.map_filename, "wb") as file:
                 file.write(map)
@@ -162,7 +164,9 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         """
         if command in COMMANDS:
-            return await self.put(f"alms/{self._serial}/state", {"state": command})
+            if not self.serial:
+                return
+            return await self.put(f"alms/{self.serial}/state", {"state": command})
         raise ValueError("Wrong Command, use one of 'mow', 'pause', 'returnToDock'")
 
     async def put_mow_mode(self, command: typing.Any):
@@ -176,8 +180,10 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         """
         if command in ("true", "false", "True", "False") or isinstance(command, bool):
+            if not self.serial:
+                return
             return await self.put(
-                f"alms/{self._serial}/predictive", {"enabled": command}
+                f"alms/{self.serial}/predictive", {"enabled": command}
             )
         raise ValueError("Wrong Command, use one True or False")
 
@@ -187,7 +193,9 @@ class IndegoAsyncClient(IndegoBaseClient):
             Calendar(**calendar["cals"][0])
         except TypeError as e:
             raise ValueError("Value for calendar is not valid: %s", e)
-        return await self.put(f"alms/{self._serial}/predictive/calendar", calendar)
+        if not self.serial:
+            return
+        return await self.put(f"alms/{self.serial}/predictive/calendar", calendar)
 
     async def update_alerts(self):
         """Update alerts."""
@@ -220,63 +228,83 @@ class IndegoAsyncClient(IndegoBaseClient):
 
     async def update_calendar(self):
         """Update calendar."""
-        self._update_calendar(await self.get(f"alms/{self._serial}/calendar"))
+        if not self.serial:
+            return
+        self._update_calendar(await self.get(f"alms/{self.serial}/calendar"))
 
     async def update_config(self):
         """Update config."""
-        self._update_config(await self.get(f"alms/{self._serial}/config"))
+        if not self.serial:
+            return
+        self._update_config(await self.get(f"alms/{self.serial}/config"))
 
     async def update_generic_data(self):
         """Update generic data."""
-        self._update_generic_data(await self.get(f"alms/{self._serial}"))
+        if not self.serial:
+            return
+        self._update_generic_data(await self.get(f"alms/{self.serial}"))
 
     async def update_last_completed_mow(self):
         """Update last completed mow."""
+        if not self.serial:
+            return
         self._update_last_completed_mow(
-            await self.get(f"alms/{self._serial}/predictive/lastcutting")
+            await self.get(f"alms/{self.serial}/predictive/lastcutting")
         )
 
     async def update_location(self):
         """Update location."""
-        self._update_location(
-            await self.get(f"alms/{self._serial}/predictive/location")
-        )
+        if not self.serial:
+            return
+        self._update_location(await self.get(f"alms/{self.serial}/predictive/location"))
 
     async def update_network(self):
         """Update network."""
-        self._update_network(await self.get(f"alms/{self._serial}/network"))
+        if not self.serial:
+            return
+        self._update_network(await self.get(f"alms/{self.serial}/network"))
 
     async def update_next_mow(self):
         """Update next mow datetime."""
+        if not self.serial:
+            return
         self._update_next_mow(
-            await self.get(f"alms/{self._serial}/predictive/nextcutting")
+            await self.get(f"alms/{self.serial}/predictive/nextcutting")
         )
 
     async def update_operating_data(self):
         """Update operating data."""
-        self._update_operating_data(
-            await self.get(f"alms/{self._serial}/operatingData")
-        )
+        if not self.serial:
+            return
+        self._update_operating_data(await self.get(f"alms/{self.serial}/operatingData"))
 
     async def update_predictive_calendar(self):
         """Update predictive_calendar."""
+        if not self.serial:
+            return
         self._update_predictive_calendar(
-            await self.get(f"alms/{self._serial}/predictive/calendar")
+            await self.get(f"alms/{self.serial}/predictive/calendar")
         )
 
     async def update_predictive_schedule(self):
         """Update predictive_schedule."""
+        if not self.serial:
+            return
         self._update_predictive_schedule(
-            await self.get(f"alms/{self._serial}/predictive/schedule")
+            await self.get(f"alms/{self.serial}/predictive/schedule")
         )
 
     async def update_security(self):
         """Update security."""
-        self._update_security(await self.get(f"alms/{self._serial}/security"))
+        if not self.serial:
+            return
+        self._update_security(await self.get(f"alms/{self.serial}/security"))
 
     async def update_setup(self):
         """Update setup."""
-        self._update_setup(await self.get(f"alms/{self._serial}/setup"))
+        if not self.serial:
+            return
+        self._update_setup(await self.get(f"alms/{self.serial}/setup"))
 
     async def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state. Can be both forced and with longpoll.
@@ -290,7 +318,9 @@ class IndegoAsyncClient(IndegoBaseClient):
             ValueError: when the longpoll timeout is longer then 300 seconds.
 
         """
-        path = f"alms/{self._serial}/state"
+        if not self.serial:
+            return
+        path = f"alms/{self.serial}/state"
         if longpoll:
             if longpoll_timeout > 300:
                 raise ValueError(
@@ -311,9 +341,11 @@ class IndegoAsyncClient(IndegoBaseClient):
 
     async def update_updates_available(self):
         """Update updates available."""
+        if not self.serial:
+            return
         if self._online:
             self._update_updates_available(
-                await self.get(f"alms/{self._serial}/updates")
+                await self.get(f"alms/{self.serial}/updates")
             )
 
     async def update_user(self):

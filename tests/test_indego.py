@@ -366,7 +366,7 @@ state = {
     "mow_trig": True,
 }
 
-test_config = {"username": "testname", "password": "testpassword", "api_url": ""}
+test_config = {"username": "testname", "password": "testpassword", "api_url": "", "serial": "123456789"}
 
 
 class AsyncMock(MagicMock):
