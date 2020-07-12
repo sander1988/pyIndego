@@ -51,28 +51,27 @@ Returns a detailed description of the state, instead of a number.
 ## Update/download functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 
-Call                               | Bosch API | Mower | Mower needs to be online
------------------------------------|-----------|-------|-------------------------
-indego.update_alerts()             |    X      |       |
-indego.update_all()                |           |       |
-indego.update_calendar()           |    X      |       |
-indego.update_config()             |           |       |
-indego.update_generic_data()       |    X      |       |
-indego.update_last_completed_mow() |    X      |       |
-indego.update_location()           |           |       |
-indego.update_network()            |    ?      |  ?    |   ?
-indego.update_next_mow()           |           |       |
-indego.update_operating_data()     |           |  X    |
-indego.update_predictive_calendar()|    X      |       |
-indego.update_predictive_schedule()|    X      |       |
-indego.update_security()           |    X      |       |
-indego.update_setup()              |    X      |       |
-indego.update_state()              |    X      |       |
-indego.update_state(force=True)    |    X      |  X    |
-indego.update_state(longpoll=True, longpoll_timeout=120)|X|  X    |
-indego.update_updates_available()            |           |  X    |
-indego.update_users()              |    X      |       |
-indego.download_map(filename='')|||
+Call                                                        | Bosch API | Mower | Mower needs to be online
+------------------------------------------------------------|-----------|-------|-------------------------
+indego.update_alerts()                                      |    X      |       |
+indego.update_calendar()                                    |    X      |       |
+indego.update_config()                                      |    X      |  X    |
+indego.update_generic_data()                                |    X      |       |
+indego.update_last_completed_mow()                          |    X      |       |
+indego.update_location()                                    |    X      |       |
+indego.update_network()                                     |    ?      |  ?    |   ?
+indego.update_next_mow()                                    |           |       |
+indego.update_operating_data()                              |    X      |  X    |
+indego.update_predictive_calendar()                         |    X      |       |
+indego.update_predictive_schedule()                         |    X      |       |
+indego.update_security()                                    |    X      |       |
+indego.update_setup()                                       |    X      |       |
+indego.update_state()                                       |    X      |       |
+indego.update_state(force=True)                             |    X      |       |
+indego.update_state(longpoll=True, longpoll_timeout=120)    |    X      |       |
+indego.update_updates_available()                           |    X      |  X?   |
+indego.update_users()                                       |    X      |       |
+indego.download_map(filename='')                            |    ?      |  ?    |
 
 ### To be implemented
 Predictive Setup
