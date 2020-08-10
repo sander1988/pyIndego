@@ -12,13 +12,12 @@ For PYPI package: https://pypi.org/project/pyIndego/
 
 ## Basic information needed
 
-The library requires python 3.7 or above.
+The library requires python 3.7 or above. Change the settings in the config.json file:
 
 Information   | Description
 --------------|------------
 your_username | Your username in the BoschSmartMove app
 your_password | Your password for the app
-your_serial   | Optional: Your Bosch Indego serial (found on the mover, in the mover menu or in the app)
 
 This library is written for the login method with username (email address) and password. Login with Facebook account is not supported.
 
@@ -26,12 +25,12 @@ This library is written for the login method with username (email address) and p
 Call the API, synchronously:
 
     from pyIndego import IndegoClient
-    indego = IndegoClient(username='your_mail@gmail.com', password='your_password', serial='your_serial')
+    indego = IndegoClient(username='your_mail@gmail.com', password='your_password')
 
 Call the API, asynchronously:
 
     from pyIndego import IndegoAsyncClient
-    indego = IndegoAsyncClient(username='your_mail@gmail.com', password='your_password', serial='your_serial')
+    indego = IndegoAsyncClient(username='your_mail@gmail.com', password='your_password')
 
     await indego.close()
 
