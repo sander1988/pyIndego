@@ -5,19 +5,23 @@
 Join the Discord channel to discuss around this integration:
 https://discord.gg/aD33GsP
 
-## Usage with Home Assistant
+## Source code
 For source files and version handling: https://github.com/jm-73/pyIndego
 
-For PYPI package: https://pypi.org/project/pyIndego/
+## PyPi package
+For PYPI package: https://pypi.org/project/pyIndego
+
+## Home Assistant
+For use in Home Assistant: https://github.com/jm-73/Indego
 
 ## Basic information needed
 
-The library requires python 3.7 or above. Change the settings in the config.json file:
+The library requires python 3.7 or above.
 
-Information   | Description
---------------|------------
-your_username | Your username in the BoschSmartMove app
-your_password | Your password for the app
+Required information   | Description
+-----------------------|------------
+your_mail@gmail.com    | Your username in the BoschSmartGardening app
+your_password          | Your password for the app
 
 This library is written for the login method with username (email address) and password. Login with Facebook account is not supported.
 
