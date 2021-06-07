@@ -48,18 +48,19 @@ class ModelVoltage:
 
 
 MOWER_MODEL_VOLTAGE = {
-    "3600HA2300": ModelVoltage(min=285, max=369),  # Indego 1000
-    "3600HA2301": ModelVoltage(min=285, max=369),  # Indego 1200
-    "3600HA2302": ModelVoltage(min=285, max=369),  # Indego 1100
-    "3600HA2303": ModelVoltage(min=285, max=369),  # Indego 13C
-    "3600HA2304": ModelVoltage(min=285, max=369),  # Indego 10C
-    "3600HB0100": ModelVoltage(min=0, max=100),  # Indego 350
-    "3600HB0101": ModelVoltage(min=0, max=100),  # Indego 400
-    "3600HB0102": ModelVoltage(min=0, max=100),  # Indego S+ 350
-    "3600HB0103": ModelVoltage(min=0, max=100),  # Indego S+ 400
-    "3600HB0105": ModelVoltage(min=0, max=100),  # Indego S+ 350
-    "3600HB0106": ModelVoltage(min=0, max=100),  # Indego S+ 400
-    "3600HB0301": ModelVoltage(min=0, max=100),  # Indego M+ 700
+    "3600HA2300": ModelVoltage(min=285, max=369),   # Indego 1000
+    "3600HA2301": ModelVoltage(min=285, max=369),   # Indego 1200
+    "3600HA2302": ModelVoltage(min=285, max=369),   # Indego 1100
+    "3600HA2303": ModelVoltage(min=285, max=369),   # Indego 13C
+    "3600HA2304": ModelVoltage(min=285, max=369),   # Indego 10C
+    "3600HB0100": ModelVoltage(min=0, max=100),     # Indego 350
+    "3600HB0101": ModelVoltage(min=0, max=100),     # Indego 400
+    "3600HB0102": ModelVoltage(min=0, max=100),     # Indego S+ 350
+    "3600HB0103": ModelVoltage(min=0, max=100),     # Indego S+ 400
+    "3600HB0105": ModelVoltage(min=0, max=100),     # Indego S+ 350
+    "3600HB0106": ModelVoltage(min=0, max=100),     # Indego S+ 400
+    "3600HB0302": ModelVoltage(min=0, max=100),     # Indego S+ 500
+    "3600HB0301": ModelVoltage(min=0, max=100),     # Indego M+ 700
     #    '3600HB0xxx': {'min': '0','max': '100'}   # Indego M+ 700
 }
 
