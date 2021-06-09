@@ -1,13 +1,10 @@
 """API for Bosch API server for Indego lawn mower."""
 import asyncio
-import inspect
-import json
 import logging
-import typing
 from socket import error as SocketError
+from typing import Any
 
 import aiohttp
-import requests
 from aiohttp import (
     ClientOSError,
     ClientResponseError,
@@ -15,7 +12,7 @@ from aiohttp import (
     TooManyRedirects,
 )
 from aiohttp.helpers import BasicAuth
-from aiohttp.web_exceptions import HTTPGatewayTimeout, HTTPUnauthorized
+from aiohttp.web_exceptions import HTTPGatewayTimeout
 
 from . import __version__
 from .const import (
@@ -43,6 +40,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         serial: str = None,
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
+        session: aiohttp.ClientSession = None,
     ):
         """Initialize the Async Client.
 
@@ -55,14 +53,17 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         """
         super().__init__(username, password, serial, map_filename, api_url)
-        self._session = aiohttp.ClientSession(raise_for_status=False)
+        if session:
+            self._session = session
+        else:
+            self._session = aiohttp.ClientSession(raise_for_status=False)
 
     async def __aenter__(self):
         """Enter for async with."""
         await self.start()
         return self
 
-    async def __aexit__(self, type, value, traceback):
+    async def __aexit__(self, exc_type, exc_value, traceback):
         """Exit for async with."""
         await self.close()
 
@@ -115,10 +116,10 @@ class IndegoAsyncClient(IndegoBaseClient):
             self.map_filename = filename
         if not self.map_filename:
             raise ValueError("No map filename defined.")
-        map = await self.get(f"alms/{self.serial}/map")
-        if map:
+        lawn_map = await self.get(f"alms/{self.serial}/map")
+        if lawn_map:
             with open(self.map_filename, "wb") as file:
-                file.write(map)
+                file.write(lawn_map)
 
     async def put_alert_read(self, alert_index: int):
         """Set the alert to read.
@@ -169,7 +170,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             return await self.put(f"alms/{self.serial}/state", {"state": command})
         raise ValueError("Wrong Command, use one of 'mow', 'pause', 'returnToDock'")
 
-    async def put_mow_mode(self, command: typing.Any):
+    async def put_mow_mode(self, command: Any):
         """Set the mower to mode manual (false-ish) or predictive (true-ish).
 
         Args:
@@ -191,8 +192,8 @@ class IndegoAsyncClient(IndegoBaseClient):
         """Set the predictive calendar."""
         try:
             Calendar(**calendar["cals"][0])
-        except TypeError as e:
-            raise ValueError("Value for calendar is not valid: %s", e)
+        except TypeError as exc:
+            raise ValueError("Value for calendar is not valid") from exc
         if not self.serial:
             return
         return await self.put(f"alms/{self.serial}/predictive/calendar", calendar)
@@ -200,6 +201,11 @@ class IndegoAsyncClient(IndegoBaseClient):
     async def update_alerts(self):
         """Update alerts."""
         self._update_alerts(await self.get("alerts"))
+
+    async def get_alerts(self):
+        """Update alerts and return them."""
+        await self.update_alerts()
+        return self.alerts
 
     async def update_all(self):
         """Update all states."""
@@ -232,17 +238,32 @@ class IndegoAsyncClient(IndegoBaseClient):
             return
         self._update_calendar(await self.get(f"alms/{self.serial}/calendar"))
 
+    async def get_calendar(self):
+        """Update calendar and return them."""
+        await self.update_calendar()
+        return self.calendar
+
     async def update_config(self):
         """Update config."""
         if not self.serial:
             return
         self._update_config(await self.get(f"alms/{self.serial}/config"))
 
+    async def get_config(self):
+        """Update config and return it."""
+        await self.update_config()
+        return self.config
+
     async def update_generic_data(self):
         """Update generic data."""
         if not self.serial:
             return
         self._update_generic_data(await self.get(f"alms/{self.serial}"))
+
+    async def get_generic_data(self):
+        """Update generic_data and return it."""
+        await self.update_generic_data()
+        return self.generic_data
 
     async def update_last_completed_mow(self):
         """Update last completed mow."""
@@ -252,17 +273,32 @@ class IndegoAsyncClient(IndegoBaseClient):
             await self.get(f"alms/{self.serial}/predictive/lastcutting")
         )
 
+    async def get_last_completed_mow(self):
+        """Update last_completed_mow and return it."""
+        await self.update_last_completed_mow()
+        return self.last_completed_mow
+
     async def update_location(self):
         """Update location."""
         if not self.serial:
             return
         self._update_location(await self.get(f"alms/{self.serial}/predictive/location"))
 
+    async def get_location(self):
+        """Update location and return it."""
+        await self.update_location()
+        return self.location
+
     async def update_network(self):
         """Update network."""
         if not self.serial:
             return
         self._update_network(await self.get(f"alms/{self.serial}/network"))
+
+    async def get_network(self):
+        """Update network and return it."""
+        await self.update_network()
+        return self.network
 
     async def update_next_mow(self):
         """Update next mow datetime."""
@@ -272,11 +308,21 @@ class IndegoAsyncClient(IndegoBaseClient):
             await self.get(f"alms/{self.serial}/predictive/nextcutting")
         )
 
+    async def get_next_mow(self):
+        """Update next_mow and return it."""
+        await self.update_next_mow()
+        return self.next_mow
+
     async def update_operating_data(self):
         """Update operating data."""
         if not self.serial:
             return
         self._update_operating_data(await self.get(f"alms/{self.serial}/operatingData"))
+
+    async def get_operating_data(self):
+        """Update operating_data and return it."""
+        await self.update_operating_data()
+        return self.operating_data
 
     async def update_predictive_calendar(self):
         """Update predictive_calendar."""
@@ -286,6 +332,11 @@ class IndegoAsyncClient(IndegoBaseClient):
             await self.get(f"alms/{self.serial}/predictive/calendar")
         )
 
+    async def get_predictive_calendar(self):
+        """Update predictive_calendar and return it."""
+        await self.update_predictive_calendar()
+        return self.predictive_calendar
+
     async def update_predictive_schedule(self):
         """Update predictive_schedule."""
         if not self.serial:
@@ -294,17 +345,32 @@ class IndegoAsyncClient(IndegoBaseClient):
             await self.get(f"alms/{self.serial}/predictive/schedule")
         )
 
+    async def get_predictive_schedule(self):
+        """Update predictive_schedule and return it."""
+        await self.update_predictive_schedule()
+        return self.predictive_schedule
+
     async def update_security(self):
         """Update security."""
         if not self.serial:
             return
         self._update_security(await self.get(f"alms/{self.serial}/security"))
 
+    async def get_security(self):
+        """Update security and return it."""
+        await self.update_security()
+        return self.security
+
     async def update_setup(self):
         """Update setup."""
         if not self.serial:
             return
         self._update_setup(await self.get(f"alms/{self.serial}/setup"))
+
+    async def get_setup(self):
+        """Update setup and return it."""
+        await self.update_setup()
+        return self.setup
 
     async def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state. Can be both forced and with longpoll.
@@ -339,6 +405,21 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         self._update_state(await self.get(path, timeout=longpoll_timeout + 30))
 
+    async def get_state(self, force=False, longpoll=False, longpoll_timeout=120):
+        """Update state and return it.
+
+        Args:
+            force (bool, optional): Force the state refresh, wakes up the mower. Defaults to False.
+            longpoll (bool, optional): Do a longpoll. Defaults to False.
+            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120, maximum is 300.
+
+        Raises:
+            ValueError: when the longpoll timeout is longer then 300 seconds.
+
+        """
+        await self.update_state(force, longpoll, longpoll_timeout)
+        return self.state
+
     async def update_updates_available(self):
         """Update updates available."""
         if not self.serial:
@@ -348,11 +429,21 @@ class IndegoAsyncClient(IndegoBaseClient):
                 await self.get(f"alms/{self.serial}/updates")
             )
 
+    async def get_updates_available(self):
+        """Update updates_available and return it."""
+        await self.update_updates_available()
+        return self.update_available
+
     async def update_user(self):
         """Update users."""
         self._update_user(await self.get(f"users/{self._userid}"))
 
-    async def login(self):
+    async def get_user(self):
+        """Update user and return it."""
+        await self.update_user()
+        return self.user
+
+    async def login(self, attempts: int = 0):
         """Login to the api and store the context."""
         response = await self._request(
             method=Methods.POST,
@@ -361,6 +452,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             headers=DEFAULT_HEADER,
             auth=BasicAuth(self._username, self._password),
             timeout=30,
+            attempts=attempts,
         )
         self._login(response)
         if response is not None:
@@ -469,8 +561,8 @@ class IndegoAsyncClient(IndegoBaseClient):
                         _LOGGER.debug("504: longpoll stopped, no updates")
                         return None
                 response.raise_for_status()
-        except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as e:
-            _LOGGER.info("%s: Timeout on Bosch servers, retrying", e)
+        except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as exc:
+            _LOGGER.info("%s: Timeout on Bosch servers, retrying", exc)
             return await self._request(
                 method=method,
                 path=path,
@@ -478,17 +570,17 @@ class IndegoAsyncClient(IndegoBaseClient):
                 timeout=timeout,
                 attempts=attempts + 1,
             )
-        except ClientOSError as e:
-            _LOGGER.debug("%s: Failed to update Indego status, longpoll timeout", e)
+        except ClientOSError as exc:
+            _LOGGER.debug("%s: Failed to update Indego status, longpoll timeout", exc)
             return None
-        except (TooManyRedirects, ClientResponseError, SocketError) as e:
-            _LOGGER.error("%s: Failed %s to Indego, won't retry", e, method.value)
+        except (TooManyRedirects, ClientResponseError, SocketError) as exc:
+            _LOGGER.error("%s: Failed %s to Indego, won't retry", exc, method.value)
             return None
         except asyncio.CancelledError:
             _LOGGER.debug("Task cancelled by task runner")
             return None
-        except Exception as e:
-            _LOGGER.error("Request to %s gave a unhandled error: %s", url, e)
+        except Exception as exc:
+            _LOGGER.error("Request to %s gave a unhandled error: %s", url, exc)
             return None
 
     async def get(self, path: str, timeout: int = 30):
@@ -513,4 +605,3 @@ class IndegoAsyncClient(IndegoBaseClient):
         return await self._request(
             method=Methods.PUT, path=path, data=data, timeout=timeout
         )
-

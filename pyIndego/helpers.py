@@ -1,6 +1,6 @@
 """Helper class for Indego."""
 import logging
-from dataclasses import dataclass, is_dataclass
+from dataclasses import dataclass, is_dataclass, replace
 from datetime import datetime
 from typing import Any
 
@@ -45,3 +45,20 @@ def convert_bosch_datetime(dt: Any = None) -> datetime:
         if isinstance(dt, datetime):
             return dt
     return None
+
+
+def generate_update(field: Any, new: dict, new_class: Any):
+    """Update a field to the new value, or instantiated the class and return the updated or new.
+
+    Args:
+        field (None|State Class): current value of the to be updated field.
+        new (dict): new values coming back from the api.
+        new_class (State Class): Class to instantiate the value with if necessary.
+
+    Returns:
+        (new_class): new value of the type that was passed as the new_class.
+
+    """
+    if field:
+        return replace(field, **new)
+    return new_class(**new)
