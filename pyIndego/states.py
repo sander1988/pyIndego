@@ -1,6 +1,6 @@
 """Classes for states of pyIndego."""
 import logging
-from dataclasses import dataclass, field, is_dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta
 from typing import List
 

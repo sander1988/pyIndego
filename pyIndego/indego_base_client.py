@@ -1,30 +1,21 @@
 """Base class for indego."""
 import logging
-import typing
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, replace
-from datetime import timezone
-from typing import ClassVar
+from typing import Any
 
 import pytz
 
 from .const import (
-    CONTENT_TYPE,
-    CONTENT_TYPE_JSON,
-    DEFAULT_BODY,
     DEFAULT_CALENDAR,
     DEFAULT_LOOKUP_VALUE,
     DEFAULT_URL,
-    MOWER_MODEL_DESCRIPTION,
     MOWER_STATE_DESCRIPTION,
     MOWER_STATE_DESCRIPTION_DETAIL,
-    MOWING_MODE_DESCRIPTION,
     Methods,
 )
-from .helpers import convert_bosch_datetime
+from .helpers import convert_bosch_datetime, generate_update
 from .states import (
     Alert,
-    Battery,
     Calendar,
     Config,
     GenericData,
@@ -32,7 +23,6 @@ from .states import (
     Network,
     OperatingData,
     PredictiveSchedule,
-    Runtime,
     Security,
     Setup,
     State,
@@ -71,6 +61,7 @@ class IndegoBaseClient(ABC):
         self._logged_in = False
         self._online = False
         self._contextid = ""
+        self._userid = None
 
         self.alerts = []
         self._alerts_loaded = False
@@ -177,7 +168,7 @@ class IndegoBaseClient(ABC):
         """Send a command to the mower."""
 
     @abstractmethod
-    def put_mow_mode(self, command: typing.Any):
+    def put_mow_mode(self, command: Any):
         """Set the mower to mode manual (false-ish) or predictive (true-ish)."""
 
     @abstractmethod
@@ -187,6 +178,10 @@ class IndegoBaseClient(ABC):
     @abstractmethod
     def update_alerts(self):
         """Update alerts."""
+
+    @abstractmethod
+    def get_alerts(self):
+        """Update alerts and return them."""
 
     def _update_alerts(self, new):
         """Update alerts."""
@@ -204,33 +199,49 @@ class IndegoBaseClient(ABC):
     def update_calendar(self):
         """Update calendar."""
 
+    @abstractmethod
+    def get_calendar(self):
+        """Update calendar and return it."""
+
     def _update_calendar(self, new):
         """Update calendar."""
         if new:
-            self.calendar = self._gen_upd(self.calendar, new["cals"][0], Calendar)
+            self.calendar = generate_update(self.calendar, new["cals"][0], Calendar)
 
     @abstractmethod
     def update_config(self):
         """Update config."""
 
+    @abstractmethod
+    def get_config(self):
+        """Update config and return it."""
+
     def _update_config(self, new):
         """Update config."""
         if new:
-            self.config = self._gen_upd(self.config, new, Config)
+            self.config = generate_update(self.config, new, Config)
 
     @abstractmethod
     def update_generic_data(self):
         """Update generic data."""
 
+    @abstractmethod
+    def get_generic_data(self):
+        """Update generic_data and return it."""
+
     def _update_generic_data(self, new):
         """Update generic data."""
         if new:
-            self.generic_data = self._gen_upd(self.generic_data, new, GenericData)
+            self.generic_data = generate_update(self.generic_data, new, GenericData)
             self._update_battery_percentage_adjusted()
 
     @abstractmethod
     def update_last_completed_mow(self):
         """Update last completed mow."""
+
+    @abstractmethod
+    def get_last_completed_mow(self):
+        """Update last_completed_mow and return it."""
 
     def _update_last_completed_mow(self, new):
         """Update last completed mow."""
@@ -241,23 +252,35 @@ class IndegoBaseClient(ABC):
     def update_location(self):
         """Update location."""
 
+    @abstractmethod
+    def get_location(self):
+        """Update location and return it."""
+
     def _update_location(self, new):
         """Update location."""
         if new:
-            self.location = self._gen_upd(self.location, new, Location)
+            self.location = generate_update(self.location, new, Location)
 
     @abstractmethod
     def update_network(self):
         """Update network."""
 
+    @abstractmethod
+    def get_network(self):
+        """Update network and return it."""
+
     def _update_network(self, new):
         """Update network."""
         if new:
-            self.network = self._gen_upd(self.network, new, Network)
+            self.network = generate_update(self.network, new, Network)
 
     @abstractmethod
     def update_next_mow(self):
         """Update next mow datetime."""
+
+    @abstractmethod
+    def get_next_mow(self):
+        """Update next_mow and return it."""
 
     def _update_next_mow(self, new):
         """Update next mow datetime."""
@@ -268,10 +291,16 @@ class IndegoBaseClient(ABC):
     def update_operating_data(self):
         """Update operating data."""
 
+    @abstractmethod
+    def get_operating_data(self):
+        """Update operating_data and return it."""
+
     def _update_operating_data(self, new):
         """Update operating data."""
         if new:
-            self.operating_data = self._gen_upd(self.operating_data, new, OperatingData)
+            self.operating_data = generate_update(
+                self.operating_data, new, OperatingData
+            )
             self._update_battery_percentage_adjusted()
             self._online = True
         else:
@@ -281,10 +310,14 @@ class IndegoBaseClient(ABC):
     def update_predictive_calendar(self):
         """Update predictive_calendar."""
 
+    @abstractmethod
+    def get_predictive_calendar(self):
+        """Update predictive_calendar and return it."""
+
     def _update_predictive_calendar(self, new):
         """Update predictive_calendar."""
         if new:
-            self.predictive_calendar = self._gen_upd(
+            self.predictive_calendar = generate_update(
                 self.predictive_calendar, new["cals"][0], Calendar
             )
 
@@ -292,10 +325,14 @@ class IndegoBaseClient(ABC):
     def update_predictive_schedule(self):
         """Update predictive schedule."""
 
+    @abstractmethod
+    def get_predictive_schedule(self):
+        """Update predictive_schedule and return it."""
+
     def _update_predictive_schedule(self, new):
         """Update predictive schedule."""
         if new:
-            self.predictive_schedule = self._gen_upd(
+            self.predictive_schedule = generate_update(
                 self.predictive_schedule, new, PredictiveSchedule
             )
 
@@ -303,32 +340,48 @@ class IndegoBaseClient(ABC):
     def update_security(self):
         """Update security."""
 
+    @abstractmethod
+    def get_security(self):
+        """Update security and return it."""
+
     def _update_security(self, new):
         """Update security."""
         if new:
-            self.security = self._gen_upd(self.security, new, Security)
+            self.security = generate_update(self.security, new, Security)
 
     @abstractmethod
     def update_setup(self):
         """Update setup."""
 
+    @abstractmethod
+    def get_setup(self):
+        """Update setup and return it."""
+
     def _update_setup(self, new):
         """Update setup."""
         if new:
-            self.setup = self._gen_upd(self.setup, new, Setup)
+            self.setup = generate_update(self.setup, new, Setup)
 
     @abstractmethod
     def update_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state. Can be both forced and with longpoll."""
 
+    @abstractmethod
+    def get_state(self, force=False, longpoll=False, longpoll_timeout=120):
+        """Update state and return it."""
+
     def _update_state(self, new):
         """Update state."""
         if new:
-            self.state = self._gen_upd(self.state, new, State)
+            self.state = generate_update(self.state, new, State)
 
     @abstractmethod
     def update_updates_available(self):
         """Update updates available."""
+
+    @abstractmethod
+    def get_updates_available(self):
+        """Update updates_available and return it."""
 
     def _update_updates_available(self, new):
         """Update updates available."""
@@ -339,10 +392,14 @@ class IndegoBaseClient(ABC):
     def update_user(self):
         """Update users."""
 
+    @abstractmethod
+    def get_user(self):
+        """Update user and return it."""
+
     def _update_user(self, new):
         """Update users."""
         if new:
-            self.user = self._gen_upd(self.user, new, User)
+            self.user = generate_update(self.user, new, User)
 
     @abstractmethod
     def login(self, attempts: int = 0):
@@ -364,7 +421,7 @@ class IndegoBaseClient(ABC):
         path: str,
         data: dict = None,
         headers: dict = None,
-        auth: typing.Any = None,
+        auth: Any = None,
         timeout: int = 30,
         attempts: int = 0,
     ):
@@ -388,10 +445,10 @@ class IndegoBaseClient(ABC):
             return None
         try:
             return self.alerts[alert_index].alert_id
-        except IndexError:
+        except IndexError as exc:
             raise IndexError(
                 f"Wrong index for the alert, there are {self.alerts_count} alerts, so the highest index is: {self.alerts_count - 1}, supplied was {alert_index}"
-            )
+            ) from exc
 
     def _update_battery_percentage_adjusted(self):
         """Update the battery percentage adjusted field, relies on generic and operating data populated."""
@@ -399,22 +456,6 @@ class IndegoBaseClient(ABC):
             self.operating_data.battery.update_percent_adjusted(
                 self.generic_data.model_voltage
             )
-
-    def _gen_upd(self, field: typing.Any, new: dict, new_class: typing.Any):
-        """Update a field to the new value, or instantiated the class and return the updated or new.
-
-        Args:
-            field (None|State Class): current value of the to be updated field.
-            new (dict): new values coming back from the api.
-            new_class (State Class): Class to instantiate the value with if necessary.
-
-        Returns:
-            (new_class): new value of the type that was passed as the new_class.
-
-        """
-        if field:
-            return replace(field, **new)
-        return new_class(**new)
 
     def __repr__(self):
         """Create a string representing the mower."""
