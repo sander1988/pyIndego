@@ -191,7 +191,8 @@ MOWER_MODEL_DESCRIPTION = {
     "3600HB0105": "Indego S+ 350 2gen",
     "3600HB0106": "Indego S+ 400 2gen",
     "3600HB0302": "Indego S+ 500",
-    "3600HB0301": "Indego M+ 700",
+    "3600HB0301": "Indego M+ 700 1gen",
+    "3600HB0303": "Indego M+ 700 2gen",
 }
 
 MOWING_MODE_DESCRIPTION = {
