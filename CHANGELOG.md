@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.28
+- Added new mower model S+ 500 #107
+- Added get_ methods and option to pass a aiohttp session #108
+- Clean up in code (removed duplicate mower voltage)
+- Fixed some documentation
+
+## 2.0.25
+
+- New release after commit of workflows for CI/CD workflow
+
 ## 2.0.20
 - Added Calendar class and update_calendar methods
 - Added delete_alert
