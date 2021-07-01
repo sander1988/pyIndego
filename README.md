@@ -5,20 +5,23 @@
 Join the Discord channel to discuss around this integration:
 https://discord.gg/aD33GsP
 
-## Usage with Home Assistant
+## Source code
 For source files and version handling: https://github.com/jm-73/pyIndego
 
-For PYPI package: https://pypi.org/project/pyIndego/
+## PyPi package
+For PYPI package: https://pypi.org/project/pyIndego
+
+## Home Assistant
+For use in Home Assistant: https://github.com/jm-73/Indego
 
 ## Basic information needed
 
 The library requires python 3.7 or above.
 
-Information   | Description
---------------|------------
-your_username | Your username in the BoschSmartMove app
-your_password | Your password for the app
-your_serial   | Optional: Your Bosch Indego serial (found on the mover, in the mover menu or in the app)
+Required information   | Description
+-----------------------|------------
+your_mail@gmail.com    | Your username in the BoschSmartGardening app
+your_password          | Your password for the app
 
 This library is written for the login method with username (email address) and password. Login with Facebook account is not supported.
 
@@ -26,12 +29,12 @@ This library is written for the login method with username (email address) and p
 Call the API, synchronously:
 
     from pyIndego import IndegoClient
-    indego = IndegoClient(username='your_mail@gmail.com', password='your_password', serial='your_serial')
+    indego = IndegoClient(username='your_mail@gmail.com', password='your_password')
 
 Call the API, asynchronously:
 
     from pyIndego import IndegoAsyncClient
-    indego = IndegoAsyncClient(username='your_mail@gmail.com', password='your_password', serial='your_serial')
+    indego = IndegoAsyncClient(username='your_mail@gmail.com', password='your_password')
 
     await indego.close()
 
@@ -51,28 +54,27 @@ Returns a detailed description of the state, instead of a number.
 ## Update/download functions
 Description for the functions updating data from API and mower. The functions collecting data from only Bosch API does not wake up mower. Functions collecting data from both Bosch API and mower does wake up mower from sleeping.
 
-Call                               | Bosch API | Mower | Mower needs to be online
------------------------------------|-----------|-------|-------------------------
-indego.update_alerts()             |    X      |       |
-indego.update_all()                |           |       |
-indego.update_calendar()           |    X      |       |
-indego.update_config()             |           |       |
-indego.update_generic_data()       |    X      |       |
-indego.update_last_completed_mow() |    X      |       |
-indego.update_location()           |           |       |
-indego.update_network()            |    ?      |  ?    |   ?
-indego.update_next_mow()           |           |       |
-indego.update_operating_data()     |           |  X    |
-indego.update_predictive_calendar()|    X      |       |
-indego.update_predictive_schedule()|    X      |       |
-indego.update_security()           |    X      |       |
-indego.update_setup()              |    X      |       |
-indego.update_state()              |    X      |       |
-indego.update_state(force=True)    |    X      |  X    |
-indego.update_state(longpoll=True, longpoll_timeout=120)|X|  X    |
-indego.update_updates_available()            |           |  X    |
-indego.update_users()              |    X      |       |
-indego.download_map(filename='')|||
+Call                                                        | Bosch API | Mower | Mower needs to be online
+------------------------------------------------------------|-----------|-------|-------------------------
+indego.update_alerts()                                      |    X      |       |
+indego.update_calendar()                                    |    X      |       |
+indego.update_config()                                      |    X      |  X    |
+indego.update_generic_data()                                |    X      |       |
+indego.update_last_completed_mow()                          |    X      |       |
+indego.update_location()                                    |    X      |       |
+indego.update_network()                                     |    ?      |  ?    |   ?
+indego.update_next_mow()                                    |           |       |
+indego.update_operating_data()                              |    X      |  X    |
+indego.update_predictive_calendar()                         |    X      |       |
+indego.update_predictive_schedule()                         |    X      |       |
+indego.update_security()                                    |    X      |       |
+indego.update_setup()                                       |    X      |       |
+indego.update_state()                                       |    X      |       |
+indego.update_state(force=True)                             |    X      |       |
+indego.update_state(longpoll=True, longpoll_timeout=120)    |    X      |       |
+indego.update_updates_available()                           |    X      |  X?   |
+indego.update_users()                                       |    X      |       |
+indego.download_map(filename='')                            |    ?      |  ?    |
 
 ### To be implemented
 Predictive Setup
@@ -83,29 +85,29 @@ Predictive Setup
 Updates all sensors.
 
 ### indego.update_alerts()
-Updates alerts from API to indego.alerts.
+Updates alerts to indego.alerts.
 
 ```python
-indego.alert_count = 1
-[Alerts(alert_id='5d48171263c5345a75dbc017', error_code='ntfy_blade_life', headline='Underhållstips.', date='2019-08-05T11:46:26.397Z', message='Kontrollera klippknivarna. Indego har klippt i 100 timmar. Ska den fungera optimalt, kontrollera klippknivarna så att de är i bra skick. Du kan beställa nya knivar via avsnittet Tillbehör.', read_status='unread', flag='warning', push=True, alert_description='Reminder blade life')]
+[Alert(alert_id='5d48171263c5345a75dbc017', error_code='ntfy_blade_life', headline='Underhållstips.', date='2019-08-05T11:46:26.397Z', message='Kontrollera klippknivarna. Indego har klippt i 100 timmar. Ska den fungera optimalt, kontrollera klippknivarna så att de är i bra skick. Du kan beställa nya knivar via avsnittet Tillbehör.', read_status='unread', flag='warning', push=True, alert_description='Reminder blade life')]
 ```
+Contains: alerts for mower.
 
 ### indego.update_calendar()
-Updates the calendar with the next planned mows.
+Updates the calendar to indego.calendar with the next planned mows.
 
 ```python
 Calendar(cal=3, days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0), CalendarSlot(En=False, StHr=None, StMin=None, EnHr=None, EnMin=None)]), CalendarDay(day=2, day_name='wednesday', slalendarSlot(En=False, StHr=None, StMin=None, EnHr=None, EnMin=None)])])
 ```
 
 ### indego.update_config()
-Updates config to indego.config. With some Indegos, this function gives an error (e.g., Indego 1000), with others it works (e.g., Indego S+ 400).
+Updates indego.config with settings for region, border cut, pin lock, id for the wire, bump and alarm mode. This call doesnt work on some Indegos, this function gives an error on Indego 1000, while it works on newer models (e.g., Indego S+ 400).
 
 ```python
 Config(region=0, language=1, border_cut=0, is_pin_set=True, wire_id=4, bump_sensitivity=0, alarm_mode=True)
 ```
 
 ### indego.update_generic_data()
-Updates indego.generic_data with serial, service counter, name, mowing mode, model number and firmware version.
+Updates indego.generic_data with serial, service counter, name, mowing mode, model number and firmware version, model description, voltage for battery, descripton  of mowing mode.
 
 ```python
 GenericData(alm_name='Indego', alm_sn='505703041', service_counter=132436, needs_service=False, alm_mode='calendar', bareToolnumber='3600HA2300', alm_firmware_version='00837.01043', model_description='Indego 1000', model_voltage=ModelVoltage(min=297, max=369), mowing_mode_description='Calendar')
@@ -115,7 +117,7 @@ GenericData(alm_name='Indego', alm_sn='505703041', service_counter=132436, needs
 Updates indego.last_completed_mow with date and time of the latest completed mow.
 
 ```python
-indego.last_completed_mow = (DateTime) 2020-06-21 21:38:50.115000+02:00
+2020-06-21 21:38:50.115000+02:00
 ```
 
 ### indego.update_location()
@@ -126,7 +128,7 @@ Location(latitude='59.742950', longitude='17.380440', timezone='Europe/Berlin')
 ```
 
 ### indego.update_network()
-Updates data on the mobile network the Indego is connected to.
+Updates indego.network with data on the mobile network the Indego is connected to.
 
 ```python
 Network(mcc=262, mnc=2, rssi=-77, currMode='s', configMode='s', steeredRssi=-100, networkCount=3, networks=[26201, 26202, 26203])
@@ -136,7 +138,11 @@ Network(mcc=262, mnc=2, rssi=-77, currMode='s', configMode='s', steeredRssi=-100
 Updates the indego.next_mow with the next planned mow date and time.
 
 ```python
-indego.next_mow = (DateTime) 2020-06-29 10:00:00+02:00
+2020-06-29 10:00:00+02:00
+```
+or
+```python
+None
 ```
 
 ### indego.update_operating_data()
@@ -147,14 +153,14 @@ OperatingData(hmiKeys=1768, battery=Battery(percent=357, voltage=35.7, cycles=0,
 ```
 
 ### indego.update_predictive_calendar()
-Updates the predictive_calendar with the timeslots (days and hours) where the user wants smart mowing not to mow the lawn.
+Updates the indego.predictive_calendar with the timeslots (days and hours) where the user wants smart mowing not to mow the lawn.
 
 ```python
-PredictiveCalendar(cal=1, days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=1, day_name='tuesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=3, day_name='thursday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=5, day_name='saturday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=6, day_name='sunday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=23, EnMin=59, Attr=None)])])
+Calendar(cal=1, days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=1, day_name='tuesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=3, day_name='thursday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=5, day_name='saturday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr=None), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr=None)]), CalendarDay(day=6, day_name='sunday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=23, EnMin=59, Attr=None)])])
 ```
 
 ### indego.update_predictive_schedule()
-Updates the predictive_schedule with the next planned mows (schedule_days) and the days where the smart mowing will not mow the lawn. The latter is combined by the time slots where the user does not want the Indego to mow (Attr='C') and the slots where the weather conditions prevent the mowing (e.g., Attr='pP').
+Updates the indego.predictive_schedule with the next planned mows (schedule_days) and the days where the smart mowing will not mow the lawn. The latter is combined by the time slots where the user does not want the Indego to mow (Attr='C') and the slots where the weather conditions prevent the mowing (e.g., Attr='pP').
 
 ```python
 PredictiveSchedule(schedule_days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=10, StMin=0, EnHr=13, EnMin=0, Attr=None)])], exclusion_days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=1, day_name='tuesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=2, day_name='wednesday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=3, day_name='thursday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=8, StMin=0, EnHr=12, EnMin=0, Attr='pP'), CalendarSlot(En=True, StHr=13, StMin=0, EnHr=15, EnMin=0, Attr='Pp'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=4, day_name='friday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=5, day_name='saturday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=8, EnMin=0, Attr='C'), CalendarSlot(En=True, StHr=20, StMin=0, EnHr=23, EnMin=59, Attr='C')]), CalendarDay(day=6, day_name='sunday', slots=[CalendarSlot(En=True, StHr=0, StMin=0, EnHr=23, EnMin=59, Attr='C')])])
@@ -168,32 +174,54 @@ Security(enabled=True, autolock=False)
 ```
 
 ### indego.update_setup()
-Updates the indego.setup with information if the Indego is set up.
+Updates the indego.setup with information if the Indego is set up, has pincode and wome other unknown values.
 
 ```python
 Setup(hasOwner=True, hasPin=True, hasMap=True, hasAutoCal=False, hasIntegrityCheckPassed=True)
 ```
 
 ### indego.update_state(force=False, longpoll=False, longpoll_timeout=120)
+Updates the indego.state with state of mower, % lawn mowed, position, runtime, map updates, map coordinates (cached).
+
+```python
+State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPos=65, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=5, charge=0, cut=0)), mapsvgcache_ts=1593207884109, svg_xPos=192, svg_yPos=544, config_change=None, mow_trig=None)
+```
+
+### indego.update_state(force=True, longpoll=False, longpoll_timeout=120)
+Updates the indego.state with state of mower, % lawn mowed, position, runtime, map updates and real time map coordinates.
+
+```python
+State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPos=65, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=5, charge=0, cut=0)), mapsvgcache_ts=1593207884109, svg_xPos=192, svg_yPos=544, config_change=None, mow_trig=None)
+```
+
+### indego.update_state(force=False, longpoll=True, longpoll_timeout=120)
 Updates the indego.state with state of mower, % lawn mowed, position, runtime, map coordinates.
 
-If longpoll is set to True, it sends the latest state value to the server and then waits for the timeout to see if there are an updated state value. The server attempts to "hold open" (not immediately reply to) each HTTP request, responding and coming back only when there are events to deliver or the timeout (in seconds) is due.
+When longpoll is set to True, the indego.state must contain a value. It should contain the current state of the mower (you must run a "regular" update.state first). You send the current value to the API, and the API answers back when the state chenges.
 
 This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
 
 ```python
 State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPos=65, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=5, charge=0, cut=0)), mapsvgcache_ts=1593207884109, svg_xPos=192, svg_yPos=544, config_change=None, mow_trig=None)
 ```
+State(state=257, map_update_available=True, mowed=79, mowmode=0, error=None, xPos=167, yPos=77, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1973, charge=433, cut=1540), session=RuntimeDetail(operate=121, charge=0, cut=0)), mapsvgcache_ts=1597492701099, svg_xPos=152, svg_yPos=640, config_change=None, mow_trig=None)
 
 ### indego.update_updates_available()
-Check if there are any updates applicable to the mower and updates the (bool) `indego.update_available`.
+Updates `indego.update_available` with status if there are any updates applicable to the mower.
+
+```python
+False
+```
 
 ### indego.update_users()
-Updates the indego.users with information about the user.
+Updates the `indego.user` with information about the user.
 
 ```python
 Users(email='youremail@mail.com', display_name='Indego', language='sv', country='SE', optIn=True, optInApp=True)
 ```
+
+## Functions for the cached data
+TBD!
 
 ## Sending commands
 

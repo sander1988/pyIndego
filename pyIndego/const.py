@@ -190,22 +190,8 @@ MOWER_MODEL_DESCRIPTION = {
     "3600HB0103": "Indego S+ 400 1gen",
     "3600HB0105": "Indego S+ 350 2gen",
     "3600HB0106": "Indego S+ 400 2gen",
+    "3600HB0302": "Indego S+ 500",
     "3600HB0301": "Indego M+ 700",
-}
-
-MOWER_MODEL_VOLTAGE = {
-    "3600HA2300": {"min": "297", "max": "369"},  # Indego 1000
-    "3600HA2301": {"min": "297", "max": "369"},  # Indego 1200
-    "3600HA2302": {"min": "297", "max": "369"},  # Indego 1100
-    "3600HA2303": {"min": "297", "max": "369"},  # Indego 13C
-    "3600HA2304": {"min": "297", "max": "369"},  # Indego 10C
-    "3600HB0100": {"min": "0", "max": "100"},  # Indego 350
-    "3600HB0101": {"min": "0", "max": "100"},  # Indego 400
-    "3600HB0102": {"min": "0", "max": "100"},  # Indego S+ 350
-    "3600HB0103": {"min": "0", "max": "100"},  # Indego S+ 400
-    "3600HB0105": {"min": "0", "max": "100"},  # Indego S+ 350
-    "3600HB0106": {"min": "0", "max": "100"},  # Indego S+ 400
-    "3600HB0301": {"min": "0", "max": "100"},  # Indego M+ 700
 }
 
 MOWING_MODE_DESCRIPTION = {
