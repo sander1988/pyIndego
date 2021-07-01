@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.29
+- Added new mower model S+ 700 gen 2 #120
+
 ## 2.0.28
 - Added new mower model S+ 500 #107
 - Added get_ methods and option to pass a aiohttp session #108
