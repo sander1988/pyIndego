@@ -320,7 +320,7 @@ class State:
     svg_yPos: int = None
     config_change: bool = None
     mow_trig: bool = None
-    enabled: bool
+    enabled: bool = None
 
 
 @dataclass
