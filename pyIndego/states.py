@@ -167,6 +167,8 @@ class GenericData:
     model_description: str = None
     model_voltage: ModelVoltage = field(default_factory=ModelVoltage)
     mowing_mode_description: str = None
+    #renew_date: str = None
+    renew_date: datetime = None
 
     def __post_init__(self):
         """Set model description, voltage, mode description."""
@@ -179,6 +181,7 @@ class GenericData:
         self.mowing_mode_description = MOWING_MODE_DESCRIPTION.get(
             self.alm_mode, DEFAULT_LOOKUP_VALUE
         )
+        self.renew_date = convert_bosch_datetime(self.renew_date)
 
 
 @dataclass
@@ -317,6 +320,7 @@ class State:
     svg_yPos: int = None
     config_change: bool = None
     mow_trig: bool = None
+    enabled: bool = None
 
 
 @dataclass

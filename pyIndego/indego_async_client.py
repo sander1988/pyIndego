@@ -446,8 +446,8 @@ class IndegoAsyncClient(IndegoBaseClient):
     async def login(self, attempts: int = 0):
         """Login to the api and store the context."""
         response = await self._request(
-            method=Methods.POST,
-            path="authenticate",
+            method=Methods.GET,
+            path="authenticate/check",
             data=DEFAULT_BODY,
             headers=DEFAULT_HEADER,
             auth=BasicAuth(self._username, self._password),
@@ -524,7 +524,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                     )
                     return None
                 if status == 401:
-                    if path == "authenticate":
+                    if path == "authenticate/check":
                         _LOGGER.info(
                             "401: Unauthorized, credentials are wrong, won't retry"
                         )
