@@ -205,9 +205,13 @@ ALERT_ERROR_CODE = {
     "104": "Stop button pushed",
     "101": "Mower lifted",
     "115": "Mower is stuck",
+    "1008": "Mower is stuck",
     "149": "Mower outside perimeter cable",
     "151": "Perimeter cable signal missing",
     "ntfy_blade_life": "Reminder blade life",
+    "1005": "Mower has not entered the charging station",
+    "smartMow.mowerUnreachable": "SmartMowing disabled",
+    "1108": "Too large tilt angle",
 }
 
 
