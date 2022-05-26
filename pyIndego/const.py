@@ -18,6 +18,7 @@ DEFAULT_URL = "https://api.indego.iot.bosch-si.com/api/v1/"
 CONTENT_TYPE_JSON = "application/json"
 CONTENT_TYPE = "Content-Type"
 DEFAULT_BODY = {
+    "accept_tc_id": "202012",
     "device": "",
     "os_type": "Android",
     "os_version": "4.0",
