@@ -213,6 +213,8 @@ ALERT_ERROR_CODE = {
     "1005": "Mower has not entered the charging station",
     "smartMow.mowerUnreachable": "SmartMowing disabled",
     "1108": "Too large tilt angle",
+    "1138": "Mower needs help",
+    "firmware.updateComplete": "Software update complete",
 }
 
 
