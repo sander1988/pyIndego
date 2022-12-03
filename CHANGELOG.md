@@ -1,7 +1,10 @@
 # Changelog
 
+## 2.0.33
+- Added storage of mowers list during login
+
 ## 2.0.30
-- Adjusted python code for somw changes in the Bosch API
+- Adjusted python code for some changes in the Bosch API
 
 ## 2.0.29
 - Added new mower model S+ 700 gen 2 #120
