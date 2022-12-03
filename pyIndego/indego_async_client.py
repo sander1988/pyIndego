@@ -457,11 +457,18 @@ class IndegoAsyncClient(IndegoBaseClient):
         self._login(response)
         if response is not None:
             _LOGGER.debug("Logged in")
-            if not self._serial:
-                list_of_mowers = await self.get("alms")
-                self._serial = list_of_mowers[0].get("alm_sn")
-                _LOGGER.debug("Serial added")
+            if self._serial is not None:
+                return True
+
+            self._mowers_in_account = await self.get("alms")
+            if len(self._mowers_in_account) == 0:
+                _LOGGER.warning("No mowers found in account")
+                return False
+
+            self._serial = self._mowers_in_account[0].get("alm_sn")
+            _LOGGER.debug("First mower added")
             return True
+
         return False
 
     async def _request(  # noqa: C901

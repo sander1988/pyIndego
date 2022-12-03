@@ -56,6 +56,7 @@ class IndegoBaseClient(ABC):
         self._username = username
         self._password = password
         self._serial = serial
+        self._mowers_in_account = None
         self.map_filename = map_filename
         self._api_url = api_url
         self._logged_in = False
@@ -90,6 +91,11 @@ class IndegoBaseClient(ABC):
             return self._serial
         _LOGGER.warning("Serial not yet set, please login first")
         return None
+
+    @property
+    def mowers_in_account(self):
+        """Return the list of mower detected during login."""
+        return self._mowers_in_account
 
     @property
     def alerts_count(self):
@@ -413,6 +419,7 @@ class IndegoBaseClient(ABC):
             self._logged_in = True
         else:
             self._logged_in = False
+            self._mowers_in_account = None
 
     @abstractmethod
     def _request(

@@ -37,3 +37,6 @@ _build.cmd
 
 # vscode
 .vscode/
+
+# PyCharm
+.idea/
