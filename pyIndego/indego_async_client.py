@@ -22,7 +22,7 @@ from .const import (
     DEFAULT_URL,
     Methods,
 )
-from .indego_base_client import IndegoBaseClient, BearerAuth
+from .indego_base_client import IndegoBaseClient
 from .states import Calendar
 
 _LOGGER = logging.getLogger(__name__)
@@ -473,6 +473,7 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         if not headers:
             headers = DEFAULT_HEADER.copy()
+            headers["Authorization"] = "Bearer %s" % self._token
 
         try:
             _LOGGER.debug("%s call to API endpoint %s", method.value, url)
@@ -481,7 +482,6 @@ class IndegoAsyncClient(IndegoBaseClient):
                 url=url,
                 json=data,
                 headers=headers,
-                auth=BearerAuth(self._token),
                 timeout=timeout,
             ) as response:
                 status = response.status

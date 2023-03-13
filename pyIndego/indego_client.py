@@ -15,7 +15,7 @@ from .const import (
     DEFAULT_HEADER,
     Methods,
 )
-from .indego_base_client import IndegoBaseClient, BearerAuth
+from .indego_base_client import IndegoBaseClient
 from .states import Calendar
 
 _LOGGER = logging.getLogger(__name__)
@@ -406,6 +406,7 @@ class IndegoClient(IndegoBaseClient):
 
         if not headers:
             headers = DEFAULT_HEADER.copy()
+            headers["Authorization"] = "Bearer %s" % self._token
 
         try:
             _LOGGER.debug("%s call to API endpoint %s", method.value, url)
@@ -414,7 +415,6 @@ class IndegoClient(IndegoBaseClient):
                 url=url,
                 json=data,
                 headers=headers,
-                auth=BearerAuth(self._token),
                 timeout=timeout,
             )
             status = response.status_code
@@ -446,7 +446,7 @@ class IndegoClient(IndegoBaseClient):
             _LOGGER.error("%s: Failed to update Indego status.", exc)
 
         except Exception as exc:
-            _LOGGER.error("Get gave a unhandled error: %s", exc)
+            _LOGGER.error("Request to %s gave a unhandled error: %s", url, exc)
 
         return None
 
