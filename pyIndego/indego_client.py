@@ -4,7 +4,6 @@ import time
 import typing
 
 import requests
-from requests.auth import HTTPBasicAuth
 from requests.exceptions import RequestException, Timeout, TooManyRedirects
 
 from . import __version__
@@ -12,12 +11,11 @@ from .const import (
     COMMANDS,
     CONTENT_TYPE,
     CONTENT_TYPE_JSON,
-    DEFAULT_BODY,
     DEFAULT_CALENDAR,
     DEFAULT_HEADER,
     Methods,
 )
-from .indego_base_client import IndegoBaseClient
+from .indego_base_client import IndegoBaseClient, BearerAuth
 from .states import Calendar
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,17 +26,18 @@ class IndegoClient(IndegoBaseClient):
 
     def __enter__(self):
         """Enter for with."""
-        self.start()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Exit for with."""
         pass
 
-    def start(self):
-        """Login if not done."""
-        if not self._logged_in:
-            self.login()
+    def get_mowers(self):
+        """Get a list of the available mowers (serials) in the account."""
+        result = self.get("alms")
+        if result is None:
+            return []
+        return [mower['alm_sn'] for mower in result]
 
     def delete_alert(self, alert_index: int):
         """Delete the alert with the specified index.
@@ -382,40 +381,12 @@ class IndegoClient(IndegoBaseClient):
         self.update_user()
         return self.user
 
-    def login(self, attempts: int = 0):
-        """Login to the api and store the context."""
-        response = self._request(
-            method=Methods.POST,
-            path="authenticate",
-            data=DEFAULT_BODY,
-            headers=DEFAULT_HEADER,
-            auth=HTTPBasicAuth(self._username, self._password),
-            timeout=30,
-            attempts=attempts,
-        )
-        self._login(response)
-        if response is not None:
-            _LOGGER.debug("Logged in")
-            if self._serial is not None:
-                return True
-
-            self._mowers_in_account = self.get("alms")
-            if len(self._mowers_in_account) == 0:
-                _LOGGER.warning("No mowers found in account")
-                return False
-
-            self._serial = self._mowers_in_account[0].get("alm_sn")
-            _LOGGER.debug("First mower added")
-            return True
-        return False
-
     def _request(  # noqa: C901
         self,
         method: Methods,
         path: str,
         data: dict = None,
-        headers=None,
-        auth=None,
+        headers: dict = None,
         timeout: int = 30,
         attempts: int = 0,
     ):
@@ -423,73 +394,45 @@ class IndegoClient(IndegoBaseClient):
         if attempts >= 3:
             _LOGGER.warning("Three attempts done, waiting 30 seconds.")
             time.sleep(30)
+
         if attempts >= 5:
             _LOGGER.warning("Five attempts done, please try again manually.")
             return None
+
+        if self._token_refresh_method is not None:
+            self.token = self._token_refresh_method()
+
         url = f"{self._api_url}{path}"
+
         if not headers:
             headers = DEFAULT_HEADER.copy()
-            headers["x-im-context-id"] = self._contextid
+
         try:
+            _LOGGER.debug("%s call to API endpoint %s", method.value, url)
             response = requests.request(
                 method=method.value,
                 url=url,
                 json=data,
                 headers=headers,
-                auth=auth,
+                auth=BearerAuth(self._token),
                 timeout=timeout,
             )
             status = response.status_code
+            _LOGGER.debug("HTTP status code: %i", status)
+
             if status == 200:
                 if method in (Methods.DELETE, Methods.PATCH, Methods.PUT):
                     return True
                 if CONTENT_TYPE_JSON in response.headers[CONTENT_TYPE].split(";"):
                     return response.json()
                 return response.content
-            if status == 204:
-                _LOGGER.info("204: No content in response from server")
+
+            if self._log_request_result(status, url, path):
                 return None
-            if status == 400:
-                _LOGGER.error("400: Bad Request: won't retry.")
-                return None
-            if status == 401:
-                if path == "authenticate":
-                    _LOGGER.info(
-                        "401: Unauthorized, credentials are wrong, won't retry"
-                    )
-                    return None
-                _LOGGER.info("401: Unauthorized: logging in again")
-                login_result = self.login()
-                if login_result:
-                    return self._request(
-                        method=method,
-                        path=path,
-                        data=data,
-                        timeout=timeout,
-                        attempts=attempts + 1,
-                    )
-                return None
-            if status == 403:
-                _LOGGER.error("403: Forbidden: won't retry.")
-                return None
-            if status == 405:
-                _LOGGER.error(
-                    "405: Method not allowed: Get is used but not allowerd, try a different method for path %s, won't retry.",
-                    path,
-                )
-                return None
-            if status == 500:
-                _LOGGER.info("500: Internal Server Error")
-                return None
-            if status == 501:
-                _LOGGER.info("501: Not implemented yet")
-                return None
-            if status == 504:
-                if url.find("longpoll=true") > 0:
-                    _LOGGER.info("504: longpoll stopped, no updates.")
-                    return None
+
             response.raise_for_status()
-        except (Timeout) as exc:
+
+        except Timeout as exc:
             _LOGGER.error("%s: Timeout on Bosch servers, retrying.", exc)
             return self._request(
                 method=method,
@@ -498,10 +441,13 @@ class IndegoClient(IndegoBaseClient):
                 timeout=timeout,
                 attempts=attempts + 1,
             )
+
         except (TooManyRedirects, RequestException) as exc:
             _LOGGER.error("%s: Failed to update Indego status.", exc)
+
         except Exception as exc:
             _LOGGER.error("Get gave a unhandled error: %s", exc)
+
         return None
 
     def get(self, path: str, timeout: int = 30):

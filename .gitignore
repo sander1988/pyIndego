@@ -40,3 +40,6 @@ _build.cmd
 
 # PyCharm
 .idea/
+
+# Python virtual environment
+env/

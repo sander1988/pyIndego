@@ -19,15 +19,17 @@ def main(config):
         # indego.download_map()
         # print("map: ", indego.map_filename)
 
-        print(" ")
-        print("=[indego.update_state]===")
-        indego.update_state()
-        print(indego.state)
-        print(f"State: {indego.state_description}")
-        print(f"State detail: {indego.state_description_detail}")
+        # print(" ")
+        # print("=[indego.update_state]===")
+        # indego.update_state()
+        # print(indego.state)
+        # print(f"State: {indego.state_description}")
+        # print(f"State detail: {indego.state_description_detail}")
+        #
+        # print(f"xPos: {indego.state.xPos}")
+        # print(f"yPos: {indego.state.yPos}")
 
-        print(f"xPos: {indego.state.xPos}")
-        print(f"yPos: {indego.state.yPos}")
+        print(f"Mowers: {indego.get_mowers()}")
 
         print(f"Serial: {indego.serial}")
         #print(" ")
@@ -67,8 +69,8 @@ def main(config):
 
         print(" ")
         print("=[indego.update_last_mow]====")
-        indego.update_last_mow()
-        print(indego.last_mow)
+        indego.update_last_completed_mow()
+        print(indego.last_completed_mow)
 
         #print(" ")
         #print("=[update_location]====")
@@ -131,7 +133,4 @@ if __name__ == "__main__":
         print(" ")
         print("Sleep for 60 seconds")
 
-
         time.sleep(60)
-
-

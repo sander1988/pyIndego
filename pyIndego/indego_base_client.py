@@ -1,9 +1,10 @@
 """Base class for indego."""
 import logging
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional, Callable, Awaitable
 
 import pytz
+import requests
 
 from .const import (
     DEFAULT_CALENDAR,
@@ -32,13 +33,22 @@ from .states import (
 _LOGGER = logging.getLogger(__name__)
 
 
+class BearerAuth(requests.auth.AuthBase):
+    def __init__(self, token):
+        self.token = token
+
+    def __call__(self, r):
+        r.headers["Authorization"] = "Bearer " + self.token
+        return r
+
+
 class IndegoBaseClient(ABC):
     """Indego base client class."""
 
     def __init__(
         self,
-        username: str,
-        password: str,
+        token: str,
+        token_refresh_method: Optional[Callable[[], Awaitable[str]]] = None,
         serial: str = None,
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
@@ -46,15 +56,15 @@ class IndegoBaseClient(ABC):
         """Abstract class for the Indego Clent, only use the Indego Client or Indego Async Client.
 
         Args:
-            username (str): username for Indego Account
-            password (str): password for Indego Account
+            token (str): Bosch SingleKey ID OAuth token
+            token_refresh_method (callback): Callback method to request an OAuth token refresh
             serial (str): serial number of the mower
             map_filename (str, optional): Filename to store maps in. Defaults to None.
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
 
         """
-        self._username = username
-        self._password = password
+        self._token = token
+        self._token_refresh_method = token_refresh_method
         self._serial = serial
         self._mowers_in_account = None
         self.map_filename = map_filename
@@ -408,31 +418,53 @@ class IndegoBaseClient(ABC):
             self.user = generate_update(self.user, new, User)
 
     @abstractmethod
-    def login(self, attempts: int = 0):
-        """Login to the Indego API."""
-
-    def _login(self, login):
-        """Login to the Indego API."""
-        if login:
-            self._contextid = login["contextId"]
-            self._userid = login["userId"]
-            self._logged_in = True
-        else:
-            self._logged_in = False
-            self._mowers_in_account = None
-
-    @abstractmethod
     def _request(
         self,
         method: Methods,
         path: str,
         data: dict = None,
         headers: dict = None,
-        auth: Any = None,
         timeout: int = 30,
         attempts: int = 0,
     ):
         """Request implemented by the subclasses either synchronously or asynchronously."""
+
+    def _log_request_result(self, status: int, url: str, path: str) -> bool:
+        """Log the API request result for certain status codes."""
+
+        if status == 204:
+            _LOGGER.info("204: No content in response from server")
+            return True
+
+        if status == 400:
+            _LOGGER.error("400: Bad Request, won't retry")
+            return True
+
+        if status == 401:
+            _LOGGER.error("401: Unauthorized, OAuth token is wrong, won't retry")
+            return True
+
+        if status == 403:
+            _LOGGER.error("403: Forbidden, won't retry")
+            return True
+
+        if status == 405:
+            _LOGGER.error("405: Method not allowed: Get is used but not allowed, try a different method for path %s, won't retry", path)
+            return True
+
+        if status == 500:
+            _LOGGER.info("500: Internal Server Error")
+            return True
+
+        if status == 501:
+            _LOGGER.info("501: Not implemented yet")
+            return True
+
+        if status == 504 and url.find("longpoll=true") > 0:
+            _LOGGER.info("504: longpoll stopped, no updates")
+            return True
+
+        return False
 
     @abstractmethod
     def get(self, path: str, timeout: int):

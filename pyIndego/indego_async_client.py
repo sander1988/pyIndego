@@ -2,7 +2,7 @@
 import asyncio
 import logging
 from socket import error as SocketError
-from typing import Any
+from typing import Any, Optional, Callable, Awaitable
 
 import aiohttp
 from aiohttp import (
@@ -11,20 +11,18 @@ from aiohttp import (
     ServerTimeoutError,
     TooManyRedirects,
 )
-from aiohttp.helpers import BasicAuth
 from aiohttp.web_exceptions import HTTPGatewayTimeout
 
 from . import __version__
 from .const import (
     COMMANDS,
     CONTENT_TYPE_JSON,
-    DEFAULT_BODY,
     DEFAULT_CALENDAR,
     DEFAULT_HEADER,
     DEFAULT_URL,
     Methods,
 )
-from .indego_base_client import IndegoBaseClient
+from .indego_base_client import IndegoBaseClient, BearerAuth
 from .states import Calendar
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,8 +33,8 @@ class IndegoAsyncClient(IndegoBaseClient):
 
     def __init__(
         self,
-        username: str,
-        password: str,
+        token: str,
+        token_refresh_method: Optional[Callable[[], Awaitable[str]]] = None,
         serial: str = None,
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
@@ -45,36 +43,33 @@ class IndegoAsyncClient(IndegoBaseClient):
         """Initialize the Async Client.
 
         Args:
-            username (str): username for Indego Account
-            password (str): password for Indego Account
+            token (str): Bosch SingleKey ID OAuth token
+            token_refresh_method (callback): Callback method to request an OAuth token refresh
             serial (str): serial number of the mower
             map_filename (str, optional): Filename to store maps in. Defaults to None.
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
 
         """
-        super().__init__(username, password, serial, map_filename, api_url)
+        super().__init__(token, token_refresh_method, serial, map_filename, api_url)
         if session:
             self._session = session
         else:
             self._session = aiohttp.ClientSession(raise_for_status=False)
 
-    async def __aenter__(self):
-        """Enter for async with."""
-        await self.start()
-        return self
-
     async def __aexit__(self, exc_type, exc_value, traceback):
         """Exit for async with."""
         await self.close()
 
-    async def start(self):
-        """Login if not done."""
-        if not self._logged_in:
-            await self.login()
-
     async def close(self):
         """Close the aiohttp session."""
         await self._session.close()
+
+    async def get_mowers(self):
+        """Get a list of the available mowers (serials) in the account."""
+        result = await self.get("alms")
+        if result is None:
+            return []
+        return [mower['alm_sn'] for mower in result]
 
     async def delete_alert(self, alert_index: int):
         """Delete the alert with the specified index.
@@ -443,41 +438,12 @@ class IndegoAsyncClient(IndegoBaseClient):
         await self.update_user()
         return self.user
 
-    async def login(self, attempts: int = 0):
-        """Login to the api and store the context."""
-        response = await self._request(
-            method=Methods.GET,
-            path="authenticate/check",
-            data=DEFAULT_BODY,
-            headers=DEFAULT_HEADER,
-            auth=BasicAuth(self._username, self._password),
-            timeout=30,
-            attempts=attempts,
-        )
-        self._login(response)
-        if response is not None:
-            _LOGGER.debug("Logged in")
-            if self._serial is not None:
-                return True
-
-            self._mowers_in_account = await self.get("alms")
-            if len(self._mowers_in_account) == 0:
-                _LOGGER.warning("No mowers found in account")
-                return False
-
-            self._serial = self._mowers_in_account[0].get("alm_sn")
-            _LOGGER.debug("First mower added")
-            return True
-
-        return False
-
     async def _request(  # noqa: C901
         self,
         method: Methods,
         path: str,
         data: dict = None,
         headers: dict = None,
-        auth: BasicAuth = None,
         timeout: int = 30,
         attempts: int = 0,
     ):
@@ -488,7 +454,6 @@ class IndegoAsyncClient(IndegoBaseClient):
             path (str): url to call on top of base_url.
             data (dict, optional): if applicable, data to be sent, defaults to None.
             headers (dict, optional): headers to be included, defaults to None, which should be filled by the method.
-            auth (BasicAuth or HTTPBasicAuth, optional): login specific attribute, defaults to None.
             timeout (int, optional): Timeout for the api call. Defaults to 30.
             attempts (int, optional): Number to keep track of retries, after three starts delaying, after five quites.
 
@@ -496,78 +461,43 @@ class IndegoAsyncClient(IndegoBaseClient):
         if 3 <= attempts < 5:
             _LOGGER.info("Three or four attempts done, waiting 30 seconds")
             await asyncio.sleep(30)
+
         if attempts == 5:
             _LOGGER.warning("Five attempts done, please try again later")
             return None
+
+        if self._token_refresh_method is not None:
+            self.token = await self._token_refresh_method()
+
         url = f"{self._api_url}{path}"
+
         if not headers:
             headers = DEFAULT_HEADER.copy()
-            headers["x-im-context-id"] = self._contextid
-        _LOGGER.debug("Sending %s to %s", method.value, url)
+
         try:
+            _LOGGER.debug("%s call to API endpoint %s", method.value, url)
             async with self._session.request(
                 method=method.value,
                 url=url,
-                json=data if data else DEFAULT_BODY,
+                json=data,
                 headers=headers,
-                auth=auth,
+                auth=BearerAuth(self._token),
                 timeout=timeout,
             ) as response:
                 status = response.status
-                _LOGGER.debug("status: %s", status)
+                _LOGGER.debug("HTTP status code: %i", status)
                 if status == 200:
                     if response.content_type == CONTENT_TYPE_JSON:
                         resp = await response.json()
                         _LOGGER.debug("Response: %s", resp)
-                        return resp  # await response.json()
+                        return resp
                     return await response.content.read()
-                if status == 204:
-                    _LOGGER.debug("204: No content in response from server")
+
+                if self._log_request_result(status, url, path):
                     return None
-                if status == 400:
-                    _LOGGER.warning(
-                        "400: Bad Request: won't retry. Message: %s",
-                        (await response.content.read()).decode("UTF-8"),
-                    )
-                    return None
-                if status == 401:
-                    if path == "authenticate/check":
-                        _LOGGER.info(
-                            "401: Unauthorized, credentials are wrong, won't retry"
-                        )
-                        return None
-                    _LOGGER.info("401: Unauthorized: logging in again")
-                    login_result = await self.login()
-                    if login_result:
-                        return await self._request(
-                            method=method,
-                            path=path,
-                            data=data,
-                            timeout=timeout,
-                            attempts=attempts + 1,
-                        )
-                    return None
-                if status == 403:
-                    _LOGGER.error("403: Forbidden: won't retry")
-                    return None
-                if status == 405:
-                    _LOGGER.error(
-                        "405: Method not allowed: %s is used but not allowed, try a different method for path %s, won't retry",
-                        method,
-                        path,
-                    )
-                    return None
-                if status == 500:
-                    _LOGGER.debug("500: Internal Server Error")
-                    return None
-                if status == 501:
-                    _LOGGER.debug("501: Not implemented yet")
-                    return None
-                if status == 504:
-                    if url.find("longpoll=true") > 0:
-                        _LOGGER.debug("504: longpoll stopped, no updates")
-                        return None
+
                 response.raise_for_status()
+
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as exc:
             _LOGGER.info("%s: Timeout on Bosch servers, retrying", exc)
             return await self._request(
@@ -577,15 +507,19 @@ class IndegoAsyncClient(IndegoBaseClient):
                 timeout=timeout,
                 attempts=attempts + 1,
             )
+
         except ClientOSError as exc:
             _LOGGER.debug("%s: Failed to update Indego status, longpoll timeout", exc)
             return None
+
         except (TooManyRedirects, ClientResponseError, SocketError) as exc:
             _LOGGER.error("%s: Failed %s to Indego, won't retry", exc, method.value)
             return None
+
         except asyncio.CancelledError:
             _LOGGER.debug("Task cancelled by task runner")
             return None
+
         except Exception as exc:
             _LOGGER.error("Request to %s gave a unhandled error: %s", url, exc)
             return None
