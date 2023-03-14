@@ -424,7 +424,7 @@ class IndegoBaseClient(ABC):
         """Log the API request result for certain status codes."""
 
         if status == 204:
-            _LOGGER.info("204: No content in response from server, ignoring")
+            _LOGGER.debug("204: No content in response from server, ignoring")
             return True
 
         if status == 400:
@@ -444,15 +444,15 @@ class IndegoBaseClient(ABC):
             return True
 
         if status == 500:
-            _LOGGER.info("500: Internal Server Error, won't retry")
+            _LOGGER.warning("500: Internal Server Error, won't retry")
             return True
 
         if status == 501:
-            _LOGGER.info("501: Not implemented yet, ignoring")
+            _LOGGER.debug("501: Not implemented yet, ignoring")
             return True
 
         if status == 504 and url.find("longpoll=true") > 0:
-            _LOGGER.info("504: longpoll stopped, no updates")
+            _LOGGER.debug("504: longpoll stopped, no updates")
             return True
 
         return False
