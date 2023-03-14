@@ -472,7 +472,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             return None
 
         if self._token_refresh_method is not None:
-            self.token = await self._token_refresh_method()
+            self._token = await self._token_refresh_method()
 
         url = f"{self._api_url}{path}"
 
