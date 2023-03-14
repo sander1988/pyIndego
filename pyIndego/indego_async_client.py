@@ -53,8 +53,12 @@ class IndegoAsyncClient(IndegoBaseClient):
         super().__init__(token, token_refresh_method, serial, map_filename, api_url)
         if session:
             self._session = session
+            # We should only close session we own.
+            # In this case don't own it, probably a reference from HA.
+            self._should_close_session = False
         else:
             self._session = aiohttp.ClientSession(raise_for_status=False)
+            self._should_close_session = True
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         """Exit for async with."""
@@ -62,7 +66,8 @@ class IndegoAsyncClient(IndegoBaseClient):
 
     async def close(self):
         """Close the aiohttp session."""
-        await self._session.close()
+        if self._should_close_session:
+            await self._session.close()
 
     async def get_mowers(self):
         """Get a list of the available mowers (serials) in the account."""
@@ -499,7 +504,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                 response.raise_for_status()
 
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as exc:
-            _LOGGER.info("%s: Timeout on Bosch servers, retrying", exc)
+            _LOGGER.info("%s: Timeout on Bosch servers (mower offline?), retrying...", exc)
             return await self._request(
                 method=method,
                 path=path,
