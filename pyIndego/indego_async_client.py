@@ -39,6 +39,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
         session: aiohttp.ClientSession = None,
+        raise_request_exceptions: bool = False,
     ):
         """Initialize the Async Client.
 
@@ -48,9 +49,9 @@ class IndegoAsyncClient(IndegoBaseClient):
             serial (str): serial number of the mower
             map_filename (str, optional): Filename to store maps in. Defaults to None.
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
-
+            raise_request_exceptions (bool): Should unexpected API request exception be raised or not. Default False to keep things backwards compatible.
         """
-        super().__init__(token, token_refresh_method, serial, map_filename, api_url)
+        super().__init__(token, token_refresh_method, serial, map_filename, api_url, raise_request_exceptions)
         if session:
             self._session = session
             # We should only close session we own.
@@ -385,7 +386,7 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         """
         if not self.serial:
-            return
+            return False
         path = f"alms/{self.serial}/state"
         if longpoll:
             if longpoll_timeout > 300:
@@ -403,7 +404,8 @@ class IndegoAsyncClient(IndegoBaseClient):
             else:
                 path = f"{path}?forceRefresh=true"
 
-        self._update_state(await self.get(path, timeout=longpoll_timeout + 30))
+        new_state = await self.get(path, timeout=longpoll_timeout + 30)
+        return self._update_state(new_state)
 
     async def get_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state and return it.
@@ -498,7 +500,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                         return resp
                     return await response.content.read()
 
-                if self._log_request_result(status, url, path):
+                if self._log_request_result(status, url):
                     return None
 
                 response.raise_for_status()
@@ -526,6 +528,8 @@ class IndegoAsyncClient(IndegoBaseClient):
             return None
 
         except Exception as exc:
+            if self._raise_request_exceptions:
+                raise
             _LOGGER.error("Request to %s gave a unhandled error: %s", url, exc)
             return None
 

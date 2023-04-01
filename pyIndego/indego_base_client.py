@@ -43,6 +43,7 @@ class IndegoBaseClient(ABC):
         serial: str = None,
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
+        raise_request_exceptions: bool = False,
     ):
         """Abstract class for the Indego Clent, only use the Indego Client or Indego Async Client.
 
@@ -52,7 +53,7 @@ class IndegoBaseClient(ABC):
             serial (str): serial number of the mower
             map_filename (str, optional): Filename to store maps in. Defaults to None.
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
-
+            raise_request_exceptions (bool): Should unexpected API request exception be raised or not. Default False to keep things backwards compatible.
         """
         self._token = token
         self._token_refresh_method = token_refresh_method
@@ -60,6 +61,7 @@ class IndegoBaseClient(ABC):
         self._mowers_in_account = None
         self.map_filename = map_filename
         self._api_url = api_url
+        self._raise_request_exceptions = raise_request_exceptions
         self._logged_in = False
         self._online = False
         self._contextid = ""
@@ -420,40 +422,21 @@ class IndegoBaseClient(ABC):
     ):
         """Request implemented by the subclasses either synchronously or asynchronously."""
 
-    def _log_request_result(self, status: int, url: str, path: str) -> bool:
+    def _log_request_result(self, status: int, url: str) -> bool:
         """Log the API request result for certain status codes."""
+        """Return False if the status is fatal and should be raised."""
 
         if status == 204:
             _LOGGER.debug("204: No content in response from server, ignoring")
             return True
 
-        if status == 400:
-            _LOGGER.error("400: Bad Request, won't retry")
-            return True
-
-        if status == 401:
-            _LOGGER.error("401: Unauthorized, OAuth token is wrong, won't retry")
-            return True
-
-        if status == 403:
-            _LOGGER.error("403: Forbidden, won't retry")
-            return True
-
-        if status == 405:
-            _LOGGER.error("405: Method not allowed: Get is used but not allowed, try a different method for path %s, won't retry", path)
-            return True
-
-        if status == 500:
-            _LOGGER.warning("500: Internal Server Error, won't retry")
-            return True
-
-        if status == 501:
-            _LOGGER.debug("501: Not implemented yet, ignoring")
-            return True
-
         if status == 504 and url.find("longpoll=true") > 0:
             _LOGGER.debug("504: longpoll stopped, no updates")
             return True
+
+        if 400 <= status < 600:
+            _LOGGER.error("Request to '%s' failed with HTTP status code: %i", url, status)
+            return not self._raise_request_exceptions
 
         return False
 

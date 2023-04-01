@@ -427,7 +427,7 @@ class IndegoClient(IndegoBaseClient):
                     return response.json()
                 return response.content
 
-            if self._log_request_result(status, url, path):
+            if self._log_request_result(status, url):
                 return None
 
             response.raise_for_status()
@@ -446,6 +446,8 @@ class IndegoClient(IndegoBaseClient):
             _LOGGER.error("%s: Failed to update Indego status.", exc)
 
         except Exception as exc:
+            if self._raise_request_exceptions:
+                raise
             _LOGGER.error("Request to %s gave a unhandled error: %s", url, exc)
 
         return None
