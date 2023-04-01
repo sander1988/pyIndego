@@ -386,7 +386,7 @@ class IndegoAsyncClient(IndegoBaseClient):
 
         """
         if not self.serial:
-            return False
+            return
         path = f"alms/{self.serial}/state"
         if longpoll:
             if longpoll_timeout > 300:
@@ -404,8 +404,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             else:
                 path = f"{path}?forceRefresh=true"
 
-        new_state = await self.get(path, timeout=longpoll_timeout + 30)
-        return self._update_state(new_state)
+        self._update_state(await self.get(path, timeout=longpoll_timeout + 30))
 
     async def get_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state and return it.
