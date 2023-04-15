@@ -473,7 +473,10 @@ class IndegoAsyncClient(IndegoBaseClient):
             return None
 
         if self._token_refresh_method is not None:
+            _LOGGER.debug("Refreshing token")
             self._token = await self._token_refresh_method()
+        else:
+            _LOGGER.warning("Token refresh is not available")
 
         url = f"{self._api_url}{path}"
 
