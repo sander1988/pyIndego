@@ -14,19 +14,17 @@ class Methods(Enum):
     HEAD = "HEAD"
 
 
-DEFAULT_URL = "https://api.indego.iot.bosch-si.com/api/v1/"
+DEFAULT_URL = "https://api.indego-cloud.iot.bosch-si.com/api/v1/"
 CONTENT_TYPE_JSON = "application/json"
 CONTENT_TYPE = "Content-Type"
-DEFAULT_BODY = {
-    "device": "",
-    "os_type": "Android",
-    "os_version": "4.0",
-    "dvc_manuf": "unknown",
-    "dvc_type": "unknown",
-}
 COMMANDS = ("mow", "pause", "returnToDock")
 
-DEFAULT_HEADER = {CONTENT_TYPE: CONTENT_TYPE_JSON}
+DEFAULT_HEADER = {
+    CONTENT_TYPE: CONTENT_TYPE_JSON,
+    # We need to change the user-agent!
+    # The Microsoft Azure proxy seems to block all requests (HTTP 403) for the default 'python-requests' user-agent.
+    "User-Agent": "pyIndego"
+}
 DEFAULT_LOOKUP_VALUE = "Not in database."
 
 DEFAULT_CALENDAR = {
@@ -205,9 +203,15 @@ ALERT_ERROR_CODE = {
     "104": "Stop button pushed",
     "101": "Mower lifted",
     "115": "Mower is stuck",
+    "1008": "Mower is stuck",
     "149": "Mower outside perimeter cable",
     "151": "Perimeter cable signal missing",
     "ntfy_blade_life": "Reminder blade life",
+    "1005": "Mower has not entered the charging station",
+    "smartMow.mowerUnreachable": "SmartMowing disabled",
+    "1108": "Too large tilt angle",
+    "1138": "Mower needs help",
+    "firmware.updateComplete": "Software update complete",
 }
 
 
