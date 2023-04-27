@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.0.1
+- Bugfixes when I made some major errors when relleasing 3.0.0
+
 ## 3.0.0
 - Added OAuth (Bosch SingleKey ID support) Doest work anymore: New API / Switch to Bosch Single ID #116.
 - Improved logging output.
