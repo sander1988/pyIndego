@@ -37,3 +37,9 @@ _build.cmd
 
 # vscode
 .vscode/
+
+# PyCharm
+.idea/
+
+# Python virtual environment
+env/
