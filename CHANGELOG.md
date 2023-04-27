@@ -1,7 +1,12 @@
 # Changelog
 
+## 3.0.0
+- Added OAuth (Bosch SingleKey ID support) Doest work anymore: New API / Switch to Bosch Single ID #116.
+- Improved logging output.
+- Added call to retrieve the available mowers/serial a the account.
+
 ## 2.0.30
-- Adjusted python code for somw changes in the Bosch API
+- Adjusted python code for some changes in the Bosch API
 
 ## 2.0.29
 - Added new mower model S+ 700 gen 2 #120
