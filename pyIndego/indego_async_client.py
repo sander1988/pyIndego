@@ -508,7 +508,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                 response.raise_for_status()
 
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as exc:
-            _LOGGER.info("%s: Timeout on Bosch servers (mower offline?), retrying...", exc)
+            _LOGGER.info("%s %s request timed out (mower offline?): %s. Retrying...", method.value, path, exc)
             return await self._request(
                 method=method,
                 path=path,
@@ -518,11 +518,13 @@ class IndegoAsyncClient(IndegoBaseClient):
             )
 
         except ClientOSError as exc:
-            _LOGGER.debug("%s: Failed to update Indego status, longpoll timeout", exc)
+            _LOGGER.debug("%s %s request timed out: %s", method.value, path, exc)
             return None
 
         except (TooManyRedirects, ClientResponseError, SocketError) as exc:
-            _LOGGER.error("%s: Failed %s to Indego, won't retry", exc, method.value)
+            if self._raise_request_exceptions:
+                raise
+            _LOGGER.error("%s %s failed: %s", method.value, path, exc)
             return None
 
         except asyncio.CancelledError:
@@ -532,7 +534,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         except Exception as exc:
             if self._raise_request_exceptions:
                 raise
-            _LOGGER.error("Request to %s gave a unhandled error: %s", url, exc)
+            _LOGGER.error("Request %s %s gave a unhandled error: %s", method.value, path, exc)
             return None
 
     async def get(self, path: str, timeout: int = 30):
