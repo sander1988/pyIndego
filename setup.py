@@ -6,7 +6,11 @@ with open("README.md", "r") as fh:
 
 setup(
     name="pyIndego",
+<<<<<<< HEAD
     version="3.1.0",
+=======
+    version="2.2.3",
+>>>>>>> 7769c94 (Bump version)
     author="jm-73, sander1988",
     author_email="jens@myretyr.se",
     description="API for Bosch Indego mower",
