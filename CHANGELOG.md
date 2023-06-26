@@ -1,11 +1,12 @@
 # Changelog
 
-## 2.1.0
-- Replaced old Bosch Indego authentication by Bosch SingleKey ID #171
-- Changed to new Bosch Indego API server #171
+## 3.0.1
+- Bugfixes when I made some major errors when relleasing 3.0.0
 
-## 2.0.33
-- Added storage of mowers list during login
+## 3.0.0
+- Added OAuth (Bosch SingleKey ID support) Doest work anymore: New API / Switch to Bosch Single ID #116.
+- Improved logging output.
+- Added call to retrieve the available mowers/serial a the account.
 
 ## 2.0.30
 - Adjusted python code for some changes in the Bosch API
