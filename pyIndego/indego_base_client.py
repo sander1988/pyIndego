@@ -1,9 +1,10 @@
 """Base class for indego."""
 import logging
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional, Callable, Awaitable
 
 import pytz
+import requests
 
 from .const import (
     DEFAULT_CALENDAR,
@@ -37,27 +38,30 @@ class IndegoBaseClient(ABC):
 
     def __init__(
         self,
-        username: str,
-        password: str,
+        token: str,
+        token_refresh_method: Optional[Callable[[], Awaitable[str]]] = None,
         serial: str = None,
         map_filename: str = None,
         api_url: str = DEFAULT_URL,
+        raise_request_exceptions: bool = False,
     ):
         """Abstract class for the Indego Clent, only use the Indego Client or Indego Async Client.
 
         Args:
-            username (str): username for Indego Account
-            password (str): password for Indego Account
+            token (str): Bosch SingleKey ID OAuth token
+            token_refresh_method (callback): Callback method to request an OAuth token refresh
             serial (str): serial number of the mower
             map_filename (str, optional): Filename to store maps in. Defaults to None.
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
-
+            raise_request_exceptions (bool): Should unexpected API request exception be raised or not. Default False to keep things backwards compatible.
         """
-        self._username = username
-        self._password = password
+        self._token = token
+        self._token_refresh_method = token_refresh_method
         self._serial = serial
+        self._mowers_in_account = None
         self.map_filename = map_filename
         self._api_url = api_url
+        self._raise_request_exceptions = raise_request_exceptions
         self._logged_in = False
         self._online = False
         self._contextid = ""
@@ -90,6 +94,11 @@ class IndegoBaseClient(ABC):
             return self._serial
         _LOGGER.warning("Serial not yet set, please login first")
         return None
+
+    @property
+    def mowers_in_account(self):
+        """Return the list of mower detected during login."""
+        return self._mowers_in_account
 
     @property
     def alerts_count(self):
@@ -402,30 +411,34 @@ class IndegoBaseClient(ABC):
             self.user = generate_update(self.user, new, User)
 
     @abstractmethod
-    def login(self, attempts: int = 0):
-        """Login to the Indego API."""
-
-    def _login(self, login):
-        """Login to the Indego API."""
-        if login:
-            self._contextid = login["contextId"]
-            self._userid = login["userId"]
-            self._logged_in = True
-        else:
-            self._logged_in = False
-
-    @abstractmethod
     def _request(
         self,
         method: Methods,
         path: str,
         data: dict = None,
         headers: dict = None,
-        auth: Any = None,
         timeout: int = 30,
         attempts: int = 0,
     ):
         """Request implemented by the subclasses either synchronously or asynchronously."""
+
+    def _log_request_result(self, status: int, url: str) -> bool:
+        """Log the API request result for certain status codes."""
+        """Return False if the status is fatal and should be raised."""
+
+        if status == 204:
+            _LOGGER.debug("204: No content in response from server, ignoring")
+            return True
+
+        if status == 504 and url.find("longpoll=true") > 0:
+            _LOGGER.debug("504: longpoll stopped, no updates")
+            return True
+
+        if 400 <= status < 600:
+            _LOGGER.error("Request to '%s' failed with HTTP status code: %i", url, status)
+            return not self._raise_request_exceptions
+
+        return False
 
     @abstractmethod
     def get(self, path: str, timeout: int):

@@ -380,13 +380,10 @@ Get the automatic update settings
 
 
 # API CALLS
-https://api.indego.iot.bosch-si.com:443/api/v1
+https://api.indego-cloud.iot.bosch-si.com/api/v1/
 
 
 ```python
-post
-/authenticate
-
 get
 /alerts
 /alms
