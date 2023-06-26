@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.1.0
+- Changed the useragent for communication with the Bosch server API.
+
 ## 3.0.1
 - Bugfixes when I made some major errors when relleasing 3.0.0
 
