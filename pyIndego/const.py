@@ -1,6 +1,7 @@
 """Constants for pyIndego."""
 from enum import Enum
-
+import random
+import string
 
 class Methods(Enum):
     """Enum with HTTP methods."""
@@ -23,7 +24,8 @@ DEFAULT_HEADER = {
     CONTENT_TYPE: CONTENT_TYPE_JSON,
     # We need to change the user-agent!
     # The Microsoft Azure proxy seems to block all requests (HTTP 403) for the default 'python-requests' user-agent.
-    "User-Agent": "pyIndego"
+    # We also need to use a random agent for each client: https://github.com/jm-73/pyIndego/issues/119
+    "User-Agent": ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
 }
 DEFAULT_LOOKUP_VALUE = "Not in database."
 
