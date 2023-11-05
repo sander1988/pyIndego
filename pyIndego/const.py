@@ -132,7 +132,6 @@ MOWER_STATE_DESCRIPTION_DETAIL = {
     99999: "Offline",
 }
 
-
 MOWER_STATE_DESCRIPTION = {
     0: "Docked",
     101: "Docked",
@@ -215,7 +214,6 @@ ALERT_ERROR_CODE = {
     "1138": "Mower needs help",
     "firmware.updateComplete": "Software update complete",
 }
-
 
 DAY_MAPPING = {
     0: "monday",

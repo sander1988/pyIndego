@@ -1,5 +1,4 @@
 {
-  "username": "xxx@xxx.xx",
-  "password": "xxx",
-  "serial": "xxxxxxxxx"
+    "token": "<put your token here>",
+    "serial": "123456789"
 }

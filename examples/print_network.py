@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import json
+import logging
 from pyIndego import IndegoClient
 
+logging.basicConfig(filename="pyIndego.log", level=logging.DEBUG)
+_LOGGER = logging.getLogger(__name__)
+_LOGGER.setLevel(logging.DEBUG)
+
 def country_operator(mcc, mnc):
+    """get the country and network operator from network ID's"""
     if mcc == 262:
         country =  "Germany"
         if mnc == 1:
@@ -40,30 +46,34 @@ def country_operator(mcc, mnc):
 
 
 def main(config):
+    """example of how to instantiate a indego object and get the network info"""
     with IndegoClient(**config) as indego:
         indego.update_network()
-        
-        (country, operator) = country_operator(indego.network.mcc, indego.network.mnc)
-        if country is not None:
-            print("Country is:", country)
-            if operator is not None:
-                print("Operator is:", operator)
+
+        if indego.network is not None:
+            (country, operator) = country_operator(indego.network.mcc, indego.network.mnc)
+            if country is not None:
+                print("Country is:", country)
+                if operator is not None:
+                    print("Operator is:", operator)
+                else:
+                    print("Operator is unknown")
             else:
-                print("Operator is unknown")
+                print("Country and operator are unknown")
+
+            print("Signal strength (rssi):", indego.network.rssi)
+
+            print("Available Networks:")
+            for i in range(indego.network.networkCount):
+                (country, operator) = country_operator(int(str(indego.network.networks[i])[:3]), int(str(indego.network.networks[i])[3:5]))
+                if (country is not None) and (operator is not None):
+                    print("\t", country, ":", operator)
+                else:
+                    print("\tmcc =", str(indego.network.networks[i])[:3], ": mnc =", str(indego.network.networks[i])[3:5])
         else:
-            print("Country and operator are unknown")
-        
-        print("Signal strength (rssi):", indego.network.rssi)
-        
-        print("Available Networks:")
-        for i in range(indego.network.networkCount):
-            (country, operator) = country_operator(int(str(indego.network.networks[i])[:3]), int(str(indego.network.networks[i])[3:5]))
-            if (country is not None) and (operator is not None):
-                print("\t", country, ":", operator)
-            else:
-                print("\tmcc =", str(indego.network.networks[i])[:3], ": mnc =", str(indego.network.networks[i])[3:5])
-        
+            print("Error getting network info")
+
 if __name__ == "__main__":
-    with open("config.json", "r") as config_file:
-        config = json.load(config_file)
-    main(config)
+    with open("config.json", "r",encoding="utf-8") as config_file:
+        _config = json.load(config_file)
+    main(_config)
