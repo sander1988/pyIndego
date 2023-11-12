@@ -1,7 +1,7 @@
 """Constants for pyIndego."""
 from enum import Enum
-import random
-import string
+from socket import gethostname
+from hashlib import md5
 
 class Methods(Enum):
     """Enum with HTTP methods."""
@@ -26,7 +26,7 @@ DEFAULT_HEADER = {
     # The Microsoft Azure proxy WAF seems to block all requests (HTTP 403) for the default 'python-requests' user-agent.
     # We also need to use a random agent for each client: https://github.com/jm-73/pyIndego/issues/119
     # Updated due to issue: https://github.com/jm-73/Indego/issues/204
-    'User-Agent': "pyIndego (%s)" % ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
+    'User-Agent': "HomeAssistant/Indego (%s)" % md5(gethostname().encode()).hexdigest()
 }
 DEFAULT_LOOKUP_VALUE = "Not in database."
 
