@@ -1,7 +1,6 @@
 """Constants for pyIndego."""
 from enum import Enum
-from socket import gethostname
-from hashlib import md5
+import pkg_resources
 
 class Methods(Enum):
     """Enum with HTTP methods."""
@@ -20,13 +19,14 @@ CONTENT_TYPE_JSON = "application/json"
 CONTENT_TYPE = "Content-Type"
 COMMANDS = ("mow", "pause", "returnToDock")
 
-DEFAULT_HEADER = {
+DEFAULT_HEADERS = {
     CONTENT_TYPE: CONTENT_TYPE_JSON,
     # We need to change the user-agent!
     # The Microsoft Azure proxy WAF seems to block all requests (HTTP 403) for the default 'python-requests' user-agent.
-    # We also need to use a random agent for each client: https://github.com/jm-73/pyIndego/issues/119
-    # Updated due to issue: https://github.com/jm-73/Indego/issues/204
-    'User-Agent': "HomeAssistant/Indego (%s)" % md5(gethostname().encode()).hexdigest()
+    # See issues:
+    # - https://github.com/jm-73/pyIndego/issues/119
+    # - https://github.com/jm-73/Indego/issues/204
+    'User-Agent': "HomeAssistant/Indego (%s)" % pkg_resources.require("pyIndego")[0].version
 }
 DEFAULT_LOOKUP_VALUE = "Not in database."
 

@@ -12,7 +12,7 @@ from .const import (
     CONTENT_TYPE,
     CONTENT_TYPE_JSON,
     DEFAULT_CALENDAR,
-    DEFAULT_HEADER,
+    DEFAULT_HEADERS,
     Methods,
 )
 from .indego_base_client import IndegoBaseClient
@@ -405,7 +405,7 @@ class IndegoClient(IndegoBaseClient):
         url = f"{self._api_url}{path}"
 
         if not headers:
-            headers = DEFAULT_HEADER.copy()
+            headers = self._default_headers.copy()
             headers["Authorization"] = "Bearer %s" % self._token
 
         try:
