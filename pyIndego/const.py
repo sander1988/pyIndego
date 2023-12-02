@@ -1,6 +1,7 @@
 """Constants for pyIndego."""
 from enum import Enum
-import pkg_resources
+from pyIndego.version import __version__
+
 
 class Methods(Enum):
     """Enum with HTTP methods."""
@@ -26,7 +27,7 @@ DEFAULT_HEADERS = {
     # See issues:
     # - https://github.com/jm-73/pyIndego/issues/119
     # - https://github.com/jm-73/Indego/issues/204
-    'User-Agent': "HomeAssistant/Indego (%s)" % pkg_resources.require("pyIndego")[0].version
+    'User-Agent': "HomeAssistant/Indego (%s)" % __version__
 }
 DEFAULT_LOOKUP_VALUE = "Not in database."
 

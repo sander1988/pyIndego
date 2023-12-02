@@ -1,12 +1,13 @@
 """Setup for pyIndego."""
 from setuptools import find_packages, setup
+from pyIndego.version import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name="pyIndego",
-    version="3.1.3",
+    version=__version__,
     author="jm-73, sander1988",
     author_email="jens@myretyr.se",
     description="API for Bosch Indego mower",
