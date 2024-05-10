@@ -419,3 +419,23 @@ put
 delete
 /alerts/<alertid>
 ```
+# Contributing
+The project development is done in a poetry virtual environment.
+
+## setup your environment
+To start development please install [poetry](https://python-poetry.org/docs/).
+
+* Install all dependency by running `poetry install`.
+* activate the virtual environment by running `poetry shell`
+* Run `python test_new.py` to test your setup.
+
+## setup your personal info
+
+Open [config.json](./config.json) and type in the information for your `indego`.
+
+```javascript
+{
+    "token": "mytoken",
+    "serial": "myserial"
+}
+```
