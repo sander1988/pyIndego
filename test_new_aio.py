@@ -21,7 +21,7 @@ async def main(config):
     async with IndegoAsyncClient(**config) as indego:
         #Update and cache all calls from API
         #await indego.update_all()
-        
+
         # await indego.update_alerts()
         # print("alerts: ", indego.alerts)
         ###### FUNCTION! print("alert count: ", indego.alerts_count)
@@ -53,7 +53,7 @@ async def main(config):
 
         # await indego.update_predictive_calendar()
         # print("predictive calendar: ", indego.predictive_calendar)
-# 
+#
         # await indego.update_predictive_schedule()
         # print("predictive schedule: ", indego.predictive_schedule)
 
@@ -72,18 +72,18 @@ async def main(config):
             # print("serial: ", indego.serial)
             #print("xPos: ", indego.state.xPos)
             #print("yPos: ", indego.state.yPos)
-            
+
             f = open('percentage.log', 'a')
-            
+
             from time import gmtime, strftime
             logtime = strftime("%H:%M", gmtime())
             print(logtime , end = ' ')
             print("Mowed: ", indego.state.mowed)
-            
 
-            
-            
-            
+
+
+
+
             f.write(str(logtime) + " - ")
             f.write(str(indego.state.mowed) + "\n")
             f.close()
@@ -102,7 +102,7 @@ async def main(config):
         # print("state description: ", indego.state_description)
         # print("state description detail: ", indego.state_description_detail)
 
-        
+
         # await indego.update_updates_available()
         # print("update available: ", indego.update_available)
 
@@ -110,11 +110,9 @@ async def main(config):
         # print("user: ", indego.user)
 
 
-
 if __name__ == "__main__":
     with open("config.json", "r") as config_file:
         config = json.load(config_file)
     # config.pop("serial")
     # config["username"] = "sdjbfajhbsdf"
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(config))
+    asyncio.run(main(config))

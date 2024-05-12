@@ -1,8 +1,6 @@
 import json
 import logging
-import pytz
 import pytz    # $ pip install pytz
-import tzlocal # $ pip install tzlocal
 from pyIndego import IndegoClient
 from datetime import datetime
 import time
@@ -86,7 +84,7 @@ def main(config):
         #print("=[indego.update_next_mow]===")
         #indego.update_next_mow()
         #print(indego.next_mow)
-        
+
         # Wakes mower!
         # # print(" ")
         # print("=[operating data]====")
@@ -108,7 +106,7 @@ def main(config):
         #print("=[updates]====")
         #indego.update_updates_available()
         #print(indego.update_available)
-        
+
         #print(" ")
         #print("=[user]====")
         #indego.update_user()
@@ -118,7 +116,7 @@ def main(config):
 if __name__ == "__main__":
     with open("config.json", "r") as config_file:
         config = json.load(config_file)
-    
+
     for i in range(10):
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")

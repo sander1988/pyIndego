@@ -61,9 +61,22 @@ class IndegoAsyncClient(IndegoBaseClient):
             self._session = aiohttp.ClientSession(raise_for_status=False)
             self._should_close_session = True
 
+    async def __aenter__(self):
+        """Enter for async with."""
+        await self.start()
+        return self
+
     async def __aexit__(self, exc_type, exc_value, traceback):
         """Exit for async with."""
         await self.close()
+
+    async def start(self):
+        """get the OAuth-token"""
+        if self._token_refresh_method is not None:
+            _LOGGER.debug("Refreshing token")
+            self._token = await self._token_refresh_method()
+        else:
+            _LOGGER.debug("Token refresh is NOT available")
 
     async def close(self):
         """Close the aiohttp session."""
@@ -472,11 +485,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             _LOGGER.warning("Five attempts done, please try again later")
             return None
 
-        if self._token_refresh_method is not None:
-            _LOGGER.debug("Refreshing token")
-            self._token = await self._token_refresh_method()
-        else:
-            _LOGGER.debug("Token refresh is NOT available")
+        await self.start()
 
         url = f"{self._api_url}{path}"
 

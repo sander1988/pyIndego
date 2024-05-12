@@ -5,6 +5,7 @@ from datetime import datetime
 from socket import error as SocketError
 
 import pytest
+import pytest_asyncio
 from aiohttp import (
     ClientOSError,
     ClientResponseError,
@@ -42,6 +43,8 @@ from pyIndego.states import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+pytest_plugins = ('pytest_asyncio',)
 
 alert = {
     "alm_sn": "test_sn",
@@ -366,7 +369,7 @@ state = {
     "mow_trig": True,
 }
 
-test_config = {"username": "testname", "password": "testpassword", "api_url": "", "serial": "123456789"}
+test_config = {"serial": "123456789", "token": "testtoken"}
 
 
 class AsyncMock(MagicMock):
@@ -666,6 +669,7 @@ class TestIndego(object):
             (False, IndegoAsyncClient.update_all, "user", None, None),
         ],
     )
+    @pytest.mark.asyncio
     async def test_client_update_functions(
         self, sync, func, attr, ret_value, assert_value
     ):
@@ -674,8 +678,6 @@ class TestIndego(object):
             resp = MockResponseSync(ret_value, 200)
             with patch("requests.request", return_value=resp):
                 indego = IndegoClient(**test_config)
-                indego._online = True
-                indego._userid = "test_user_id"
                 func(indego)
                 assert getattr(indego, attr) == assert_value
                 if attr == "state":
@@ -687,9 +689,6 @@ class TestIndego(object):
                 "pyIndego.IndegoAsyncClient.start", return_value=True
             ):
                 async with IndegoAsyncClient(**test_config) as indego:
-                    indego._contextid = "askdjfbaks"
-                    indego._online = True
-                    indego._userid = "test_user_id"
                     await func(indego)
                     assert getattr(indego, attr) == assert_value
                     if attr == "state":
@@ -749,6 +748,7 @@ class TestIndego(object):
             ),
         ],
     )
+    @pytest.mark.asyncio
     async def test_client_update_state_params(
         self, sync, func, param, attr, ret_value, assert_value
     ):
@@ -757,8 +757,6 @@ class TestIndego(object):
             resp = MockResponseSync(ret_value, 200)
             with patch("requests.request", return_value=resp):
                 indego = IndegoClient(**test_config)
-                indego._online = True
-                indego._userid = "test_user_id"
                 func(indego, **param)
                 assert getattr(indego, attr) == assert_value
         else:
@@ -767,9 +765,6 @@ class TestIndego(object):
                 "pyIndego.IndegoAsyncClient.start", return_value=True
             ):
                 async with IndegoAsyncClient(**test_config) as indego:
-                    indego._contextid = "askdjfbaks"
-                    indego._online = True
-                    indego._userid = "test_user_id"
                     await func(indego, **param)
                     assert getattr(indego, attr) == assert_value
 
@@ -780,14 +775,13 @@ class TestIndego(object):
             (False, IndegoAsyncClient.update_user, "user", user, User(**user)),
         ],
     )
+    @pytest.mark.asyncio
     async def test_client_replace(self, sync, func, attr, ret_value, assert_value):
         """Test the base client functions with 200."""
         if sync:
             resp = MockResponseSync(ret_value, 200)
             with patch("requests.request", return_value=resp):
                 indego = IndegoClient(**test_config)
-                indego._online = True
-                indego._userid = "test_user_id"
                 func(indego)
                 assert getattr(indego, attr) == assert_value
                 func(indego)
@@ -798,9 +792,6 @@ class TestIndego(object):
                 "pyIndego.IndegoAsyncClient.start", return_value=True
             ):
                 async with IndegoAsyncClient(**test_config) as indego:
-                    indego._contextid = "askdjfbaks"
-                    indego._online = True
-                    indego._userid = "test_user_id"
                     await func(indego)
                     assert getattr(indego, attr) == assert_value
                     await func(indego)
@@ -825,22 +816,19 @@ class TestIndego(object):
             (False, 504, IndegoAsyncClient.update_user, "user", user),
         ],
     )
+    @pytest.mark.asyncio
     async def test_client_responses(self, sync, response, func, attr, ret_value):
         """Test the request functions with different responses."""
         if sync:
             resp = MockResponseSync(ret_value, response)
             with patch("requests.request", return_value=resp):
                 indego = IndegoClient(**test_config)
-                indego._online = True
-                indego._userid = "test_user_id"
                 func(indego)
                 assert getattr(indego, attr) == None
         else:
             resp = MockResponseAsync(ret_value, response)
             with patch("aiohttp.ClientSession.request", return_value=resp):
                 async with IndegoAsyncClient(**test_config) as indego:
-                    indego._online = True
-                    indego._userid = "test_user_id"
                     await func(indego)
                     assert getattr(indego, attr) == None
 
@@ -858,14 +846,13 @@ class TestIndego(object):
             (SocketError),
         ],
     )
+    @pytest.mark.asyncio
     async def test_a_client_response_errors(self, error):
         """Test the request functions with different responses."""
         with patch("aiohttp.ClientSession.request", side_effect=error), patch(
             "asyncio.sleep", new_callable=AsyncMock
         ):
             async with IndegoAsyncClient(**test_config) as indego:
-                indego._online = True
-                indego._userid = "test_user_id"
                 resp = await indego._request(
                     method=Methods.GET, path="alerts", timeout=1
                 )
@@ -880,8 +867,6 @@ class TestIndego(object):
             "time.sleep", new_callable=SyncMock
         ):
             indego = IndegoClient(**test_config)
-            indego._online = True
-            indego._userid = "test_user_id"
             resp = indego._request(method=Methods.GET, path="alerts", timeout=1)
             assert resp is None
 
@@ -894,13 +879,12 @@ class TestIndego(object):
             (None, False, 0, ValueError),
         ],
     )
+    @pytest.mark.asyncio
     async def test_alert_functions(self, alerts, loaded, index, error):
         """Test the function for handling alerts."""
         resp = MockResponseSync(True, 200)
         with patch("requests.request", return_value=resp):
             indego = IndegoClient(**test_config)
-            indego._online = True
-            indego._userid = "test_user_id"
             indego.alerts = alerts
             indego._alerts_loaded = loaded
             try:
@@ -944,8 +928,6 @@ class TestIndego(object):
             "pyIndego.IndegoAsyncClient.start", return_value=True
         ):
             async with IndegoAsyncClient(**test_config) as indego:
-                indego._online = True
-                indego._userid = "test_user_id"
                 indego.alerts = alerts
                 indego._alerts_loaded = loaded
                 try:
@@ -1003,13 +985,12 @@ class TestIndego(object):
             ("pred_cal", {"cals": 1}, ValueError),
         ],
     )
+    @pytest.mark.asyncio
     async def test_commands(self, command, param, error):
         """Test the function for handling alerts."""
         resp = MockResponseSync(True, 200)
         with patch("requests.request", return_value=resp):
             indego = IndegoClient(**test_config)
-            indego._online = True
-            indego._userid = "test_user_id"
             if command == "command":
                 try:
                     indego.put_command(param)
@@ -1043,8 +1024,6 @@ class TestIndego(object):
             "pyIndego.IndegoAsyncClient.start", return_value=True
         ):
             async with IndegoAsyncClient(**test_config) as indego:
-                indego._online = True
-                indego._userid = "test_user_id"
                 if command == "command":
                     try:
                         await indego.put_command(param)
@@ -1074,45 +1053,10 @@ class TestIndego(object):
                         assert True
 
     @pytest.mark.parametrize(
-        "config",
-        [
-            ({"username": "testname", "password": "testpassword", "api_url": ""}),
-            (
-                {
-                    "username": "testname",
-                    "password": "testpassword",
-                    "serial": "123456789",
-                    "api_url": "",
-                }
-            ),
-        ],
-    )
-    async def test_login(self, config):
-        """Test the function for handling alerts."""
-        resp_json = {"contextId": "98765", "userId": "12345"}
-        resp_get = [{"alm_sn": "123456789"}]
-        resp_login_s = MockResponseSync(resp_json, 200)
-        with patch("requests.request", return_value=resp_login_s), patch(
-            "pyIndego.IndegoClient.get", return_value=resp_get
-        ):
-            indego = IndegoClient(**config)
-            indego.login()
-            assert indego._userid == "12345"
-            assert indego.serial == "123456789"
-
-        resp_login_a = MockResponseAsync(resp_json, 200)
-        with patch("aiohttp.ClientSession.request", return_value=resp_login_a), patch(
-            "pyIndego.IndegoAsyncClient.start", return_value=True
-        ), patch("pyIndego.IndegoAsyncClient.get", return_value=resp_get):
-            async with IndegoAsyncClient(**config) as indego:
-                await indego.login()
-                assert indego._userid == "12345"
-                assert indego.serial == "123456789"
-
-    @pytest.mark.parametrize(
         "config, param, error",
         [(None, None, ValueError), (None, "test.svg", None), ("test.svg", None, None)],
     )
+    @pytest.mark.asyncio
     async def test_download(self, config, param, error):
         """Test the function for download map."""
         conf = test_config.copy()
