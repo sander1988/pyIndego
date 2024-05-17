@@ -7,6 +7,7 @@ import pytz
 import requests
 
 from .const import (
+    DEFAULT_HEADERS,
     DEFAULT_CALENDAR,
     DEFAULT_LOOKUP_VALUE,
     DEFAULT_URL,
@@ -55,6 +56,7 @@ class IndegoBaseClient(ABC):
             api_url (str, optional): url for the api, defaults to DEFAULT_URL.
             raise_request_exceptions (bool): Should unexpected API request exception be raised or not. Default False to keep things backwards compatible.
         """
+        self._default_headers = DEFAULT_HEADERS.copy()
         self._token = token
         self._token_refresh_method = token_refresh_method
         self._serial = serial
@@ -469,6 +471,12 @@ class IndegoBaseClient(ABC):
             self.operating_data.battery.update_percent_adjusted(
                 self.generic_data.model_voltage
             )
+
+    def set_default_header(self, key: str, value: str):
+        if value is None or value == "":
+            return
+        self._default_headers[key] = value
+        _LOGGER.debug("Default request headers updated: '%s'", self._default_headers)
 
     def __repr__(self):
         """Create a string representing the mower."""

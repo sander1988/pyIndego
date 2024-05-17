@@ -1,12 +1,21 @@
 """Setup for pyIndego."""
+import os
 from setuptools import find_packages, setup
 
-with open("README.md", "r") as fh:
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Little hack to load the version.py file without loading the __init__.py.
+# As that would fail (when deps are not yet installed).
+__version__ = None
+with open(os.path.join(current_dir, "pyIndego", "version.py"), "r") as fh:
+    exec(fh.read())
+
+with open(os.path.join(current_dir, "README.md"), "r") as fh:
     long_description = fh.read()
 
 setup(
     name="pyIndego",
-    version="3.1.1",
+    version=__version__,
     author="jm-73, sander1988",
     author_email="jens@myretyr.se",
     description="API for Bosch Indego mower",
