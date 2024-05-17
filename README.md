@@ -16,7 +16,7 @@ For use in Home Assistant: https://github.com/jm-73/Indego
 
 ## Basic information needed
 
-The library requires python 3.7 or above.
+The library requires python 3.8 or above.
 
 Required information   | Description
 -----------------------|------------
@@ -100,7 +100,7 @@ Calendar(cal=3, days=[CalendarDay(day=0, day_name='monday', slots=[CalendarSlot(
 ```
 
 ### indego.update_config()
-Updates indego.config with settings for region, border cut, pin lock, id for the wire, bump and alarm mode. This call doesnt work on some Indegos, this function gives an error on Indego 1000, while it works on newer models (e.g., Indego S+ 400).
+Updates indego.config with settings for region, border cut, pin lock, id for the wire, bump and alarm mode. This call doesn't work on some Indegos, this function gives an error on Indego 1000, while it works on newer models (e.g., Indego S+ 400).
 
 ```python
 Config(region=0, language=1, border_cut=0, is_pin_set=True, wire_id=4, bump_sensitivity=0, alarm_mode=True)
@@ -174,7 +174,7 @@ Security(enabled=True, autolock=False)
 ```
 
 ### indego.update_setup()
-Updates the indego.setup with information if the Indego is set up, has pincode and wome other unknown values.
+Updates the indego.setup with information if the Indego is set up, has pincode and some other unknown values.
 
 ```python
 Setup(hasOwner=True, hasPin=True, hasMap=True, hasAutoCal=False, hasIntegrityCheckPassed=True)
@@ -197,7 +197,7 @@ State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPo
 ### indego.update_state(force=False, longpoll=True, longpoll_timeout=120)
 Updates the indego.state with state of mower, % lawn mowed, position, runtime, map coordinates.
 
-When longpoll is set to True, the indego.state must contain a value. It should contain the current state of the mower (you must run a "regular" update.state first). You send the current value to the API, and the API answers back when the state chenges.
+When longpoll is set to True, the indego.state must contain a value. It should contain the current state of the mower (you must run a "regular" update.state first). You send the current value to the API, and the API answers back when the state changes.
 
 This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
 
@@ -237,19 +237,19 @@ Set all alerts to read, the function loops through the alert_id's from indego.al
 ### indego.put_command(command)
 Send commands.
 
-Command     |Description         
+Command     |Description
 ------------|--------------------
-put_command('mow')          |Start mowing        
-put_command('pause')        |Pause mower         
+put_command('mow')          |Start mowing
+put_command('pause')        |Pause mower
 put_command('returnToDock') |Return mower to dock
 
 ### indego.put_mow_mode(command)
 Send command. Accepted commands:
 
-Command     |Description         
+Command     |Description
 ------------|--------------------
-put_mow_mode('true')  |Smart Mow enabled        
-put_mow_mode('false') |Smart Mow disabled   
+put_mow_mode('true')  |Smart Mow enabled
+put_mow_mode('false') |Smart Mow disabled
 
 
 ## Not implemented yet
@@ -311,7 +311,7 @@ Response:
 
 
 ## Attributes for reading data from locally cached API data
-All functions that doesnt contain "update" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
+All functions that doesn't contain "update" first in name is collecting data from locally stored variables in the function. No API calls to Bosch or mower.
 
 attributes                 | Description
 -------------------------|-----------------------------
@@ -324,7 +324,7 @@ AlmName | Show name.
 BareToolNumber | Show the model number.
 Battery | Show battery information.
 BatteryAmbientTemp | Show the ambient temp of the battery.
-BatteryCycles | Dont know what this value is?
+BatteryCycles | Don't know what this value is?
 BatteryDischarge | Show the current drawn in Ah.
 BatteryPercent | Show the raw value for percentage left. For Gen 1 this seems to be the battery voltage. For Gen 2 it seems to be the actual percentage left in the battery.
 BatteryPercentAdjusted | Show the adjusted value for percentage left. Calculated for Gen 1, and the actual percentage value for Gen 2.
@@ -333,13 +333,13 @@ BatteryVoltage | Show voltage for the battery. For Gen 1 mowers this value seems
 ConvertBoschDateTime | Convert Bosch abbreviation for time to std 24h time
 Country | Show country for the account.
 Displayname | Show name for the account.
-Email | Show email adress for the account.
+Email | Show email address for the account.
 FirmwareAvailable | Show if there are any firmware updates available.
 FriendlyAlertErrorCode | Show user friendly alert error code description to be shown in HA GUI.
-Garden | Dont know what this is?
-HmiKeysn | Dont know what this is?
+Garden | Don't know what this is?
+HmiKeysn | Don't know what this is?
 Language | Show language for the account.
-MapSvgCacheTs | Dont know what this is...
+MapSvgCacheTs | Don't know what this is...
 MapUpdateAvailable | Show if there is an update of the map image.
 ModelDescription | Show user friendly model name.
 ModelVoltage | Show the predefined voltage limits in order to calculate battery percentage.
@@ -351,11 +351,11 @@ MowerState | Show current state
 MowerStateDescription | Show simple description of current state. States available are Docked, Mowing, Stuck, Diagnostics mode, End of life, Software update.
 MowerStateDescriptionDetailed | Show description in detail of current state.
 MowingModeDescription | Show the user friendly mow mode description.
-NeedsService | Show needs service flag. Dont know when it is used.
+NeedsService | Show needs service flag. Don't know when it is used.
 NextMow | Show next planned mow session.
-OptIn | Dont know what this are for?
-OptInApp | Dont know what this are for?
-Runtime | Show session and total rutime and charge time in minutes.
+OptIn | Don't know what this are for?
+OptInApp | Don't know what this are for?
+Runtime | Show session and total runtime and charge time in minutes.
 RuntimeSession | show session runtime and charge time in minutes
 RuntimeTotal | Show total runtime and charge time in hours
 Serial | Show serial number
@@ -369,7 +369,7 @@ YPos | Show y-position of mower.
 
 ### Not properly implemented yet
 
-    update_predicitive_calendar()
+    update_predictive_calendar()
 Get the calender for predicted mow sessions
 
     update_user_adjustment()
@@ -418,4 +418,24 @@ put
 
 delete
 /alerts/<alertid>
+```
+# Contributing
+The project development is done in a poetry virtual environment.
+
+## setup your environment
+To start development please install [poetry](https://python-poetry.org/docs/).
+
+* Install all dependency by running `poetry install`.
+* activate the virtual environment by running `poetry shell`
+* Run `python test_new.py` to test your setup.
+
+## setup your personal info
+
+Open [config.json](./config.json) and type in the information for your `indego`.
+
+```javascript
+{
+    "token": "mytoken",
+    "serial": "myserial"
+}
 ```
