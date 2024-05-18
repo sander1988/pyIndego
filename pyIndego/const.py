@@ -1,7 +1,7 @@
 """Constants for pyIndego."""
 from enum import Enum
-import random
-import string
+from pyIndego.version import __version__
+
 
 class Methods(Enum):
     """Enum with HTTP methods."""
@@ -20,12 +20,14 @@ CONTENT_TYPE_JSON = "application/json"
 CONTENT_TYPE = "Content-Type"
 COMMANDS = ("mow", "pause", "returnToDock")
 
-DEFAULT_HEADER = {
+DEFAULT_HEADERS = {
     CONTENT_TYPE: CONTENT_TYPE_JSON,
     # We need to change the user-agent!
-    # The Microsoft Azure proxy seems to block all requests (HTTP 403) for the default 'python-requests' user-agent.
-    # We also need to use a random agent for each client: https://github.com/jm-73/pyIndego/issues/119
-    "User-Agent": ''.join(random.choices(string.ascii_uppercase + string.digits, k=12))
+    # The Microsoft Azure proxy WAF seems to block all requests (HTTP 403) for the default 'python-requests' user-agent.
+    # See issues:
+    # - https://github.com/jm-73/pyIndego/issues/119
+    # - https://github.com/jm-73/Indego/issues/204
+    'User-Agent': "HomeAssistant/Indego (%s)" % __version__
 }
 DEFAULT_LOOKUP_VALUE = "Not in database."
 
