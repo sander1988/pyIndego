@@ -502,10 +502,10 @@ class IndegoAsyncClient(IndegoBaseClient):
                 "%s call to API endpoint %s, headers: %s, data: %s",
                 method.value,
                 url,
-                json.dumps(headers) if headers is not None else '',
+                json.dumps(log_headers) if log_headers is not None else '',
                 json.dumps(data) if data is not None else '',
             )
-            
+
             async with self._session.request(
                 method=method.value,
                 url=url,
