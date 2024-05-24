@@ -1,6 +1,7 @@
 """API for Bosch API server for Indego lawn mower."""
 import asyncio
 import logging
+import json
 from socket import error as SocketError
 from typing import Any, Optional, Callable, Awaitable
 
@@ -494,7 +495,13 @@ class IndegoAsyncClient(IndegoBaseClient):
             headers["Authorization"] = "Bearer %s" % self._token
 
         try:
-            _LOGGER.debug("%s call to API endpoint %s", method.value, url)
+            _LOGGER.debug(
+                "%s call to API endpoint %s, headers: %s, data: %s",
+                method.value,
+                url,
+                json.dumps(headers) if headers is not None else '',
+                json.dumps(data) if data is not None else '',
+            )
             async with self._session.request(
                 method=method.value,
                 url=url,
@@ -507,9 +514,17 @@ class IndegoAsyncClient(IndegoBaseClient):
                 if status == 200:
                     if response.content_type == CONTENT_TYPE_JSON:
                         resp = await response.json()
-                        _LOGGER.debug("Response: %s", resp)
+                        _LOGGER.debug("Response (JSON): %s", resp)
                         return resp
-                    return await response.content.read()
+
+                resp = await response.content.read()
+                if len(resp) < 1000:
+                    _LOGGER.debug("Response (raw): %s", resp)
+                else:
+                    _LOGGER.debug("Response (raw): Not logged, exceeds 1000 characters")
+
+                if status == 200:
+                    return resp
 
                 if self._log_request_result(status, url):
                     return None
