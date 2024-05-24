@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import json
+import time
 from socket import error as SocketError
 from typing import Any, Optional, Callable, Awaitable
 
@@ -494,6 +495,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             headers = self._default_headers.copy()
             headers["Authorization"] = "Bearer %s" % self._token
 
+        request_start_time = None
         try:
             log_headers = headers.copy()
             if 'Authorization' in log_headers:
@@ -506,6 +508,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                 json.dumps(data) if data is not None else '',
             )
 
+            request_start_time = time.time()
             async with self._session.request(
                 method=method.value,
                 url=url,
@@ -536,7 +539,13 @@ class IndegoAsyncClient(IndegoBaseClient):
                 response.raise_for_status()
 
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as exc:
-            _LOGGER.info("%s %s request timed out (mower offline?): %s. Retrying...", method.value, path, exc)
+            _LOGGER.info(
+                "%s %s request timed out after %i seconds (mower offline?): %s. Retrying...",
+                method.value,
+                path,
+                time.time() - request_start_time,
+                str(exc)
+            )
             return await self._request(
                 method=method,
                 path=path,
@@ -546,13 +555,25 @@ class IndegoAsyncClient(IndegoBaseClient):
             )
 
         except ClientOSError as exc:
-            _LOGGER.debug("%s %s request timed out: %s", method.value, path, exc)
+            _LOGGER.debug(
+                "%s %s request timed out after %i seconds: %s",
+                method.value,
+                path,
+                time.time() - request_start_time,
+                str(exc)
+            )
             return None
 
         except (TooManyRedirects, ClientResponseError, SocketError) as exc:
             if self._raise_request_exceptions:
                 raise
-            _LOGGER.error("%s %s failed: %s", method.value, path, exc)
+            _LOGGER.error(
+                "%s %s failed after %i seconds: %s",
+                method.value,
+                path,
+                time.time() - request_start_time,
+                str(exc)
+            )
             return None
 
         except asyncio.CancelledError:
@@ -562,7 +583,12 @@ class IndegoAsyncClient(IndegoBaseClient):
         except Exception as exc:
             if self._raise_request_exceptions:
                 raise
-            _LOGGER.error("Request %s %s gave a unhandled error: %s", method.value, path, exc)
+            _LOGGER.error(
+                "Request %s %s gave a unhandled error: %s",
+                method.value,
+                path,
+                str(exc)
+            )
             return None
 
     async def get(self, path: str, timeout: int = 30):
