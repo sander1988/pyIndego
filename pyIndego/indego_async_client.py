@@ -495,6 +495,9 @@ class IndegoAsyncClient(IndegoBaseClient):
             headers["Authorization"] = "Bearer %s" % self._token
 
         try:
+            log_headers = headers.copy()
+            if 'Authorization' in log_headers:
+                log_headers['Authorization'] = '******'
             _LOGGER.debug(
                 "%s call to API endpoint %s, headers: %s, data: %s",
                 method.value,
@@ -502,6 +505,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                 json.dumps(headers) if headers is not None else '',
                 json.dumps(data) if data is not None else '',
             )
+            
             async with self._session.request(
                 method=method.value,
                 url=url,
