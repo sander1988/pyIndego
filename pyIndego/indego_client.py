@@ -409,7 +409,17 @@ class IndegoClient(IndegoBaseClient):
             headers["Authorization"] = "Bearer %s" % self._token
 
         try:
-            _LOGGER.debug("%s call to API endpoint %s", method.value, url)
+            log_headers = headers.copy()
+            if 'Authorization' in log_headers:
+                log_headers['Authorization'] = '******'
+            _LOGGER.debug(
+                "%s call to API endpoint %s, headers: %s, data: %s",
+                method.value,
+                url,
+                json.dumps(log_headers) if log_headers is not None else '',
+                json.dumps(data) if data is not None else '',
+            )
+
             response = requests.request(
                 method=method.value,
                 url=url,
