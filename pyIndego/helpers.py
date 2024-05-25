@@ -53,7 +53,7 @@ def generate_update(field: Any, new: dict, new_class: Any):
 
     Args:
         field (None|State Class): current value of the to be updated field.
-        new (dict): new values coming back from the api.
+        new (dict): new values coming back from the API.
         new_class (State Class): Class to instantiate the value with if necessary.
 
     Returns:
