@@ -1,5 +1,6 @@
 """Helper class for Indego."""
 import logging
+import os
 from dataclasses import dataclass, is_dataclass, replace
 from datetime import datetime
 from typing import Any
@@ -62,3 +63,8 @@ def generate_update(field: Any, new: dict, new_class: Any):
     if field:
         return replace(field, **new)
     return new_class(**new)
+
+
+def random_request_id() -> str:
+    """A random ID for API request to for easier tracking of corresponding log messages."""
+    return os.urandom(6).hex().upper()

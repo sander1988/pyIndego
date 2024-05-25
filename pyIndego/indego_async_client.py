@@ -15,17 +15,16 @@ from aiohttp import (
 )
 from aiohttp.web_exceptions import HTTPGatewayTimeout
 
-from . import __version__
 from .const import (
     COMMANDS,
     CONTENT_TYPE_JSON,
     DEFAULT_CALENDAR,
-    DEFAULT_HEADERS,
     DEFAULT_URL,
     Methods,
 )
 from .indego_base_client import IndegoBaseClient
 from .states import Calendar
+from .helpers import random_request_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -465,8 +464,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         path: str,
         data: dict = None,
         headers: dict = None,
-        timeout: int = 30,
-        attempts: int = 0,
+        timeout: int = 30
     ):
         """Request implemented by the subclasses either synchronously or asynchronously.
 
@@ -476,17 +474,8 @@ class IndegoAsyncClient(IndegoBaseClient):
             data (dict, optional): if applicable, data to be sent, defaults to None.
             headers (dict, optional): headers to be included, defaults to None, which should be filled by the method.
             timeout (int, optional): Timeout for the api call. Defaults to 30.
-            attempts (int, optional): Number to keep track of retries, after three starts delaying, after five quites.
 
         """
-        if 3 <= attempts < 5:
-            _LOGGER.info("Three or four attempts done, waiting 30 seconds")
-            await asyncio.sleep(30)
-
-        if attempts == 5:
-            _LOGGER.warning("Five attempts done, please try again later")
-            return None
-
         await self.start()
 
         url = f"{self._api_url}{path}"
@@ -495,13 +484,15 @@ class IndegoAsyncClient(IndegoBaseClient):
             headers = self._default_headers.copy()
             headers["Authorization"] = "Bearer %s" % self._token
 
+        request_id = random_request_id()
         request_start_time = None
         try:
             log_headers = headers.copy()
             if 'Authorization' in log_headers:
                 log_headers['Authorization'] = '******'
             _LOGGER.debug(
-                "%s call to API endpoint %s, headers: %s, data: %s",
+                "[%s] %s call to API endpoint %s, headers: %s, data: %s",
+                request_id,
                 method.value,
                 url,
                 json.dumps(log_headers) if log_headers is not None else '',
@@ -517,7 +508,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                 timeout=timeout,
             ) as response:
                 status = response.status
-                _LOGGER.debug("HTTP status code: %i", status)
+                _LOGGER.debug("[%s] HTTP status code: %i", request_id, status)
                 if status == 200:
                     if response.content_type == CONTENT_TYPE_JSON:
                         resp = await response.json()
@@ -526,37 +517,33 @@ class IndegoAsyncClient(IndegoBaseClient):
 
                 resp = await response.content.read()
                 if len(resp) < 1000:
-                    _LOGGER.debug("Response (raw): %s", resp)
+                    _LOGGER.debug("[%s] Response (raw): %s", request_id, resp)
                 else:
-                    _LOGGER.debug("Response (raw): Not logged, exceeds 1000 characters")
+                    _LOGGER.debug("[%s] Response (raw): Not logged, exceeds 1000 characters", request_id)
 
                 if status == 200:
                     return resp
 
-                if self._log_request_result(status, url):
+                if self._log_request_result(request_id, status, url):
                     return None
 
                 response.raise_for_status()
 
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as exc:
             _LOGGER.info(
-                "%s %s request timed out after %i seconds (mower offline?): %s. Retrying...",
+                "[%s] %s %s request timed out after %i seconds (mower offline?): %s",
+                request_id,
                 method.value,
                 path,
                 time.time() - request_start_time,
                 str(exc)
             )
-            return await self._request(
-                method=method,
-                path=path,
-                data=data,
-                timeout=timeout,
-                attempts=attempts + 1,
-            )
+            return None
 
         except ClientOSError as exc:
             _LOGGER.debug(
-                "%s %s request timed out after %i seconds: %s",
+                "[%s] %s %s request timed out after %i seconds: %s",
+                request_id,
                 method.value,
                 path,
                 time.time() - request_start_time,
@@ -568,7 +555,8 @@ class IndegoAsyncClient(IndegoBaseClient):
             if self._raise_request_exceptions:
                 raise
             _LOGGER.error(
-                "%s %s failed after %i seconds: %s",
+                "[%s] %s %s failed after %i seconds: %s",
+                request_id,
                 method.value,
                 path,
                 time.time() - request_start_time,
@@ -577,14 +565,15 @@ class IndegoAsyncClient(IndegoBaseClient):
             return None
 
         except asyncio.CancelledError:
-            _LOGGER.debug("Task cancelled by task runner")
+            _LOGGER.debug("[%s] Task cancelled by task runner", request_id)
             return None
 
         except Exception as exc:
             if self._raise_request_exceptions:
                 raise
             _LOGGER.error(
-                "Request %s %s gave a unhandled error: %s",
+                "[%s] Request %s %s gave a unhandled error: %s",
+                request_id,
                 method.value,
                 path,
                 str(exc)

@@ -420,24 +420,23 @@ class IndegoBaseClient(ABC):
         data: dict = None,
         headers: dict = None,
         timeout: int = 30,
-        attempts: int = 0,
     ):
         """Request implemented by the subclasses either synchronously or asynchronously."""
 
-    def _log_request_result(self, status: int, url: str) -> bool:
+    def _log_request_result(self, request_id: str, status: int, url: str) -> bool:
         """Log the API request result for certain status codes."""
         """Return False if the status is fatal and should be raised."""
 
         if status == 204:
-            _LOGGER.debug("204: No content in response from server, ignoring")
+            _LOGGER.debug("[%s] 204: No content in response from server, ignoring", request_id)
             return True
 
         if status == 504 and url.find("longpoll=true") > 0:
-            _LOGGER.debug("504: longpoll stopped, no updates")
+            _LOGGER.debug("[%s] 504: longpoll stopped, no updates", request_id)
             return True
 
         if 400 <= status < 600:
-            _LOGGER.error("Request to '%s' failed with HTTP status code: %i", url, status)
+            _LOGGER.error("[%s] Request to '%s' failed with HTTP status code: %i", request_id, url, status)
             return not self._raise_request_exceptions
 
         return False

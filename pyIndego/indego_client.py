@@ -1,22 +1,21 @@
 """API for Bosch API server for Indego lawn mower."""
 import logging
-import time
 import typing
+import json
 
 import requests
 from requests.exceptions import RequestException, Timeout, TooManyRedirects
 
-from . import __version__
 from .const import (
     COMMANDS,
     CONTENT_TYPE,
     CONTENT_TYPE_JSON,
     DEFAULT_CALENDAR,
-    DEFAULT_HEADERS,
     Methods,
 )
 from .indego_base_client import IndegoBaseClient
 from .states import Calendar
+from .helpers import random_request_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -388,17 +387,8 @@ class IndegoClient(IndegoBaseClient):
         data: dict = None,
         headers: dict = None,
         timeout: int = 30,
-        attempts: int = 0,
     ):
         """Send a request and return the response."""
-        if attempts >= 3:
-            _LOGGER.warning("Three attempts done, waiting 30 seconds.")
-            time.sleep(30)
-
-        if attempts >= 5:
-            _LOGGER.warning("Five attempts done, please try again manually.")
-            return None
-
         if self._token_refresh_method is not None:
             self.token = self._token_refresh_method()
 
@@ -408,12 +398,14 @@ class IndegoClient(IndegoBaseClient):
             headers = self._default_headers.copy()
             headers["Authorization"] = "Bearer %s" % self._token
 
+        request_id = random_request_id()
         try:
             log_headers = headers.copy()
             if 'Authorization' in log_headers:
                 log_headers['Authorization'] = '******'
             _LOGGER.debug(
-                "%s call to API endpoint %s, headers: %s, data: %s",
+                "[%s] %s call to API endpoint %s, headers: %s, data: %s",
+                request_id,
                 method.value,
                 url,
                 json.dumps(log_headers) if log_headers is not None else '',
@@ -428,7 +420,7 @@ class IndegoClient(IndegoBaseClient):
                 timeout=timeout,
             )
             status = response.status_code
-            _LOGGER.debug("HTTP status code: %i", status)
+            _LOGGER.debug("[%s] HTTP status code: %i", request_id, status)
 
             if status == 200:
                 if method in (Methods.DELETE, Methods.PATCH, Methods.PUT):
@@ -437,28 +429,21 @@ class IndegoClient(IndegoBaseClient):
                     return response.json()
                 return response.content
 
-            if self._log_request_result(status, url):
+            if self._log_request_result(request_id, status, url):
                 return None
 
             response.raise_for_status()
 
         except Timeout as exc:
-            _LOGGER.error("%s: Timeout on Bosch servers, retrying.", exc)
-            return self._request(
-                method=method,
-                path=path,
-                data=data,
-                timeout=timeout,
-                attempts=attempts + 1,
-            )
+            _LOGGER.error("[%s] %s: Timeout on Bosch servers", request_id, str(exc))
 
         except (TooManyRedirects, RequestException) as exc:
-            _LOGGER.error("%s: Failed to update Indego status.", exc)
+            _LOGGER.error("[%s] %s: Failed to update Indego status", request_id, str(exc))
 
         except Exception as exc:
             if self._raise_request_exceptions:
                 raise
-            _LOGGER.error("Request to %s gave a unhandled error: %s", url, exc)
+            _LOGGER.error("[%s] Request to %s gave a unhandled error: %s", request_id, url, exc)
 
         return None
 
