@@ -4,7 +4,7 @@
 - Changed the useragent for communication with the Bosch server API.
 
 ## 3.0.1
-- Bugfixes when I made some major errors when relleasing 3.0.0
+- Bugfixes when I made some major errors when releasing 3.0.0
 
 ## 3.0.0
 - Added OAuth (Bosch SingleKey ID support) Doest work anymore: New API / Switch to Bosch Single ID #116.
@@ -212,7 +212,7 @@
 ## 0.7.11 2019-08-27
 
 ### Changes
-- Added support for last completed lawn mowe
+- Added support for last completed lawn mow
 - Added support for CI with Azure pipelines (for testing code before releases)
 
 ## 0.7.8 2019-08-22
@@ -256,7 +256,7 @@
 ### Changes
 - Adjusted files to GitHub
 - Updated documentation
-- Perparing for reading Alerts as a list
+- Preparing for reading Alerts as a list
 
 ## 0.7.0 2019-08-12
 
