@@ -530,7 +530,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                 response.raise_for_status()
 
         except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as exc:
-            _LOGGER.info(
+            _LOGGER.debug(
                 "[%s] %s %s request timed out after %i seconds (mower offline?): %s",
                 request_id,
                 method.value,
