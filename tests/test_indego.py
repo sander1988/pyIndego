@@ -877,13 +877,11 @@ class TestIndego(object):
                     assert getattr(indego, attr) == assert_value
 
     @pytest.mark.parametrize(
-        "sync, func, param, attr, initial_ret_value, updated_ret_value, initial_assert_value, updated_assert_value",
+        "sync, func, initial_ret_value, updated_ret_value, initial_assert_value, updated_assert_value",
         [
             (
                     True,
                     IndegoClient.update_state,
-                    {"longpoll": True},
-                    "state",
                     STATE_RESPONSE,
                     None,  # No update / empty response
                     State(**STATE_RESPONSE),
@@ -892,8 +890,6 @@ class TestIndego(object):
             (
                     True,
                     IndegoClient.update_state,
-                    {"longpoll": True},
-                    "state",
                     STATE_RESPONSE,
                     None,  # No update / empty response
                     State(**STATE_RESPONSE),
@@ -902,8 +898,6 @@ class TestIndego(object):
             (
                     False,
                     IndegoAsyncClient.update_state,
-                    {"longpoll": True},
-                    "state",
                     STATE_RESPONSE,
                     STATE_UPDATE_RESPONSE,
                     State(**STATE_RESPONSE),
@@ -912,8 +906,6 @@ class TestIndego(object):
             (
                     False,
                     IndegoAsyncClient.update_state,
-                    {"longpoll": True},
-                    "state",
                     STATE_RESPONSE,
                     STATE_UPDATE_RESPONSE,
                     State(**STATE_RESPONSE),
@@ -923,7 +915,7 @@ class TestIndego(object):
     )
     @pytest.mark.asyncio
     async def test_state_long_poll_updates(
-            self, sync, func, param, attr, initial_ret_value, updated_ret_value, initial_assert_value, updated_assert_value
+            self, sync, func, initial_ret_value, updated_ret_value, initial_assert_value, updated_assert_value
     ):
         """Test a state update using longpoll and make sure the state of correctly merged."""
         if sync:
@@ -932,14 +924,14 @@ class TestIndego(object):
             # Initial update with changes.
             resp = MockResponseSync(initial_ret_value, 200)
             with patch("requests.request", return_value=resp):
-                func(indego, **param)
-                assert getattr(indego, attr) == initial_assert_value
+                func(indego, longpoll=True, longpoll_timeout=10)
+                assert getattr(indego, "state") == initial_assert_value
 
             # 2nd update, state should be merged with previous update.
             resp = MockResponseSync(updated_ret_value, 504 if updated_ret_value is None else 200)
             with patch("requests.request", return_value=resp):
-                func(indego, **param)
-                assert getattr(indego, attr) == updated_assert_value
+                func(indego, longpoll=True, longpoll_timeout=10)
+                assert getattr(indego, "state") == updated_assert_value
 
         else:
             async with IndegoAsyncClient(**test_config) as indego:
@@ -948,16 +940,16 @@ class TestIndego(object):
                 with patch("aiohttp.ClientSession.request", return_value=resp), patch(
                         "pyIndego.IndegoAsyncClient.start", return_value=True
                 ):
-                    await func(indego, **param)
-                    assert getattr(indego, attr) == initial_assert_value
+                    await func(indego, longpoll=True, longpoll_timeout=10)
+                    assert getattr(indego, "state") == initial_assert_value
 
                 # 2nd update, state should be merged with previous update.
                 resp = MockResponseAsync(updated_ret_value, 504 if updated_ret_value is None else 200)
                 with patch("aiohttp.ClientSession.request", return_value=resp), patch(
                         "pyIndego.IndegoAsyncClient.start", return_value=True
                 ):
-                    await func(indego, **param)
-                    assert getattr(indego, attr) == updated_assert_value
+                    await func(indego, longpoll=True, longpoll_timeout=10)
+                    assert getattr(indego, "state") == updated_assert_value
 
     @pytest.mark.parametrize(
         "sync, func, attr, ret_value, assert_value",
