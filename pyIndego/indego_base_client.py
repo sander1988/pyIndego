@@ -312,9 +312,6 @@ class IndegoBaseClient(ABC):
                 self.operating_data, new, OperatingData
             )
             self._update_battery_percentage_adjusted()
-            self._online = True
-        else:
-            self._online = False
 
     @abstractmethod
     def update_predictive_calendar(self):
@@ -384,6 +381,7 @@ class IndegoBaseClient(ABC):
         """Update state."""
         if new:
             self.state = generate_update(self.state, new, State)
+        self._online = new is not None
 
     @abstractmethod
     def update_updates_available(self):
