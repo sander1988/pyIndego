@@ -393,19 +393,21 @@ class IndegoAsyncClient(IndegoBaseClient):
         Args:
             force (bool, optional): Force the state refresh, wakes up the mower. Defaults to False.
             longpoll (bool, optional): Do a longpoll. Defaults to False.
-            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120, maximum is 300.
+            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120, maximum is 230.
 
         Raises:
-            ValueError: when the longpoll timeout is longer then 300 seconds.
+            ValueError: when the longpoll timeout is less or equal to 0 or greater than 230 seconds.
 
         """
         if not self.serial:
             return
         path = f"alms/{self.serial}/state"
         if longpoll:
-            if longpoll_timeout > 300:
+            # 4 minutes (240 sec) max, so 230 is the absolute maximum (due to the 10 sec request timeout).
+            # See https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-tcp-reset
+            if longpoll_timeout <= 0 or longpoll_timeout > 230:
                 raise ValueError(
-                    "Longpoll timeout must be less than or equal 300 seconds."
+                    "Longpoll timeout outside valid range (1-230)."
                 )
             last_state = 0
             if self.state:
@@ -418,7 +420,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             else:
                 path = f"{path}?forceRefresh=true"
 
-        self._update_state(await self.get(path, timeout=longpoll_timeout + 30))
+        self._update_state(await self.get(path, timeout=longpoll_timeout + 10))
 
     async def get_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state and return it.
@@ -426,10 +428,10 @@ class IndegoAsyncClient(IndegoBaseClient):
         Args:
             force (bool, optional): Force the state refresh, wakes up the mower. Defaults to False.
             longpoll (bool, optional): Do a longpoll. Defaults to False.
-            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120, maximum is 300.
+            longpoll_timeout (int, optional): Timeout of the longpoll. Defaults to 120, maximum is 230.
 
         Raises:
-            ValueError: when the longpoll timeout is longer then 300 seconds.
+            ValueError: when the longpoll timeout is longer then 230 seconds.
 
         """
         await self.update_state(force, longpoll, longpoll_timeout)

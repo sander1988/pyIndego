@@ -199,7 +199,7 @@ Updates the indego.state with state of mower, % lawn mowed, position, runtime, m
 
 When longpoll is set to True, the indego.state must contain a value. It should contain the current state of the mower (you must run a "regular" update.state first). You send the current value to the API, and the API answers back when the state changes.
 
-This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 300 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
+This function can be used instead of polling the status every couple of seconds: place one longpoll status request with a timeout of max. 230 seconds and the function will provide its return value when the status has been updated. As soon as an answer is received, the next longpoll status request can be placed. This should save traffic on both ends.
 
 ```python
 State(state=64513, map_update_available=True, mowed=78, mowmode=0, xPos=162, yPos=65, charge=None, operate=None, runtime=Runtime(total=RuntimeDetail(operate=1715, charge=387, cut=1328), session=RuntimeDetail(operate=5, charge=0, cut=0)), mapsvgcache_ts=1593207884109, svg_xPos=192, svg_yPos=544, config_change=None, mow_trig=None)
