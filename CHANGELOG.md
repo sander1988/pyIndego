@@ -1,5 +1,13 @@
 # Changelog
 
+# 3.2.0
+- Removed API retry logic, this gave unexpected results in some cases. Where commands get called after several minutes of delay. Retries should be handled by the application.
+- Fixed longpoll hang where the longpoll exceeds 4 minutes (which is the Azure maximum for inactive long running requests).
+- Set online/offline state based on the (longpoll) state updates instead of the generic data update. This gives a more realistic and quick online/offline update.
+- Raise some more exceptions instead of only suppressing and logging them so the application can handle them accordingly.
+- Improved request debug log.
+- Improved and extended unit tests.
+
 ## 3.1.0
 - Changed the useragent for communication with the Bosch server API.
 
