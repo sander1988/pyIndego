@@ -401,6 +401,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         """
         if not self.serial:
             return
+
         path = f"alms/{self.serial}/state"
         if longpoll:
             # 4 minutes (240 sec) max, so 230 is the absolute maximum (due to the 10 sec request timeout).
@@ -410,15 +411,11 @@ class IndegoAsyncClient(IndegoBaseClient):
                     "Longpoll timeout outside valid range (1-230)."
                 )
             last_state = 0
-            if self.state:
-                if self.state.state:
-                    last_state = self.state.state
+            if self.state and self.state.state:
+                last_state = self.state.state
             path = f"{path}?longpoll=true&timeout={longpoll_timeout}&last={last_state}"
         if force:
-            if longpoll:
-                path = f"{path}&forceRefresh=true"
-            else:
-                path = f"{path}?forceRefresh=true"
+            path = f"{path}%sforceRefresh=true" % ("&" if longpoll else "?")
 
         self._update_state(await self.get(path, timeout=longpoll_timeout + 10))
 
@@ -511,6 +508,7 @@ class IndegoAsyncClient(IndegoBaseClient):
             ) as response:
                 status = response.status
                 _LOGGER.debug("[%s] HTTP status code: %i", request_id, status)
+
                 if status == 200:
                     if response.content_type == CONTENT_TYPE_JSON:
                         resp = await response.json()
@@ -531,19 +529,10 @@ class IndegoAsyncClient(IndegoBaseClient):
 
                 response.raise_for_status()
 
-        except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout) as exc:
-            _LOGGER.debug(
-                "[%s] %s %s request timed out after %i seconds (mower offline?): %s",
-                request_id,
-                method.value,
-                path,
-                time.time() - request_start_time,
-                str(exc)
-            )
-            return None
-
-        except ClientOSError as exc:
-            _LOGGER.debug(
+        except (asyncio.TimeoutError, ServerTimeoutError, HTTPGatewayTimeout, ClientOSError) as exc:
+            if self._raise_request_exceptions:
+                raise
+            _LOGGER.error(
                 "[%s] %s %s request timed out after %i seconds: %s",
                 request_id,
                 method.value,
