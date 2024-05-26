@@ -3,19 +3,18 @@ import asyncio
 import logging
 from datetime import datetime
 from socket import error as SocketError
+from typing import Final
 
 import pytest
-import pytest_asyncio
 from aiohttp import (
     ClientOSError,
     ClientResponseError,
     ServerTimeoutError,
     TooManyRedirects,
-    web,
 )
 from aiohttp.web_exceptions import HTTPGatewayTimeout
 from mock import MagicMock, patch
-from requests.exceptions import HTTPError, RequestException, Timeout
+from requests.exceptions import RequestException, Timeout
 from requests.exceptions import TooManyRedirects as reqTooManyRedirects
 
 from pyIndego import IndegoAsyncClient, IndegoClient
@@ -23,19 +22,13 @@ from pyIndego.const import CONTENT_TYPE, CONTENT_TYPE_JSON, Methods
 from pyIndego.helpers import convert_bosch_datetime
 from pyIndego.states import (
     Alert,
-    Battery,
     Calendar,
-    CalendarDay,
-    CalendarSlot,
     Config,
-    Garden,
     GenericData,
     Location,
     Network,
     OperatingData,
     PredictiveSchedule,
-    Runtime,
-    RuntimeDetail,
     Security,
     Setup,
     State,
@@ -44,9 +37,8 @@ from pyIndego.states import (
 
 _LOGGER = logging.getLogger(__name__)
 
-pytest_plugins = ('pytest_asyncio',)
-
-alert = {
+# region Test data
+ALERT_RESPONSE: Final = {
     "alm_sn": "test_sn",
     "alert_id": "5efda84ffbf591182723be89",
     "error_code": "104",
@@ -57,7 +49,8 @@ alert = {
     "flag": "warning",
     "push": True,
 }
-calendar = {
+
+CALENDAR_RESPONSE = {
     "cal": 3,
     "days": [
         {
@@ -83,15 +76,22 @@ calendar = {
         },
     ],
 }
-setup_json = {
+
+SETUP_RESPONSE: Final = {
     "hasOwner": True,
     "hasPin": True,
     "hasMap": True,
     "hasAutoCal": False,
     "hasIntegrityCheckPassed": True,
 }
-location = {"latitude": "1.1234", "longitude": "1.1234", "timezone": "Europe/Amsterdam"}
-user = {
+
+LOCATION_RESPONSE: Final = {
+    "latitude": "1.1234",
+    "longitude": "1.1234",
+    "timezone": "Europe/Amsterdam"
+}
+
+USER_RESPONSE: Final = {
     "email": "test@test.com",
     "display_name": "test",
     "language": "en",
@@ -99,8 +99,13 @@ user = {
     "optIn": False,
     "optInApp": False,
 }
-security = {"enabled": True, "autolock": False}
-generic = {
+
+SECURITY_RESPONSE: Final = {
+    "enabled": True,
+    "autolock": False
+}
+
+GENERIC_RESPONSE: Final = {
     "alm_sn": "test_sn",
     "service_counter": 69272,
     "needs_service": False,
@@ -108,10 +113,22 @@ generic = {
     "bareToolnumber": "3600HB0102",
     "alm_firmware_version": "17329.01211",
 }
-lastcutting = {"last_mowed": "2020-06-29T12:24:03.664+02:00"}
-nextcutting = {"mow_next": "2020-07-03T10:00:00+02:00"}
-network = {"mcc": 204, "mnc": 16, "rssi": -83}
-config = {
+
+LAST_CUTTING_RESPONSE: Final = {
+    "last_mowed": "2020-06-29T12:24:03.664+02:00"
+}
+
+NEXT_CUTTING_RESPONSE: Final = {
+    "mow_next": "2020-07-03T10:00:00+02:00"
+}
+
+NETWORK_RESPONSE: Final = {
+    "mcc": 204,
+    "mnc": 16,
+    "rssi": -83
+}
+
+CONFIG_RESPONSE: Final = {
     "region": 0,
     "language": 14,
     "border_cut": 0,
@@ -120,7 +137,8 @@ config = {
     "bump_sensitivity": 0,
     "alarm_mode": False,
 }
-operating = {
+
+OPERATING_RESPONSE: Final = {
     "runtime": {
         "total": {"operate": 81106, "charge": 11834},
         "session": {"operate": 12, "charge": 12},
@@ -149,7 +167,8 @@ operating = {
     },
     "hmiKeys": 213,
 }
-predictive_calendar = {
+
+PREDICTIVE_CALENDAR_RESPONSE: Final = {
     "sel_cal": 1,
     "cals": [
         {
@@ -209,7 +228,7 @@ predictive_calendar = {
     ],
 }
 
-predictive_schedule = {
+PREDICTIVE_SCHEDULE_RESPONSE: Final = {
     "schedule_days": [
         {
             "day": 1,
@@ -351,7 +370,7 @@ predictive_schedule = {
     ],
 }
 
-state = {
+STATE_RESPONSE: Final = {
     "state": 64513,
     "map_update_available": True,
     "mowed": 97,
@@ -369,7 +388,32 @@ state = {
     "mow_trig": True,
 }
 
+STATE_UPDATE_RESPONSE: Final = {
+    "state": 513,
+}
+
+STATE_FULL_UPDATE_RESPONSE: Final = {
+    "state": 513,
+    "map_update_available": True,
+    "mowed": 97,
+    "mowmode": 2,
+    "xPos": 5,
+    "yPos": 50,
+    "runtime": {
+        "total": {"operate": 81329, "charge": 11912},
+        "session": {"operate": 10, "charge": 0},
+    },
+    "mapsvgcache_ts": 1593609416617,
+    "svg_xPos": 720,
+    "svg_yPos": 424,
+    "config_change": False,
+    "mow_trig": True,
+}
+
 test_config = {"serial": "123456789", "token": "testtoken"}
+
+
+# endregion Test data
 
 
 class AsyncMock(MagicMock):
@@ -397,7 +441,9 @@ class MockResponseAsync:
     @property
     def content_type(self):
         """Return content type."""
-        return CONTENT_TYPE_JSON
+        if self._json is not None:
+            return CONTENT_TYPE_JSON
+        return None
 
     async def __aexit__(self, exc_type, exc, tb):
         """Do async exit."""
@@ -423,7 +469,9 @@ class MockResponseSync:
     @property
     def headers(self):
         """Return header."""
-        return {CONTENT_TYPE: f"{CONTENT_TYPE_JSON};"}
+        if self._json is not None:
+            return {CONTENT_TYPE: f"{CONTENT_TYPE_JSON};"}
+        return None
 
 
 class TestIndego(object):
@@ -437,18 +485,18 @@ class TestIndego(object):
     @pytest.mark.parametrize(
         "state, json, checks",
         [
-            (Alert, alert, ["alm_sn"]),
-            (OperatingData, operating, ["hmiKeys", ("garden.id", "['garden']['id']")]),
+            (Alert, ALERT_RESPONSE, ["alm_sn"]),
+            (OperatingData, OPERATING_RESPONSE, ["hmiKeys", ("garden.id", "['garden']['id']")]),
             (
-                Calendar,
-                calendar,
-                [
-                    "cal",
-                    ("days[0].day", "['days'][0]['day']"),
-                    ("days[0].slots[0].En", "['days'][0]['slots'][0]['En']"),
-                ],
+                    Calendar,
+                    CALENDAR_RESPONSE,
+                    [
+                        "cal",
+                        ("days[0].day", "['days'][0]['day']"),
+                        ("days[0].slots[0].En", "['days'][0]['slots'][0]['En']"),
+                    ],
             ),
-            (State, state, ["state"]),
+            (State, STATE_RESPONSE, ["state"]),
         ],
     )
     def test_states(self, state, json, checks):
@@ -467,16 +515,16 @@ class TestIndego(object):
         "date_str, date_dt",
         [
             (
-                "2020-07-01T13:22:43.15+02:00",
-                datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
+                    "2020-07-01T13:22:43.15+02:00",
+                    datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
             ),
             (
-                "2020-07-03T10:00:00+02:00",
-                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+                    "2020-07-03T10:00:00+02:00",
+                    datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
             ),
             (
-                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
-                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+                    datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+                    datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
             ),
             (None, None),
         ],
@@ -490,188 +538,248 @@ class TestIndego(object):
         "sync, func, attr, ret_value, assert_value",
         [
             (
-                True,
-                IndegoClient.update_calendar,
-                "calendar",
-                {"sel_cal": 3, "cals": [calendar]},
-                Calendar(**calendar),
-            ),
-            (True, IndegoClient.update_alerts, "alerts", [alert], [Alert(**alert)]),
-            (True, IndegoClient.update_config, "config", config, Config(**config)),
-            (
-                True,
-                IndegoClient.update_generic_data,
-                "generic_data",
-                generic,
-                GenericData(**generic),
+                    True,
+                    IndegoClient.update_calendar,
+                    "calendar",
+                    {"sel_cal": 3, "cals": [CALENDAR_RESPONSE]},
+                    Calendar(**CALENDAR_RESPONSE),
             ),
             (
-                True,
-                IndegoClient.update_last_completed_mow,
-                "last_completed_mow",
-                {"last_mowed": "2020-07-01T13:22:43.15+02:00"},
-                datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
+                    True,
+                    IndegoClient.update_alerts,
+                    "alerts",
+                    [ALERT_RESPONSE],
+                    [Alert(**ALERT_RESPONSE)]
             ),
             (
-                True,
-                IndegoClient.update_location,
-                "location",
-                location,
-                Location(**location),
-            ),
-            (True, IndegoClient.update_network, "network", network, Network(**network)),
-            (
-                True,
-                IndegoClient.update_next_mow,
-                "next_mow",
-                {"mow_next": "2020-07-03T10:00:00+02:00"},
-                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+                    True,
+                    IndegoClient.update_config,
+                    "config",
+                    CONFIG_RESPONSE,
+                    Config(**CONFIG_RESPONSE)
             ),
             (
-                True,
-                IndegoClient.update_operating_data,
-                "operating_data",
-                operating,
-                OperatingData(**operating),
+                    True,
+                    IndegoClient.update_generic_data,
+                    "generic_data",
+                    GENERIC_RESPONSE,
+                    GenericData(**GENERIC_RESPONSE),
             ),
             (
-                True,
-                IndegoClient.update_predictive_calendar,
-                "predictive_calendar",
-                predictive_calendar,
-                Calendar(**predictive_calendar["cals"][0]),
+                    True,
+                    IndegoClient.update_last_completed_mow,
+                    "last_completed_mow",
+                    {"last_mowed": "2020-07-01T13:22:43.15+02:00"},
+                    datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
             ),
             (
-                True,
-                IndegoClient.update_predictive_schedule,
-                "predictive_schedule",
-                predictive_schedule,
-                PredictiveSchedule(**predictive_schedule),
+                    True,
+                    IndegoClient.update_location,
+                    "location",
+                    LOCATION_RESPONSE,
+                    Location(**LOCATION_RESPONSE),
             ),
             (
-                True,
-                IndegoClient.update_security,
-                "security",
-                security,
-                Security(**security),
-            ),
-            (True, IndegoClient.update_setup, "setup", setup_json, Setup(**setup_json)),
-            (True, IndegoClient.update_state, "state", state, State(**state)),
-            (
-                True,
-                IndegoClient.update_updates_available,
-                "update_available",
-                {"available": False},
-                False,
-            ),
-            (True, IndegoClient.update_user, "user", user, User(**user)),
-            (True, IndegoClient.update_all, "user", None, None),
-            (
-                False,
-                IndegoAsyncClient.update_calendar,
-                "calendar",
-                {"sel_cal": 3, "cals": [calendar]},
-                Calendar(**calendar),
+                    True,
+                    IndegoClient.update_network,
+                    "network",
+                    NETWORK_RESPONSE,
+                    Network(**NETWORK_RESPONSE)
             ),
             (
-                False,
-                IndegoAsyncClient.update_alerts,
-                "alerts",
-                [alert],
-                [Alert(**alert)],
+                    True,
+                    IndegoClient.update_next_mow,
+                    "next_mow",
+                    {"mow_next": "2020-07-03T10:00:00+02:00"},
+                    datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
             ),
             (
-                False,
-                IndegoAsyncClient.update_config,
-                "config",
-                config,
-                Config(**config),
+                    True,
+                    IndegoClient.update_operating_data,
+                    "operating_data",
+                    OPERATING_RESPONSE,
+                    OperatingData(**OPERATING_RESPONSE),
             ),
             (
-                False,
-                IndegoAsyncClient.update_generic_data,
-                "generic_data",
-                generic,
-                GenericData(**generic),
+                    True,
+                    IndegoClient.update_predictive_calendar,
+                    "predictive_calendar",
+                    PREDICTIVE_CALENDAR_RESPONSE,
+                    Calendar(**PREDICTIVE_CALENDAR_RESPONSE["cals"][0]),
             ),
             (
-                False,
-                IndegoAsyncClient.update_last_completed_mow,
-                "last_completed_mow",
-                {"last_mowed": "2020-07-01T13:22:43.15+02:00"},
-                datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
+                    True,
+                    IndegoClient.update_predictive_schedule,
+                    "predictive_schedule",
+                    PREDICTIVE_SCHEDULE_RESPONSE,
+                    PredictiveSchedule(**PREDICTIVE_SCHEDULE_RESPONSE),
             ),
             (
-                False,
-                IndegoAsyncClient.update_location,
-                "location",
-                location,
-                Location(**location),
+                    True,
+                    IndegoClient.update_security,
+                    "security",
+                    SECURITY_RESPONSE,
+                    Security(**SECURITY_RESPONSE),
             ),
             (
-                False,
-                IndegoAsyncClient.update_network,
-                "network",
-                network,
-                Network(**network),
+                    True,
+                    IndegoClient.update_setup,
+                    "setup",
+                    SETUP_RESPONSE,
+                    Setup(**SETUP_RESPONSE)
             ),
             (
-                False,
-                IndegoAsyncClient.update_next_mow,
-                "next_mow",
-                {"mow_next": "2020-07-03T10:00:00+02:00"},
-                datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+                    True,
+                    IndegoClient.update_state,
+                    "state",
+                    STATE_RESPONSE,
+                    State(**STATE_RESPONSE)
             ),
             (
-                False,
-                IndegoAsyncClient.update_operating_data,
-                "operating_data",
-                operating,
-                OperatingData(**operating),
+                    True,
+                    IndegoClient.update_updates_available,
+                    "update_available",
+                    {"available": False},
+                    False,
             ),
             (
-                False,
-                IndegoAsyncClient.update_predictive_calendar,
-                "predictive_calendar",
-                predictive_calendar,
-                Calendar(**predictive_calendar["cals"][0]),
+                    True,
+                    IndegoClient.update_user,
+                    "user",
+                    USER_RESPONSE,
+                    User(**USER_RESPONSE)
             ),
             (
-                False,
-                IndegoAsyncClient.update_predictive_schedule,
-                "predictive_schedule",
-                predictive_schedule,
-                PredictiveSchedule(**predictive_schedule),
+                    True,
+                    IndegoClient.update_all,
+                    "user",
+                    None,
+                    None
             ),
             (
-                False,
-                IndegoAsyncClient.update_security,
-                "security",
-                security,
-                Security(**security),
+                    False,
+                    IndegoAsyncClient.update_calendar,
+                    "calendar",
+                    {"sel_cal": 3, "cals": [CALENDAR_RESPONSE]},
+                    Calendar(**CALENDAR_RESPONSE),
             ),
             (
-                False,
-                IndegoAsyncClient.update_setup,
-                "setup",
-                setup_json,
-                Setup(**setup_json),
+                    False,
+                    IndegoAsyncClient.update_alerts,
+                    "alerts",
+                    [ALERT_RESPONSE],
+                    [Alert(**ALERT_RESPONSE)],
             ),
-            (False, IndegoAsyncClient.update_state, "state", state, State(**state)),
             (
-                False,
-                IndegoAsyncClient.update_updates_available,
-                "update_available",
-                {"available": False},
-                False,
+                    False,
+                    IndegoAsyncClient.update_config,
+                    "config",
+                    CONFIG_RESPONSE,
+                    Config(**CONFIG_RESPONSE),
             ),
-            (False, IndegoAsyncClient.update_user, "user", user, User(**user)),
-            (False, IndegoAsyncClient.update_all, "user", None, None),
+            (
+                    False,
+                    IndegoAsyncClient.update_generic_data,
+                    "generic_data",
+                    GENERIC_RESPONSE,
+                    GenericData(**GENERIC_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_last_completed_mow,
+                    "last_completed_mow",
+                    {"last_mowed": "2020-07-01T13:22:43.15+02:00"},
+                    datetime.fromisoformat("2020-07-01 13:22:43.150000+02:00"),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_location,
+                    "location",
+                    LOCATION_RESPONSE,
+                    Location(**LOCATION_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_network,
+                    "network",
+                    NETWORK_RESPONSE,
+                    Network(**NETWORK_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_next_mow,
+                    "next_mow",
+                    {"mow_next": "2020-07-03T10:00:00+02:00"},
+                    datetime.fromisoformat("2020-07-03 10:00:00+02:00"),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_operating_data,
+                    "operating_data",
+                    OPERATING_RESPONSE,
+                    OperatingData(**OPERATING_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_predictive_calendar,
+                    "predictive_calendar",
+                    PREDICTIVE_CALENDAR_RESPONSE,
+                    Calendar(**PREDICTIVE_CALENDAR_RESPONSE["cals"][0]),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_predictive_schedule,
+                    "predictive_schedule",
+                    PREDICTIVE_SCHEDULE_RESPONSE,
+                    PredictiveSchedule(**PREDICTIVE_SCHEDULE_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_security,
+                    "security",
+                    SECURITY_RESPONSE,
+                    Security(**SECURITY_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_setup,
+                    "setup",
+                    SETUP_RESPONSE,
+                    Setup(**SETUP_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_state,
+                    "state",
+                    STATE_RESPONSE,
+                    State(**STATE_RESPONSE)
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_updates_available,
+                    "update_available",
+                    {"available": False},
+                    False,
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_user,
+                    "user",
+                    USER_RESPONSE,
+                    User(**USER_RESPONSE)
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_all,
+                    "user",
+                    None,
+                    None
+            ),
         ],
     )
     @pytest.mark.asyncio
     async def test_client_update_functions(
-        self, sync, func, attr, ret_value, assert_value
+            self, sync, func, attr, ret_value, assert_value
     ):
         """Test the base client functions with 200."""
         if sync:
@@ -686,7 +794,7 @@ class TestIndego(object):
         else:
             resp = MockResponseAsync(ret_value, 200)
             with patch("aiohttp.ClientSession.request", return_value=resp), patch(
-                "pyIndego.IndegoAsyncClient.start", return_value=True
+                    "pyIndego.IndegoAsyncClient.start", return_value=True
             ):
                 async with IndegoAsyncClient(**test_config) as indego:
                     await func(indego)
@@ -699,58 +807,58 @@ class TestIndego(object):
         "sync, func, param, attr, ret_value, assert_value",
         [
             (
-                True,
-                IndegoClient.update_state,
-                {"force": True},
-                "state",
-                state,
-                State(**state),
+                    True,
+                    IndegoClient.update_state,
+                    {"force": True},
+                    "state",
+                    STATE_RESPONSE,
+                    State(**STATE_RESPONSE),
             ),
             (
-                True,
-                IndegoClient.update_state,
-                {"longpoll": True},
-                "state",
-                state,
-                State(**state),
+                    True,
+                    IndegoClient.update_state,
+                    {"longpoll": True},
+                    "state",
+                    STATE_RESPONSE,
+                    State(**STATE_RESPONSE),
             ),
             (
-                True,
-                IndegoClient.update_state,
-                {"force": True, "longpoll": True},
-                "state",
-                state,
-                State(**state),
+                    True,
+                    IndegoClient.update_state,
+                    {"force": True, "longpoll": True},
+                    "state",
+                    STATE_RESPONSE,
+                    State(**STATE_RESPONSE),
             ),
             (
-                False,
-                IndegoAsyncClient.update_state,
-                {"force": True},
-                "state",
-                state,
-                State(**state),
+                    False,
+                    IndegoAsyncClient.update_state,
+                    {"force": True},
+                    "state",
+                    STATE_RESPONSE,
+                    State(**STATE_RESPONSE),
             ),
             (
-                False,
-                IndegoAsyncClient.update_state,
-                {"longpoll": True},
-                "state",
-                state,
-                State(**state),
+                    False,
+                    IndegoAsyncClient.update_state,
+                    {"longpoll": True},
+                    "state",
+                    STATE_RESPONSE,
+                    State(**STATE_RESPONSE),
             ),
             (
-                False,
-                IndegoAsyncClient.update_state,
-                {"force": True, "longpoll": True},
-                "state",
-                state,
-                State(**state),
+                    False,
+                    IndegoAsyncClient.update_state,
+                    {"force": True, "longpoll": True},
+                    "state",
+                    STATE_RESPONSE,
+                    State(**STATE_RESPONSE),
             ),
         ],
     )
     @pytest.mark.asyncio
     async def test_client_update_state_params(
-        self, sync, func, param, attr, ret_value, assert_value
+            self, sync, func, param, attr, ret_value, assert_value
     ):
         """Test the base client functions with 200."""
         if sync:
@@ -762,17 +870,100 @@ class TestIndego(object):
         else:
             resp = MockResponseAsync(ret_value, 200)
             with patch("aiohttp.ClientSession.request", return_value=resp), patch(
-                "pyIndego.IndegoAsyncClient.start", return_value=True
+                    "pyIndego.IndegoAsyncClient.start", return_value=True
             ):
                 async with IndegoAsyncClient(**test_config) as indego:
                     await func(indego, **param)
                     assert getattr(indego, attr) == assert_value
 
     @pytest.mark.parametrize(
+        "sync, func, param, attr, initial_ret_value, updated_ret_value, initial_assert_value, updated_assert_value",
+        [
+            (
+                    True,
+                    IndegoClient.update_state,
+                    {"longpoll": True},
+                    "state",
+                    STATE_RESPONSE,
+                    None,  # No update / empty response
+                    State(**STATE_RESPONSE),
+                    State(**STATE_RESPONSE),
+            ),
+            (
+                    True,
+                    IndegoClient.update_state,
+                    {"longpoll": True},
+                    "state",
+                    STATE_RESPONSE,
+                    None,  # No update / empty response
+                    State(**STATE_RESPONSE),
+                    State(**STATE_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_state,
+                    {"longpoll": True},
+                    "state",
+                    STATE_RESPONSE,
+                    STATE_UPDATE_RESPONSE,
+                    State(**STATE_RESPONSE),
+                    State(**STATE_FULL_UPDATE_RESPONSE),
+            ),
+            (
+                    False,
+                    IndegoAsyncClient.update_state,
+                    {"longpoll": True},
+                    "state",
+                    STATE_RESPONSE,
+                    STATE_UPDATE_RESPONSE,
+                    State(**STATE_RESPONSE),
+                    State(**STATE_FULL_UPDATE_RESPONSE),
+            ),
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_state_long_poll_updates(
+            self, sync, func, param, attr, initial_ret_value, updated_ret_value, initial_assert_value, updated_assert_value
+    ):
+        """Test a state update using longpoll and make sure the state of correctly merged."""
+        if sync:
+            indego = IndegoClient(**test_config)
+
+            # Initial update with changes.
+            resp = MockResponseSync(initial_ret_value, 200)
+            with patch("requests.request", return_value=resp):
+                func(indego, **param)
+                assert getattr(indego, attr) == initial_assert_value
+
+            # 2nd update, state should be merged with previous update.
+            resp = MockResponseSync(updated_ret_value, 504 if updated_ret_value is None else 200)
+            with patch("requests.request", return_value=resp):
+                func(indego, **param)
+                assert getattr(indego, attr) == updated_assert_value
+
+        else:
+            async with IndegoAsyncClient(**test_config) as indego:
+                # Initial update with changes.
+                resp = MockResponseAsync(initial_ret_value, 200)
+                with patch("aiohttp.ClientSession.request", return_value=resp), patch(
+                        "pyIndego.IndegoAsyncClient.start", return_value=True
+                ):
+                    await func(indego, **param)
+                    assert getattr(indego, attr) == initial_assert_value
+
+                # 2nd update, state should be merged with previous update.
+                resp = MockResponseAsync(updated_ret_value, 504 if updated_ret_value is None else 200)
+                with patch("aiohttp.ClientSession.request", return_value=resp), patch(
+                        "pyIndego.IndegoAsyncClient.start", return_value=True
+                ):
+                    await func(indego, **param)
+                    assert getattr(indego, attr) == updated_assert_value
+
+    @pytest.mark.parametrize(
         "sync, func, attr, ret_value, assert_value",
         [
-            (True, IndegoClient.update_user, "user", user, User(**user)),
-            (False, IndegoAsyncClient.update_user, "user", user, User(**user)),
+            (True, IndegoClient.update_user, "user", USER_RESPONSE, User(**USER_RESPONSE)),
+            (False, IndegoAsyncClient.update_user, "user", USER_RESPONSE, User(**USER_RESPONSE)),
         ],
     )
     @pytest.mark.asyncio
@@ -789,7 +980,7 @@ class TestIndego(object):
         else:
             resp = MockResponseAsync(ret_value, 200)
             with patch("aiohttp.ClientSession.request", return_value=resp), patch(
-                "pyIndego.IndegoAsyncClient.start", return_value=True
+                    "pyIndego.IndegoAsyncClient.start", return_value=True
             ):
                 async with IndegoAsyncClient(**test_config) as indego:
                     await func(indego)
@@ -800,20 +991,20 @@ class TestIndego(object):
     @pytest.mark.parametrize(
         "sync, response, func, attr, ret_value",
         [
-            (True, 204, IndegoClient.update_user, "user", user),
-            (True, 400, IndegoClient.update_user, "user", user),
-            (True, 401, IndegoClient.update_user, "user", user),
-            (True, 403, IndegoClient.update_user, "user", user),
-            (True, 405, IndegoClient.update_user, "user", user),
-            (True, 501, IndegoClient.update_user, "user", user),
-            (True, 504, IndegoClient.update_user, "user", user),
-            (False, 204, IndegoAsyncClient.update_user, "user", user),
-            (False, 400, IndegoAsyncClient.update_user, "user", user),
-            (False, 401, IndegoAsyncClient.update_user, "user", user),
-            (False, 403, IndegoAsyncClient.update_user, "user", user),
-            (False, 405, IndegoAsyncClient.update_user, "user", user),
-            (False, 501, IndegoAsyncClient.update_user, "user", user),
-            (False, 504, IndegoAsyncClient.update_user, "user", user),
+            (True, 204, IndegoClient.update_user, "user", USER_RESPONSE),
+            (True, 400, IndegoClient.update_user, "user", USER_RESPONSE),
+            (True, 401, IndegoClient.update_user, "user", USER_RESPONSE),
+            (True, 403, IndegoClient.update_user, "user", USER_RESPONSE),
+            (True, 405, IndegoClient.update_user, "user", USER_RESPONSE),
+            (True, 501, IndegoClient.update_user, "user", USER_RESPONSE),
+            (True, 504, IndegoClient.update_user, "user", USER_RESPONSE),
+            (False, 204, IndegoAsyncClient.update_user, "user", USER_RESPONSE),
+            (False, 400, IndegoAsyncClient.update_user, "user", USER_RESPONSE),
+            (False, 401, IndegoAsyncClient.update_user, "user", USER_RESPONSE),
+            (False, 403, IndegoAsyncClient.update_user, "user", USER_RESPONSE),
+            (False, 405, IndegoAsyncClient.update_user, "user", USER_RESPONSE),
+            (False, 501, IndegoAsyncClient.update_user, "user", USER_RESPONSE),
+            (False, 504, IndegoAsyncClient.update_user, "user", USER_RESPONSE),
         ],
     )
     @pytest.mark.asyncio
@@ -850,7 +1041,7 @@ class TestIndego(object):
     async def test_a_client_response_errors(self, error):
         """Test the request functions with different responses."""
         with patch("aiohttp.ClientSession.request", side_effect=error), patch(
-            "asyncio.sleep", new_callable=AsyncMock
+                "asyncio.sleep", new_callable=AsyncMock
         ):
             async with IndegoAsyncClient(**test_config) as indego:
                 resp = await indego._request(
@@ -864,7 +1055,7 @@ class TestIndego(object):
     def test_client_response_errors(self, error):
         """Test the request functions with different responses."""
         with patch("requests.request", side_effect=error), patch(
-            "time.sleep", new_callable=SyncMock
+                "time.sleep", new_callable=SyncMock
         ):
             indego = IndegoClient(**test_config)
             resp = indego._request(method=Methods.GET, path="alerts", timeout=1)
@@ -873,8 +1064,8 @@ class TestIndego(object):
     @pytest.mark.parametrize(  # noqa: ignore:C901
         "alerts, loaded, index, error",
         [
-            ([Alert(**alert)], True, 0, None),
-            ([Alert(**alert)], True, 1, IndexError),
+            ([Alert(**ALERT_RESPONSE)], True, 0, None),
+            ([Alert(**ALERT_RESPONSE)], True, 1, IndexError),
             (None, True, 0, ValueError),
             (None, False, 0, ValueError),
         ],
@@ -925,7 +1116,7 @@ class TestIndego(object):
                 assert True
         resp = MockResponseAsync(True, 200)
         with patch("aiohttp.ClientSession.request", return_value=resp), patch(
-            "pyIndego.IndegoAsyncClient.start", return_value=True
+                "pyIndego.IndegoAsyncClient.start", return_value=True
         ):
             async with IndegoAsyncClient(**test_config) as indego:
                 indego.alerts = alerts
@@ -1021,7 +1212,7 @@ class TestIndego(object):
 
         resp = MockResponseAsync(True, 200)
         with patch("aiohttp.ClientSession.request", return_value=resp), patch(
-            "pyIndego.IndegoAsyncClient.start", return_value=True
+                "pyIndego.IndegoAsyncClient.start", return_value=True
         ):
             async with IndegoAsyncClient(**test_config) as indego:
                 if command == "command":
@@ -1073,7 +1264,7 @@ class TestIndego(object):
                 assert True
 
         with patch("pyIndego.IndegoAsyncClient.start", return_value=True), patch(
-            "pyIndego.IndegoAsyncClient.get", return_value=None
+                "pyIndego.IndegoAsyncClient.get", return_value=None
         ):
             async with IndegoAsyncClient(**conf) as indego:
                 try:
@@ -1087,5 +1278,6 @@ class TestIndego(object):
     def test_update_battery(self):
         """Test the battery update function."""
         indego = IndegoClient(**test_config)
-        indego._update_generic_data(generic)
-        indego._update_operating_data(operating)
+        indego._update_generic_data(GENERIC_RESPONSE)
+        indego._update_operating_data(OPERATING_RESPONSE)
+

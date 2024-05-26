@@ -422,15 +422,16 @@ class IndegoClient(IndegoBaseClient):
             status = response.status_code
             _LOGGER.debug("[%s] HTTP status code: %i", request_id, status)
 
+            is_json = CONTENT_TYPE_JSON in response.headers[CONTENT_TYPE].split(";")
             if status == 200:
                 if method in (Methods.DELETE, Methods.PATCH, Methods.PUT):
                     return True
-                if CONTENT_TYPE_JSON in response.headers[CONTENT_TYPE].split(";"):
+                if is_json:
                     return response.json()
                 return response.content
 
             if self._log_request_result(request_id, status, url):
-                return None
+                return {} if is_json else ""
 
             response.raise_for_status()
 

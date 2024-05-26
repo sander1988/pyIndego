@@ -509,8 +509,9 @@ class IndegoAsyncClient(IndegoBaseClient):
                 status = response.status
                 _LOGGER.debug("[%s] HTTP status code: %i", request_id, status)
 
+                is_json = response.content_type == CONTENT_TYPE_JSON
                 if status == 200:
-                    if response.content_type == CONTENT_TYPE_JSON:
+                    if is_json:
                         resp = await response.json()
                         _LOGGER.debug("[%s] Response (JSON): %s", request_id, resp)
                         return resp
@@ -525,7 +526,7 @@ class IndegoAsyncClient(IndegoBaseClient):
                     return resp
 
                 if self._log_request_result(request_id, status, url):
-                    return None
+                    return {} if is_json else ""
 
                 response.raise_for_status()
 

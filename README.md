@@ -420,22 +420,11 @@ delete
 /alerts/<alertid>
 ```
 # Contributing
-The project development is done in a poetry virtual environment.
+The project development is done in a Python virtual environment.
 
-## setup your environment
-To start development please install [poetry](https://python-poetry.org/docs/).
-
-* Install all dependency by running `poetry install`.
-* activate the virtual environment by running `poetry shell`
-* Run `python test_new.py` to test your setup.
-
-## setup your personal info
-
-Open [config.json](./config.json) and type in the information for your `indego`.
-
-```javascript
-{
-    "token": "mytoken",
-    "serial": "myserial"
-}
-```
+## Setup your environment
+Steps required to setup your environment for development and testing:
+* Setup your Python virtual environment `python -m venv .venv`.
+* Activate the virtual environment by running `source .venv/bin/active`
+* Install de requirements `pip install '.[testing]'`
+* Run `pytest` to test your environment.
