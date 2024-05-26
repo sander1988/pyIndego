@@ -1,6 +1,6 @@
 # Changelog
 
-# 3.2.0
+## 3.2.0
 - Removed API retry logic, this gave unexpected results in some cases. Where commands get called after several minutes of delay. Retries should be handled by the application.
 - Fixed longpoll hang where the longpoll exceeds 4 minutes (which is the Azure maximum for inactive long running requests).
 - Set online/offline state based on the (longpoll) state updates instead of the generic data update. This gives a more realistic and quick online/offline update.
