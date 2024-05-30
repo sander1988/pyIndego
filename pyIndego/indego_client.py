@@ -345,7 +345,7 @@ class IndegoClient(IndegoBaseClient):
             else:
                 path = f"{path}?forceRefresh=true"
 
-        self._update_state(self.get(path, timeout=longpoll_timeout + 30))
+        self._update_state(self.get(path, timeout=(longpoll_timeout + 10) if longpoll else 10))
 
     def get_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state. Can be both forced and with longpoll.

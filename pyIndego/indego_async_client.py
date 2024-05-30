@@ -417,7 +417,7 @@ class IndegoAsyncClient(IndegoBaseClient):
         if force:
             path = f"{path}%sforceRefresh=true" % ("&" if longpoll else "?")
 
-        self._update_state(await self.get(path, timeout=longpoll_timeout + 10))
+        self._update_state(await self.get(path, timeout=(longpoll_timeout + 10) if longpoll else 10))
 
     async def get_state(self, force=False, longpoll=False, longpoll_timeout=120):
         """Update state and return it.
