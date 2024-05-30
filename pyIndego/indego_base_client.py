@@ -89,6 +89,11 @@ class IndegoBaseClient(ABC):
 
     # Properties
     @property
+    def online(self):
+        """Return the online state of this client."""
+        return self._online
+
+    @property
     def serial(self):
         """Return the serial number of the mower."""
         if self._serial:
