@@ -27,7 +27,7 @@ DEFAULT_HEADERS = {
     # See issues:
     # - https://github.com/jm-73/pyIndego/issues/119
     # - https://github.com/jm-73/Indego/issues/204
-    'User-Agent': "HomeAssistant/Indego (%s)" % __version__
+    'User-Agent': "pyIndego (%s)" % __version__
 }
 DEFAULT_LOOKUP_VALUE = "Not in database."
 
