@@ -25,8 +25,8 @@ DEFAULT_HEADERS = {
     # We need to change the user-agent!
     # The Microsoft Azure proxy WAF seems to block all requests (HTTP 403) for the default 'python-requests' user-agent.
     # See issues:
-    # - https://github.com/jm-73/pyIndego/issues/119
-    # - https://github.com/jm-73/Indego/issues/204
+    # - https://github.com/sander1988/pyIndego/issues/119
+    # - https://github.com/sander1988/Indego/issues/204
     'User-Agent': "pyIndego (%s)" % __version__
 }
 DEFAULT_LOOKUP_VALUE = "Not in database."

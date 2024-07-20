@@ -6,13 +6,13 @@ Join the Discord channel to discuss around this integration:
 https://discord.gg/aD33GsP
 
 ## Source code
-For source files and version handling: https://github.com/jm-73/pyIndego
+For source files and version handling: https://github.com/sander1988/pyIndego
 
 ## PyPi package
 For PYPI package: https://pypi.org/project/pyIndego
 
 ## Home Assistant
-For use in Home Assistant: https://github.com/jm-73/Indego
+For use in Home Assistant: https://github.com/sander1988/Indego
 
 ## Basic information needed
 

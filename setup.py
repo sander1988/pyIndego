@@ -21,7 +21,7 @@ setup(
     description="API for Bosch Indego mower",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/jm-73/pyIndego",
+    url="https://github.com/sander1988/pyIndego",
     packages=find_packages("."),
     install_requires=["requests", "aiohttp", "pytz"],
     extras_require={"testing": ["pytest", "pytest-asyncio", "pytest-cov", "mock"]},
