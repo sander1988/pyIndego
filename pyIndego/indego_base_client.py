@@ -220,7 +220,7 @@ class IndegoBaseClient(ABC):
 
     def _update_calendar(self, new):
         """Update calendar."""
-        if new:
+        if new and new.get("cals"):
             self.calendar = generate_update(self.calendar, new["cals"][0], Calendar)
 
     @abstractmethod
@@ -328,7 +328,7 @@ class IndegoBaseClient(ABC):
 
     def _update_predictive_calendar(self, new):
         """Update predictive_calendar."""
-        if new:
+        if new and new.get("cals"):
             self.predictive_calendar = generate_update(
                 self.predictive_calendar, new["cals"][0], Calendar
             )
@@ -438,7 +438,7 @@ class IndegoBaseClient(ABC):
             return True
 
         if 400 <= status < 600:
-            _LOGGER.error("[%s] Request to '%s' failed with HTTP status code: %i", request_id, url, status)
+            _LOGGER.debug("[%s] Request to '%s' failed with HTTP status code: %i", request_id, url, status)
             return not self._raise_request_exceptions
 
         return False
@@ -457,7 +457,7 @@ class IndegoBaseClient(ABC):
         if not self._alerts_loaded:
             raise ValueError("Alerts not loaded, please run update_alerts first.")
         if self.alerts_count == 0:
-            _LOGGER.info("No alerts to get")
+            _LOGGER.debug("No alerts to get")
             return None
         try:
             return self.alerts[alert_index].alert_id

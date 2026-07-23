@@ -4,7 +4,7 @@ import random
 import string
 from dataclasses import dataclass, is_dataclass, replace
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def nested_dataclass(*args, **kwargs):  # noqa: D202
     return wrapper(args[0]) if args else wrapper
 
 
-def convert_bosch_datetime(dt: Any = None) -> datetime:
+def convert_bosch_datetime(dt: Any = None) -> Optional[datetime]:
     """Create a datetime object from the string (or give back the datetime object) from Bosch. Checks if a valid number of milliseconds is sent."""
     if dt:
         if isinstance(dt, str):
